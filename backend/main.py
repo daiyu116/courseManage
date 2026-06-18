@@ -373,6 +373,33 @@ def add_auto_backup_config_column():
 
 add_auto_backup_config_column()
 
+def create_default_admin():
+    from passlib.context import CryptContext
+    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+    db = SessionLocal()
+    try:
+        existing_admin = db.query(User).filter(User.username == "admin").first()
+        if not existing_admin:
+            admin = User(
+                username="admin",
+                password_hash=pwd_context.hash("admin123"),
+                is_admin=True,
+                role='super_admin',
+                must_change_password=True
+            )
+            db.add(admin)
+            db.commit()
+            print("✓ 默认管理员账户创建成功 (用户名: admin, 密码: admin123)")
+        else:
+            print("✓ 管理员账户已存在")
+    except Exception as e:
+        print(f"创建默认管理员失败: {e}")
+        db.rollback()
+    finally:
+        db.close()
+
+create_default_admin()
+
 app.include_router(auth.router, prefix="/api/auth", tags=["认证"])
 app.include_router(courses.router, prefix="/api/courses", tags=["科目管理"])
 app.include_router(teachers.router, prefix="/api/teachers", tags=["导师管理"])

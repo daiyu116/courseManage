@@ -27,6 +27,11 @@
           </div>
         </el-form-item>
       </el-form>
+      <div class="default-account-hint">
+        <el-divider content-position="center">首次登录</el-divider>
+        <p>默认账号：<strong>admin</strong> / <strong>admin123</strong></p>
+        <p>登录后请立即修改密码</p>
+      </div>
     </el-card>
     <!-- 忘记密码对话框 -->
     <el-dialog v-model="forgotPasswordDialogVisible" title="忘记密码" width="400px">
@@ -324,5 +329,20 @@ const handleRegister = async () => {
 .card-header h2 {
   margin: 0;
   color: #333;
+}
+
+.default-account-hint {
+  text-align: center;
+  color: #909399;
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+.default-account-hint p {
+  margin: 0;
+}
+
+.default-account-hint strong {
+  color: #409eff;
 }
 </style>
