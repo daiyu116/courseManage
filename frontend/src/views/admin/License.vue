@@ -542,6 +542,7 @@
                   </el-radio-group>
                   <div v-if="selectedLicenseType && selectedFeatures.length" style="margin-top:8px;padding:8px 12px;background:#f0f9eb;border-radius:4px;border:1px solid #e1f3d8">
                     <div style="font-size:13px;color:#606266;margin-bottom:4px">费用明细（{{ LICENSE_TYPES[selectedLicenseType].name }}{{ LICENSE_TYPES[selectedLicenseType].days ? ' / ' + LICENSE_TYPES[selectedLicenseType].days + '天' : ' / 永久' }}）：</div>
+                    <div style="font-size:13px;color:#606266;margin-bottom:4px">费用以人民币计算，不包含税金。显示费用为推广价格，具体价格以供应商价格为准。</div>
                     <div v-for="feat in selectedFeatures" :key="feat" style="display:flex;justify-content:space-between;font-size:12px;color:#909399;padding:2px 0">
                       <span>{{ FEATURE_NAMES[feat] || feat }}</span>
                       <span style="color:#409eff;font-weight:500">¥{{ (FEATURE_PRICES[feat] && FEATURE_PRICES[feat][selectedLicenseType]) || 0 }}</span>

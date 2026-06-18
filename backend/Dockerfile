@@ -10,8 +10,10 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
-RUN pip install --no-cache-dir -i https://pypi.tuna.tsinghua.edu.cn/simple -r requirements.txt
-RUN pip install --no-cache-dir -i https://pypi.tuna.tsinghua.edu.cn/simple cython
+RUN pip install --no-cache-dir -r requirements.txt || \
+    pip install --no-cache-dir -i https://pypi.org/simple/ -r requirements.txt
+RUN pip install --no-cache-dir cython || \
+    pip install --no-cache-dir -i https://pypi.org/simple/ cython
 
 COPY . .
 
@@ -44,7 +46,8 @@ RUN apt-get update && \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
-RUN pip install --no-cache-dir -i https://pypi.tuna.tsinghua.edu.cn/simple -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt || \
+    pip install --no-cache-dir -i https://pypi.org/simple/ -r requirements.txt
 
 COPY --from=builder /app/ .
 
