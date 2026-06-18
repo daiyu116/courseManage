@@ -53,14 +53,18 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      - name: Get short SHA
+        id: sha
+        run: echo "short=$(echo ${{ github.sha }} | cut -c1-7)" >> "$GITHUB_OUTPUT"
+
       - name: Pull image for scanning
-        run: docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-backend:sha-${GITHUB_SHA::7}
+        run: docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-backend:sha-${{ steps.sha.outputs.short }}
 
       - name: Run Trivy vulnerability scanner
         if: success()
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-backend:sha-${GITHUB_SHA::7}
+          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-backend:sha-${{ steps.sha.outputs.short }}
           format: sarif
           output: trivy-backend-results.sarif
           severity: CRITICAL,HIGH
@@ -115,14 +119,18 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      - name: Get short SHA
+        id: sha
+        run: echo "short=$(echo ${{ github.sha }} | cut -c1-7)" >> "$GITHUB_OUTPUT"
+
       - name: Pull image for scanning
-        run: docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-frontend:sha-${GITHUB_SHA::7}
+        run: docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-frontend:sha-${{ steps.sha.outputs.short }}
 
       - name: Run Trivy vulnerability scanner
         if: success()
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-frontend:sha-${GITHUB_SHA::7}
+          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-frontend:sha-${{ steps.sha.outputs.short }}
           format: sarif
           output: trivy-frontend-results.sarif
           severity: CRITICAL,HIGH
