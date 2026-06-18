@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: AGPL-3.0-only
-# Copyright (C) 2024-2026 CourseArrange Contributors
+# Copyright (C) 2024-2026 courseManage Contributors
 from setuptools import setup, Extension
 from Cython.Build import cythonize
 import os
@@ -22,7 +22,7 @@ extensions = [
 ]
 
 setup(
-    name="coursearrange-protected",
+    name="courseManage-protected",
     ext_modules=cythonize(
         extensions,
         compiler_directives={

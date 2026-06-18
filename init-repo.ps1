@@ -1,5 +1,5 @@
 # ============================================================
-# CourseArrange 仓库初始化脚本 (PowerShell)
+# courseManage 仓库初始化脚本 (PowerShell)
 # 用于首次发布到 GitHub / Gitee
 # ============================================================
 
@@ -28,7 +28,7 @@ Set-Location $PSScriptRoot
 
 Write-Host ""
 Write-Host "============================================" -ForegroundColor Cyan
-Write-Host " CourseArrange Repository Initialization" -ForegroundColor Cyan
+Write-Host " courseManage Repository Initialization" -ForegroundColor Cyan
 Write-Host "============================================" -ForegroundColor Cyan
 Write-Host "GitHub:  $GitHubUser/$RepoName"
 Write-Host "Gitee:   $GiteeUser/$RepoName"
@@ -100,7 +100,7 @@ Write-Host "  The above files will be committed." -ForegroundColor White
 Write-Host ""
 $confirm = Read-Host "Proceed with commit? [y/N]"
 if ($confirm -eq "y" -or $confirm -eq "Y") {
-    git commit -m "feat: initial release - CourseArrange v1.0.0`n`n- AGPL-3.0 + Commercial dual licensing`n- Cython compilation for critical modules`n- RSA + HMAC license verification system`n- Supplier discovery mechanism for seamless URL updates`n- Docker-only deployment with multi-stage builds`n- Premium feature access control (backend + frontend)`n- Nginx anti-crawling and rate limiting`n- GitHub Actions CI/CD with Trivy security scanning`n- Gitee mirror sync"
+    git commit -m "feat: initial release - courseManage v1.0.0`n`n- AGPL-3.0 + Commercial dual licensing`n- Cython compilation for critical modules`n- RSA + HMAC license verification system`n- Supplier discovery mechanism for seamless URL updates`n- Docker-only deployment with multi-stage builds`n- Premium feature access control (backend + frontend)`n- Nginx anti-crawling and rate limiting`n- GitHub Actions CI/CD with Trivy security scanning`n- Gitee mirror sync"
 
     Write-Host ""
     Write-Host "============================================" -ForegroundColor Green

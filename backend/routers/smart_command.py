@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: AGPL-3.0-only
-# Copyright (C) 2024-2026 CourseArrange Contributors
+# Copyright (C) 2024-2026 courseManage Contributors
 """
 智能指令API - 支持自然语言指令处理
 """

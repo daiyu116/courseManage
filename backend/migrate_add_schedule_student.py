@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: AGPL-3.0-only
-# Copyright (C) 2024-2026 CourseArrange Contributors
+# Copyright (C) 2024-2026 courseManage Contributors
 """
 数据库迁移脚本：添加schedule_student表并为现有课程安排创建学员关联记录
 """

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: AGPL-3.0-only
-# Copyright (C) 2024-2026 CourseArrange Contributors
+# Copyright (C) 2024-2026 courseManage Contributors
 """
 迁移脚本：为schedules表添加schedule_type字段
 - 新增schedule_type字段，类型为VARCHAR(20)，默认值为'formal'（正式课）

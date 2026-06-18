@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: AGPL-3.0-only
-# Copyright (C) 2024-2026 CourseArrange Contributors
+# Copyright (C) 2024-2026 courseManage Contributors
 from __future__ import annotations
 from pydantic import BaseModel, Field
 from typing import Optional, List, Dict

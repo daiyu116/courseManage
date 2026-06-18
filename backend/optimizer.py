@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: AGPL-3.0-only
-# Copyright (C) 2024-2026 CourseArrange Contributors
+# Copyright (C) 2024-2026 courseManage Contributors
 import random
+import traceback
 import numpy as np
 from typing import List, Dict, Tuple, Optional, Set
 from datetime import datetime, timedelta

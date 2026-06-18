@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: AGPL-3.0-only
-# Copyright (C) 2024-2026 CourseArrange Contributors
+# Copyright (C) 2024-2026 courseManage Contributors
 # backend/migrate_add_operation_managers.py
 """
 添加运营管理导师配置字段 (适配 PostgreSQL)

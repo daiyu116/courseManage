@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-only
-// Copyright (C) 2024-2026 CourseArrange Contributors
+// Copyright (C) 2024-2026 courseManage Contributors
 <template>
   <div class="classes-page">
     <el-card class="nav-card" style="margin-bottom: 20px;">

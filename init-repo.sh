@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================
-# CourseArrange 仓库初始化脚本
+# courseManage 仓库初始化脚本
 # 用于首次发布到 GitHub / Gitee
 # ============================================================
 set -euo pipefail
@@ -24,7 +24,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$SCRIPT_DIR"
 
 echo "============================================"
-echo " CourseArrange Repository Initialization"
+echo " courseManage Repository Initialization"
 echo "============================================"
 echo "GitHub:  $GITHUB_USER/$REPO_NAME"
 echo "Gitee:   $GITEE_USER/$REPO_NAME"
@@ -86,7 +86,7 @@ echo "  The above files will be committed."
 echo ""
 read -rp "Proceed with commit? [y/N] " CONFIRM
 if [ "$CONFIRM" = "y" ] || [ "$CONFIRM" = "Y" ]; then
-    git commit -m "feat: initial release - CourseArrange v1.0.0
+    git commit -m "feat: initial release - courseManage v1.0.0
 
 - AGPL-3.0 + Commercial dual licensing
 - Cython compilation for critical modules

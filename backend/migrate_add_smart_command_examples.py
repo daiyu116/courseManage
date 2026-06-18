@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: AGPL-3.0-only
-# Copyright (C) 2024-2026 CourseArrange Contributors
+# Copyright (C) 2024-2026 courseManage Contributors
 """
 迁移脚本 - 添加智能指令示例数据（完整版）
 此脚本在部署系统时自动执行，确保数据库中包含所有智能指令示例

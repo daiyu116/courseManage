@@ -43,18 +43,17 @@ jobs:
             type=semver,pattern={{major}}.{{minor}}
             type=sha
 
-      - name: Build and push backend image
+      - name: Build backend image (local)
         uses: docker/build-push-action@v6
         with:
           context: ./backend
-          push: true
+          load: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
       - name: Run Trivy vulnerability scanner
-        if: success()
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-backend:${{ github.sha }}
@@ -69,6 +68,10 @@ jobs:
         with:
           sarif_file: trivy-backend-results.sarif
           category: backend
+
+      - name: Push backend image
+        run: |
+          echo "${{ steps.meta.outputs.tags }}" | xargs -I {} docker push {}
 
   build-frontend:
     runs-on: ubuntu-latest
@@ -102,18 +105,17 @@ jobs:
             type=semver,pattern={{major}}.{{minor}}
             type=sha
 
-      - name: Build and push frontend image
+      - name: Build frontend image (local)
         uses: docker/build-push-action@v6
         with:
           context: ./frontend
-          push: true
+          load: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
       - name: Run Trivy vulnerability scanner
-        if: success()
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-frontend:${{ github.sha }}
@@ -128,6 +130,10 @@ jobs:
         with:
           sarif_file: trivy-frontend-results.sarif
           category: frontend
+
+      - name: Push frontend image
+        run: |
+          echo "${{ steps.meta.outputs.tags }}" | xargs -I {} docker push {}
 
   sync-to-gitee:
     needs: [build-backend, build-frontend]

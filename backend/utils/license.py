@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: AGPL-3.0-only
-# Copyright (C) 2024-2026 CourseArrange Contributors
+# Copyright (C) 2024-2026 courseManage Contributors
 """
 License 授权验证服务（客户版）
 使用 RSA 非对称加密：公钥验证签名，私钥由供应商持有
@@ -65,9 +65,9 @@ FEATURE_NAMES = {
     "student_evaluation": "学员评价管理",
 }
 
-_SUpLIER_DISCOVERY = "https://coursearrange-discovery.example.com/config"
+_SUpLIER_DISCOVERY = "https://courseManage-discovery.example.com/config"
 _SUpLIER_COMM_DEFAULT = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=78f7362b-42a6-4d4b-813a-6a98f399f07c"
-_SUpLIER_HB_DEFAULT = "https://coursearrange-licence.service.local/api/v1/hb"
+_SUpLIER_HB_DEFAULT = "https://courseManage-licence.service.local/api/v1/hb"
 _DISCOVERY_INTERVAL = 86400
 _HEARTBEAT_INTERVAL = 3600
 _last_heartbeat_time = 0
@@ -79,7 +79,7 @@ _last_discovery_time = 0
 
 def _verify_discovery_sig(data: dict, sig: str) -> bool:
     raw = json.dumps({k: data[k] for k in sorted(data.keys())}, ensure_ascii=False)
-    expected = hashlib.sha256(("coursearrange-discovery-v1:" + raw).encode()).hexdigest()
+    expected = hashlib.sha256(("courseManage-discovery-v1:" + raw).encode()).hexdigest()
     return hmac.compare_digest(expected, sig)
 
 
@@ -118,10 +118,10 @@ def get_supplier_hb() -> str:
     return _cached_hb or _SUpLIER_HB_DEFAULT
 
 
-_FEATURES_HMAC_SALT = b"coursearrange-features-hmac-v2-8f3a1b7c9d2e"
+_FEATURES_HMAC_SALT = b"courseManage-features-hmac-v2-8f3a1b7c9d2e"
 
 def _get_hmac_key() -> bytes:
-    raw = os.getenv("SECRET_KEY", "coursearrange-default-hmac-key")
+    raw = os.getenv("SECRET_KEY", "courseManage-default-hmac-key")
     combined = raw.encode() + _FEATURES_HMAC_SALT + LICENSE_PUBLIC_KEY_PEM.encode()[:64]
     return hashlib.sha256(combined).digest()
 
@@ -292,7 +292,7 @@ class LicenseService:
         return _last_heartbeat_result
 
 
-_INTEGRITY_SALT = b"coursearrange-integrity-v1"
+_INTEGRITY_SALT = b"courseManage-integrity-v1"
 
 
 def compute_module_hash(module_path: str) -> str:
