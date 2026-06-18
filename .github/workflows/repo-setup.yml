@@ -1,0 +1,46 @@
+name: Repository Setup
+
+on:
+  workflow_dispatch:
+    inputs:
+      setup_branch_protection:
+        description: 'Set up branch protection rules'
+        required: false
+        default: 'true'
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    permissions:
+      administration: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure branch protection
+        if: github.event.inputs.setup_branch_protection == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          REPO="${{ github.repository }}"
+
+          echo "Setting branch protection for ${REPO}..."
+
+          gh api \
+            --method PUT \
+            -H "Accept: application/vnd.github+json" \
+            "/repos/${REPO}/branches/main/protection" \
+            -f "required_status_checks[strict]=true" \
+            -f "required_status_checks[contexts][]=" \
+            -f "enforce_admins=true" \
+            -f "required_pull_request_reviews[dismiss_stale_reviews]=true" \
+            -f "required_pull_request_reviews[require_code_owner_reviews]=true" \
+            -f "required_pull_request_reviews[required_approving_review_count]=1" \
+            -f "restrictions=null" \
+            -f "required_linear_history=true" \
+            -f "allow_force_pushes=false" \
+            -f "allow_deletions=false" \
+            || echo "Note: Branch protection may require admin access. Please set manually if this fails."
+
+          echo "Done."

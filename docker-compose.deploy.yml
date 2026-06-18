@@ -1,0 +1,96 @@
+﻿# ============================================================
+# CourseArrange 部署配置（使用预构建镜像）
+# 使用方法：
+#   1. 复制 .env.example 为 .env 并修改配置
+#   2. docker compose -f docker-compose.deploy.yml up -d
+# ============================================================
+
+x-database-variables: &database-variables
+  DB_HOST: postgres
+  DB_PORT: ${DB_PORT:-5432}
+  POSTGRES_DB: ${POSTGRES_DB:-cadb}
+  POSTGRES_USER: ${POSTGRES_USER:-cadbuser}
+  POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?请在.env文件中设置POSTGRES_PASSWORD}
+  POSTGRES_MAX_CONNECTIONS: ${POSTGRES_MAX_CONNECTIONS:-200}
+
+x-app-variables: &app-variables
+  SECRET_KEY: ${SECRET_KEY:?请在.env文件中设置SECRET_KEY}
+  ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:${FRONTEND_PORT:-18080},http://127.0.0.1:${FRONTEND_PORT:-18080}}
+
+x-backend-variables: &backend-variables
+  DB_POOL_SIZE: ${DB_POOL_SIZE:-10}
+  DB_MAX_OVERFLOW: ${DB_MAX_OVERFLOW:-20}
+  DB_POOL_TIMEOUT: ${DB_POOL_TIMEOUT:-30}
+  DB_POOL_RECYCLE: ${DB_POOL_RECYCLE:-1800}
+  PYTHONUNBUFFERED: 1
+  UVICORN_WORKERS: ${UVICORN_WORKERS:-4}
+  UVICORN_HOST: 0.0.0.0
+  UVICORN_PORT: 8000
+  LOG_LEVEL: ${LOG_LEVEL:-info}
+  BACKUP_DIR: /app/backups
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: coursearrange-db
+    environment:
+      <<: *database-variables
+      POSTGRES_PORT: ${DB_PORT:-5432}
+    command: >
+      postgres
+      -c max_connections=${POSTGRES_MAX_CONNECTIONS:-200}
+      -c shared_buffers=256MB
+      -c effective_cache_size=1GB
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - default
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-cadbuser} -d ${POSTGRES_DB:-cadb}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    image: ghcr.io/daiyu116/coursearrange-backend:latest
+    container_name: coursearrange-backend
+    environment:
+      <<: [*database-variables, *app-variables, *backend-variables]
+      DATABASE_URL: postgresql://${POSTGRES_USER:-cadbuser}:${POSTGRES_PASSWORD}@postgres:${DB_PORT:-5432}/${POSTGRES_DB:-cadb}
+    ports:
+      - "127.0.0.1:${BACKEND_PORT:-35000}:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - backup_data:/app/backups
+    networks:
+      default:
+        aliases:
+          - backend
+    restart: unless-stopped
+
+  frontend:
+    image: ghcr.io/daiyu116/coursearrange-frontend:latest
+    container_name: coursearrange-frontend
+    environment:
+      <<: *app-variables
+    ports:
+      - "${FRONTEND_PORT:-18080}:80"
+    depends_on:
+      - backend
+    networks:
+      - default
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  backup_data:
+
+networks:
+  default:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: ${DOCKER_SUBNET:-172.18.16.0/24}

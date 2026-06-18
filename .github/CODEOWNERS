@@ -1,0 +1,28 @@
+﻿# CODEOWNERS - 代码审查规则
+# 所有变更至少需要一名代码所有者审查后才能合并
+# 请将 @daiyu116 替换为你的实际 GitHub 用户名
+
+# 默认所有者
+*       @daiyu116
+
+# 关键安全模块 - 任何修改都必须经过审查
+/backend/utils/license.py          @daiyu116
+/backend/routers/license.py        @daiyu116
+/backend/optimizer.py              @daiyu116
+/backend/setup_cython.py           @daiyu116
+/backend/main.py                   @daiyu116
+
+# Docker 配置 - 影响部署安全
+/backend/Dockerfile                @daiyu116
+/frontend/Dockerfile               @daiyu116
+/docker-compose.yml                @daiyu116
+/docker-compose.deploy.yml         @daiyu116
+/.env.example                      @daiyu116
+
+# CI/CD 配置
+/.github/                          @daiyu116
+
+# 前端路由与授权
+/frontend/src/router/              @daiyu116
+/frontend/src/utils/license.js     @daiyu116
+/frontend/nginx.conf               @daiyu116
