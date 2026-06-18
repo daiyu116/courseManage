@@ -8,7 +8,7 @@ set -euo pipefail
 # ---------- 配置区 ----------
 GITHUB_USER=""       # 填入你的 GitHub 用户名
 GITEE_USER=""        # 填入你的 Gitee 用户名
-REPO_NAME="coursearrange"
+REPO_NAME="courseManage"
 
 # ---------- 前置检查 ----------
 command -v git >/dev/null 2>&1 || { echo "ERROR: git not found"; exit 1; }

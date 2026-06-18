@@ -32,7 +32,7 @@ x-backend-variables: &backend-variables
 services:
   postgres:
     image: postgres:15-alpine
-    container_name: coursearrange-db
+    container_name: coursemanage-db
     environment:
       <<: *database-variables
       POSTGRES_PORT: ${DB_PORT:-5432}
@@ -53,8 +53,8 @@ services:
       retries: 5
 
   backend:
-    image: ghcr.io/daiyu116/coursearrange-backend:latest
-    container_name: coursearrange-backend
+    image: ghcr.io/daiyu116/coursemanage-backend:latest
+    container_name: coursemanage-backend
     environment:
       <<: [*database-variables, *app-variables, *backend-variables]
       DATABASE_URL: postgresql://${POSTGRES_USER:-cadbuser}:${POSTGRES_PASSWORD}@postgres:${DB_PORT:-5432}/${POSTGRES_DB:-cadb}
@@ -72,8 +72,8 @@ services:
     restart: unless-stopped
 
   frontend:
-    image: ghcr.io/daiyu116/coursearrange-frontend:latest
-    container_name: coursearrange-frontend
+    image: ghcr.io/daiyu116/coursemanage-frontend:latest
+    container_name: coursemanage-frontend
     environment:
       <<: *app-variables
     ports:

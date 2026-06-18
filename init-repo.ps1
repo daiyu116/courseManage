@@ -8,7 +8,7 @@ param(
     [string]$GiteeUser = ""
 )
 
-$RepoName = "coursearrange"
+$RepoName = "courseManage"
 $ErrorActionPreference = "Stop"
 
 # ---------- 前置检查 ----------
