@@ -8,7 +8,6 @@ on:
 
 env:
   GHCR_REGISTRY: ghcr.io
-  DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
   IMAGE_NAME: coursemanage
 
 jobs:
@@ -31,6 +30,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Log in to Docker Hub
+        if: secrets.DOCKERHUB_TOKEN != ''
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -45,7 +45,6 @@ jobs:
         with:
           images: |
             ${{ env.GHCR_REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}-backend
-            ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}-backend
           tags: |
             type=ref,event=branch
             type=semver,pattern={{version}}
@@ -53,7 +52,7 @@ jobs:
             type=sha
             type=raw,value=latest,enable={{is_default_branch}}
 
-      - name: Build and push backend image
+      - name: Build and push backend image to GHCR
         uses: docker/build-push-action@v6
         with:
           context: ./backend
@@ -63,18 +62,31 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      - name: Push backend image to Docker Hub
+        if: secrets.DOCKERHUB_TOKEN != ''
+        run: |
+          DH_IMAGE="${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}-backend"
+          GHCR_IMAGE="${{ env.GHCR_REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}-backend"
+          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
+          docker buildx imagetools create --tag "${DH_IMAGE}:latest" "${GHCR_IMAGE}:latest"
+          docker buildx imagetools create --tag "${DH_IMAGE}:sha-${SHORT_SHA}" "${GHCR_IMAGE}:latest"
+          if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+            VERSION="${GITHUB_REF#refs/tags/v}"
+            docker buildx imagetools create --tag "${DH_IMAGE}:${VERSION}" "${GHCR_IMAGE}:latest"
+          fi
+
       - name: Get short SHA
         id: sha
         run: echo "short=$(echo ${{ github.sha }} | cut -c1-7)" >> "$GITHUB_OUTPUT"
 
       - name: Pull image for scanning
-        run: docker pull ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}-backend:sha-${{ steps.sha.outputs.short }}
+        run: docker pull ${{ env.GHCR_REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}-backend:sha-${{ steps.sha.outputs.short }}
 
       - name: Run Trivy vulnerability scanner
         if: success()
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}-backend:sha-${{ steps.sha.outputs.short }}
+          image-ref: ${{ env.GHCR_REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}-backend:sha-${{ steps.sha.outputs.short }}
           format: sarif
           output: trivy-backend-results.sarif
           severity: CRITICAL,HIGH
@@ -106,6 +118,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Log in to Docker Hub
+        if: secrets.DOCKERHUB_TOKEN != ''
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -120,7 +133,6 @@ jobs:
         with:
           images: |
             ${{ env.GHCR_REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}-frontend
-            ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}-frontend
           tags: |
             type=ref,event=branch
             type=semver,pattern={{version}}
@@ -128,7 +140,7 @@ jobs:
             type=sha
             type=raw,value=latest,enable={{is_default_branch}}
 
-      - name: Build and push frontend image
+      - name: Build and push frontend image to GHCR
         uses: docker/build-push-action@v6
         with:
           context: ./frontend
@@ -138,18 +150,31 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      - name: Push frontend image to Docker Hub
+        if: secrets.DOCKERHUB_TOKEN != ''
+        run: |
+          DH_IMAGE="${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}-frontend"
+          GHCR_IMAGE="${{ env.GHCR_REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}-frontend"
+          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
+          docker buildx imagetools create --tag "${DH_IMAGE}:latest" "${GHCR_IMAGE}:latest"
+          docker buildx imagetools create --tag "${DH_IMAGE}:sha-${SHORT_SHA}" "${GHCR_IMAGE}:latest"
+          if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+            VERSION="${GITHUB_REF#refs/tags/v}"
+            docker buildx imagetools create --tag "${DH_IMAGE}:${VERSION}" "${GHCR_IMAGE}:latest"
+          fi
+
       - name: Get short SHA
         id: sha
         run: echo "short=$(echo ${{ github.sha }} | cut -c1-7)" >> "$GITHUB_OUTPUT"
 
       - name: Pull image for scanning
-        run: docker pull ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}-frontend:sha-${{ steps.sha.outputs.short }}
+        run: docker pull ${{ env.GHCR_REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}-frontend:sha-${{ steps.sha.outputs.short }}
 
       - name: Run Trivy vulnerability scanner
         if: success()
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}-frontend:sha-${{ steps.sha.outputs.short }}
+          image-ref: ${{ env.GHCR_REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}-frontend:sha-${{ steps.sha.outputs.short }}
           format: sarif
           output: trivy-frontend-results.sarif
           severity: CRITICAL,HIGH

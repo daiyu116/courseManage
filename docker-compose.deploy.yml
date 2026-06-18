@@ -3,6 +3,10 @@
 # 使用方法：
 #   1. 复制 .env.example 为 .env 并修改配置
 #   2. docker compose -f docker-compose.deploy.yml up -d
+#
+# 镜像源说明：
+#   默认使用 GHCR (ghcr.io)，国内拉取较慢时可切换为 Docker Hub
+#   切换方法：将 image 行替换为下方注释中的 Docker Hub 地址
 # ============================================================
 
 x-database-variables: &database-variables
@@ -53,7 +57,8 @@ services:
       retries: 5
 
   backend:
-    image: daiyu116/coursemanage-backend:latest
+    image: ghcr.io/daiyu116/coursemanage-backend:latest
+    # image: daiyu116/coursemanage-backend:latest
     container_name: coursemanage-backend
     environment:
       <<: [*database-variables, *app-variables, *backend-variables]
@@ -72,7 +77,8 @@ services:
     restart: unless-stopped
 
   frontend:
-    image: daiyu116/coursemanage-frontend:latest
+    image: ghcr.io/daiyu116/coursemanage-frontend:latest
+    # image: daiyu116/coursemanage-frontend:latest
     container_name: coursemanage-frontend
     environment:
       <<: *app-variables
