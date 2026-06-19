@@ -81,15 +81,15 @@ export const LICENSE_TYPES = {
 }
 
 export const FEATURE_PRICES = {
-  [FEATURES.FLOATING_SPHERE]: { trialA: 1.99, trialB: 2.99, monthly: 6.99, quarterly: 17.99, semiannual: 29.99, annual: 49.99, perpetual: 96.99 },
-  [FEATURES.SMART_COMMAND]: { trialA: 1.99, trialB: 2.99, monthly: 6.99, quarterly: 17.99, semiannual: 29.99, annual: 49.99, perpetual: 96.99 },
-  [FEATURES.DASHBOARD_VIEW]: { trialA: 1.99, trialB: 2.99, monthly: 6.99, quarterly: 17.99, semiannual: 29.99, annual: 49.99, perpetual: 96.99 },
-  [FEATURES.WECHAT_NOTIFY]: { trialA: 1.99, trialB: 2.99, monthly: 6.99, quarterly: 17.99, semiannual: 29.99, annual: 49.99, perpetual: 96.99 },
-  [FEATURES.GRADE_TREND]: { trialA: 1.99, trialB: 2.99, monthly: 6.99, quarterly: 17.99, semiannual: 29.99, annual: 49.99, perpetual: 96.99 },
-  [FEATURES.FEE_MANAGEMENT]: { trialA: 1.99, trialB: 2.99, monthly: 6.99, quarterly: 17.99, semiannual: 29.99, annual: 49.99, perpetual: 96.99 },
-  [FEATURES.SMART_SCHEDULING]: { trialA: 1.99, trialB: 2.99, monthly: 6.99, quarterly: 17.99, semiannual: 29.99, annual: 49.99, perpetual: 96.99 },
-  [FEATURES.DATABASE_MANAGEMENT]: { trialA: 1.99, trialB: 2.99, monthly: 6.99, quarterly: 17.99, semiannual: 29.99, annual: 49.99, perpetual: 96.99 },
-  [FEATURES.STUDENT_EVALUATION]: { trialA: 1.99, trialB: 2.99, monthly: 6.99, quarterly: 17.99, semiannual: 29.99, annual: 49.99, perpetual: 96.99 },
+  [FEATURES.FLOATING_SPHERE]: { trialA: 1.99, trialB: 2.99, monthly: 6.99, quarterly: 17.99, semiannual: 29.99, annual: 49.99, perpetual: 196.99 },
+  [FEATURES.SMART_COMMAND]: { trialA: 1.99, trialB: 2.99, monthly: 6.99, quarterly: 17.99, semiannual: 29.99, annual: 49.99, perpetual: 196.99 },
+  [FEATURES.DASHBOARD_VIEW]: { trialA: 1.99, trialB: 2.99, monthly: 6.99, quarterly: 17.99, semiannual: 29.99, annual: 49.99, perpetual: 196.99 },
+  [FEATURES.WECHAT_NOTIFY]: { trialA: 1.99, trialB: 2.99, monthly: 6.99, quarterly: 17.99, semiannual: 29.99, annual: 49.99, perpetual: 196.99 },
+  [FEATURES.GRADE_TREND]: { trialA: 1.99, trialB: 2.99, monthly: 6.99, quarterly: 17.99, semiannual: 29.99, annual: 49.99, perpetual: 196.99 },
+  [FEATURES.FEE_MANAGEMENT]: { trialA: 1.99, trialB: 2.99, monthly: 6.99, quarterly: 17.99, semiannual: 29.99, annual: 49.99, perpetual: 196.99 },
+  [FEATURES.SMART_SCHEDULING]: { trialA: 1.99, trialB: 2.99, monthly: 6.99, quarterly: 17.99, semiannual: 29.99, annual: 49.99, perpetual: 196.99 },
+  [FEATURES.DATABASE_MANAGEMENT]: { trialA: 1.99, trialB: 2.99, monthly: 6.99, quarterly: 17.99, semiannual: 29.99, annual: 49.99, perpetual: 196.99 },
+  [FEATURES.STUDENT_EVALUATION]: { trialA: 1.99, trialB: 2.99, monthly: 6.99, quarterly: 17.99, semiannual: 29.99, annual: 49.99, perpetual: 196.99 },
 }
 
 export function calcTotalPrice(selectedFeatures, licenseType) {

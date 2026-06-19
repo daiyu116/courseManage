@@ -15,6 +15,14 @@
 
       <div v-if="licenseState.activated" class="license-status">
         <el-alert title="系统已授权" type="success" :closable="false" show-icon />
+        <el-alert type="success" :closable="false" show-icon style="margin-top:16px">
+          <template #title>默认已授权模块（无需额外付费）</template>
+          <div class="default-modules-grid">
+            <span v-for="mod in defaultModules" :key="mod" class="default-module-tag">
+              <el-icon><CircleCheck /></el-icon> {{ mod }}
+            </span>
+          </div>
+        </el-alert>
         <el-descriptions :column="2" border size="small" style="margin-top:12px">
           <el-descriptions-item label="客户机构">{{ licenseState.organizationName || '--' }}</el-descriptions-item>
           <el-descriptions-item label="授权类型">{{ licenseState.licenseTypeName || '--' }}</el-descriptions-item>
@@ -34,7 +42,7 @@
           <el-descriptions-item label="有效期">{{ licenseState.expiryDate ? formatDateTime(licenseState.expiryDate) : '永久有效' }}</el-descriptions-item>
           <el-descriptions-item label="第三方折扣">{{ licenseState.discountPercent != null ? licenseState.discountPercent + '%' : '--' }}</el-descriptions-item>
           <el-descriptions-item label="推荐人奖励">{{ licenseState.rebatePercent != null ? licenseState.rebatePercent + '%' : '--' }}</el-descriptions-item>
-          <el-descriptions-item label="已授权功能" :span="2">
+          <el-descriptions-item label="已授权高级功能" :span="2">
             <el-tag v-for="(enabled, key) in licenseState.features" :key="key" :type="enabled ? 'success' : 'info'" size="small" style="margin:2px">{{ FEATURE_NAMES[key] || key }}</el-tag>
             <span v-if="!Object.keys(licenseState.features).length">--</span>
           </el-descriptions-item>
@@ -143,7 +151,7 @@
                     show-icon
                   >
                     <template #title>所有功能模块均已授权</template>
-                    目前所有功能模块都是"已授权"状态，如果需要更改授权，请在对应功能模块中点击"停用"按钮停用相应授权后，重新追加授权。
+                    目前所有功能模块都是"已授权"状态，如果需要更改授权，请在对应功能模块中点击"停用"按钮停用相应授权后，重新追加授权。注意：1.停用License时，关联的模块功能授权均会被停用；2.追加授权功能模块时，请勿重复选择已授权功能模块；
                   </el-alert>
                   <el-row :gutter="12" v-else>
                     <el-col :xs="12" :sm="8" :md="8" v-for="opt in addonFeatureOptions" :key="opt.key">
@@ -183,9 +191,6 @@
                   <span class="step-title">填写信息并申请授权</span>
                 </div>
                 <div class="step-body">
-                  <el-alert type="warning" :closable="false" show-icon style="margin-bottom:12px">
-                    请务必提供有效的联系信息，以便供应商在必要时与您联系。
-                  </el-alert>
                   <el-form label-position="top">
                     <el-form-item label="服务器机器码">
                       <el-input v-model="machineCode" readonly size="small">
@@ -215,6 +220,9 @@
                         </div>
                       </div>
                     </el-form-item>
+                    <el-alert type="warning" :closable="false" show-icon style="margin-bottom:12px">
+                      请务必提供有效的联系信息，以便供应商在必要时能够联系到您。
+                    </el-alert>
                     <el-form-item label="机构名称" required>
                       <el-input v-model="orgName" placeholder="请输入机构名称" />
                     </el-form-item>
@@ -234,13 +242,14 @@
                       <el-input v-model="remarks" type="textarea" :rows="2" placeholder="选填" />
                     </el-form-item>
                     <el-form-item label="推荐码">
-                      <el-input v-model="addonReferralCode" placeholder="选填，填写其他机构的推荐码可享第三方折扣优惠" clearable>
+                      <el-input v-model="addonReferralCode" placeholder="选填，填写推荐码可享第三方折扣优惠" clearable>
                         <template #prefix>
                           <el-icon><Tickets /></el-icon>
                         </template>
                       </el-input>
                       <div v-if="licenseState.referralCode" style="font-size:12px;color:#E6A23C;margin-top:4px">
-                        ⚠️ 您的专属推荐码为 {{ licenseState.referralCode }}，请勿填写自己的推荐码
+                        ⚠️ 填写自己的专属推荐码 {{ licenseState.referralCode }}无效，请填写其他机构的真实推荐码（供应商可验证）；
+                        您的推荐码提供给其他机构使用后，您可获得对应的即时奖励；
                       </div>
                     </el-form-item>
                     <el-form-item>
@@ -270,7 +279,7 @@
                 <div class="step-body">
                   <el-alert type="info" :closable="false" show-icon style="margin-bottom:12px">
                     <template #title>购买说明</template>
-                    供应商收到授权订购信息后会第一时间联系您，请关注您留下的联系方式（我们郑重承诺对您的信息进行保密管理，不泄露不转发不外传）；如果超过2小时无供应商主动联系，请选择下方备用联系方式通知供应商；
+                    供应商收到授权订购信息后会第一时间联系您，请关注您的手机邮件微信等联系方式（我们郑重承诺对您的信息进行保密管理，不泄露不转发不外传；同时也请您对供应商联系方式同样保密，感谢配合与合作）；如果超过2小时无供应商主动联系，请选择下方备用联系方式通知供应商；
                 双方沟通确认信息及款项无误后，供应商将为您提供对应功能和授权类型的 License Key（授权码）。如果您之前已经购买过永久授权，或者购买过临时授权、订阅授权但尚未过期，但因系统重新部署机器码变更导致原授权码失效，请联系供应商核实后免费更换授权码再激活。
                   </el-alert>
                   <div v-if="!showAddonSupplierInfo" class="supplier-mask-wrapper">
@@ -302,7 +311,7 @@
                   <span class="step-title">激活授权</span>
                 </div>
                 <div class="step-body">
-                  <p style="color:#909399;margin-bottom:12px">收到供应商提供的 License Key 后，请在下方填入并激活。</p>
+                  <p style="color:#909399;margin-bottom:12px">收到供应商提供的 License Key 后，请在下方填入并激活，激活成功后供应商会收到通知信息。</p>
                   <el-form label-position="top">
                     <el-form-item label="License Key">
                       <el-input
@@ -609,7 +618,7 @@
             <div class="step-body">
               <el-alert type="info" :closable="false" show-icon style="margin-bottom:12px">
                 <template #title>购买说明</template>
-                供应商收到授权订购信息后会第一时间联系您，请关注您留下的联系方式（我们郑重承诺对您的信息进行保密管理，不泄露不转发不外传）；如果超过2小时无供应商主动联系，请选择下方备用联系方式通知供应商；
+                供应商收到授权订购信息后会第一时间联系您，请关注您的手机邮件微信等联系方式（我们郑重承诺对您的信息进行保密管理，不泄露不转发不外传；同时也请您对供应商联系方式同样保密，感谢配合与合作）；如果超过2小时无供应商主动联系，请选择下方备用联系方式通知供应商；
                 双方沟通确认信息及款项无误后，供应商将为您提供对应功能和授权类型的 License Key（授权码）。
               </el-alert>
               <div v-if="!showSupplierInfo" class="supplier-mask-wrapper">
@@ -641,7 +650,7 @@
               <span class="step-title">激活授权</span>
             </div>
             <div class="step-body">
-              <p style="color:#909399;margin-bottom:12px">收到供应商提供的 License Key 后，请在下方填入并激活。</p>
+              <p style="color:#909399;margin-bottom:12px">收到供应商提供的 License Key 后，请在下方填入并激活，激活成功后供应商会收到通知信息。</p>
               <el-form label-position="top">
                 <el-form-item label="License Key">
                   <el-input
