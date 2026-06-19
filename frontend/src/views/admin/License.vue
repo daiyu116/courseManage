@@ -63,6 +63,7 @@
             ✅ 推荐码已激活，分享给其他机构，其他机构购买后您可获得对方实际付费的{{ licenseState.rebatePercent }}%推荐人奖励
           </div>
           <div v-else class="referral-code-hint" style="color:#E6A23C">
+            您可以随时推荐码分享给其他机构，其他机构使用后您可获取相应的即时奖励。
             ⏳ 推荐码尚未激活 — 累计消费 ¥{{ licenseState.totalSpending.toFixed(2) }} / 门槛 ¥{{ licenseState.referralThreshold.toFixed(2) }}，还需消费 ¥{{ Math.max(0, licenseState.referralThreshold - licenseState.totalSpending).toFixed(2) }} 即可激活
             <el-progress
               :percentage="Math.min(100, licenseState.referralThreshold > 0 ? (licenseState.totalSpending / licenseState.referralThreshold * 100) : 0)"
@@ -458,6 +459,7 @@
             ✅ 推荐码已激活，分享给其他机构，其他机构购买后您可获得对方实际付费的{{ licenseState.rebatePercent }}%推荐人奖励
           </div>
           <div v-else class="referral-code-hint" style="color:#E6A23C">
+            您可以随时推荐码分享给其他机构，其他机构使用后您可获取相应的即时奖励。
             ⏳ 推荐码尚未激活 — 累计消费 ¥{{ licenseState.totalSpending.toFixed(2) }} / 门槛 ¥{{ licenseState.referralThreshold.toFixed(2) }}，还需消费 ¥{{ Math.max(0, licenseState.referralThreshold - licenseState.totalSpending).toFixed(2) }} 即可激活
             <el-progress
               :percentage="Math.min(100, licenseState.referralThreshold > 0 ? (licenseState.totalSpending / licenseState.referralThreshold * 100) : 0)"
@@ -530,9 +532,6 @@
               <span class="step-title">填写信息并申请授权</span>
             </div>
             <div class="step-body">
-              <el-alert type="warning" :closable="false" show-icon style="margin-bottom:12px">
-                请务必提供有效的联系信息，以便供应商与您联系沟通。
-              </el-alert>
               <el-form label-width="100px" label-position="top">
                 <el-form-item label="服务器机器码">
                   <el-input v-model="machineCode" readonly>
@@ -563,6 +562,9 @@
                     </div>
                   </div>
                 </el-form-item>
+                <el-alert type="warning" :closable="false" show-icon style="margin-bottom:12px">
+                  请务必提供有效的联系信息，以便供应商与您联系沟通。
+                </el-alert>
                 <el-form-item label="机构名称" required>
                   <el-input v-model="orgName" placeholder="请输入机构名称" />
                 </el-form-item>
@@ -582,13 +584,13 @@
                   <el-input v-model="remarks" type="textarea" :rows="2" placeholder="选填" />
                 </el-form-item>
                 <el-form-item label="推荐码">
-                  <el-input v-model="applyReferralCode" placeholder="选填，填写其他机构的推荐码可享第三方折扣优惠" clearable>
+                  <el-input v-model="applyReferralCode" placeholder="选填，填写推荐码可享第三方折扣优惠" clearable>
                     <template #prefix>
                       <el-icon><Tickets /></el-icon>
                     </template>
                   </el-input>
                   <div v-if="licenseState.referralCode" style="font-size:12px;color:#E6A23C;margin-top:4px">
-                    ⚠️ 您的专属推荐码为 {{ licenseState.referralCode }}，请勿填写自己的推荐码
+                    ⚠️ 此处填写您的专属推荐码 {{ licenseState.referralCode }}无效，请填写其他机构的推荐码获得相应折扣优惠；另外您可以随时推荐码分享给其他机构，其他机构使用后您可获取相应的即时奖励。
                   </div>
                 </el-form-item>
                 <el-form-item>
