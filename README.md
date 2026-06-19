@@ -1,3 +1,8 @@
+**项目地址**
+
+    Github   https://github.com/daiyu116/courseManage
+    Gitee    https://gitee.com/dhklym/coursemanage
+
 **演示地址**
 
     http://23gf6881kb66.vicp.fun:43393
