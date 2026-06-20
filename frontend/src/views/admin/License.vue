@@ -5,18 +5,18 @@
     <el-card class="license-card">
       <template #header>
         <div class="card-header">
-          <span><el-icon><Key /></el-icon> 系统授权管理</span>
+          <span><el-icon><Key /></el-icon> {{ t('license.title') }}</span>
           <el-button type="info" @click="goBack" size="small">
             <el-icon><ArrowLeft /></el-icon>
-            返回上一页
+            {{ t('license.goBack') }}
           </el-button>
         </div>
       </template>
 
       <div v-if="licenseState.activated" class="license-status">
-        <el-alert title="系统已授权" type="success" :closable="false" show-icon />
+        <el-alert :title="t('license.activated')" type="success" :closable="false" show-icon />
         <el-alert type="success" :closable="false" show-icon style="margin-top:16px">
-          <template #title>默认已授权模块（无需额外付费）</template>
+          <template #title>{{ t('license.defaultModulesTitle') }}</template>
           <div class="default-modules-grid">
             <span v-for="mod in defaultModules" :key="mod" class="default-module-tag">
               <el-icon><CircleCheck /></el-icon> {{ mod }}
@@ -24,25 +24,25 @@
           </div>
         </el-alert>
         <el-descriptions :column="2" border size="small" style="margin-top:12px">
-          <el-descriptions-item label="客户机构">{{ licenseState.organizationName || '--' }}</el-descriptions-item>
-          <el-descriptions-item label="授权类型">{{ licenseState.licenseTypeName || '--' }}</el-descriptions-item>
+          <el-descriptions-item :label="t('license.organization')">{{ licenseState.organizationName || '--' }}</el-descriptions-item>
+          <el-descriptions-item :label="t('license.licenseType')">{{ licenseState.licenseTypeName || '--' }}</el-descriptions-item>
           <el-descriptions-item label="License Key">
             <span>{{ licenseState.licenseKey ? licenseState.licenseKey.substring(0, 20) + '...' : '--' }}</span>
             <el-button v-if="licenseState.licenseKey" type="primary" link size="small" @click="copyText(licenseState.licenseKey)">
               <el-icon><CopyDocument /></el-icon>
             </el-button>
           </el-descriptions-item>
-          <el-descriptions-item label="服务器机器码">
+          <el-descriptions-item :label="t('license.machineCode')">
             <span>{{ licenseState.machineCode || '--' }}</span>
             <el-button v-if="licenseState.machineCode" type="primary" link size="small" @click="copyText(licenseState.machineCode)">
               <el-icon><CopyDocument /></el-icon>
             </el-button>
           </el-descriptions-item>
-          <el-descriptions-item label="License发布时间">{{ licenseState.issuedAt ? formatDateTime(licenseState.issuedAt) : '--' }}</el-descriptions-item>
-          <el-descriptions-item label="有效期">{{ licenseState.expiryDate ? formatDateTime(licenseState.expiryDate) : '永久有效' }}</el-descriptions-item>
-          <el-descriptions-item label="第三方折扣">{{ licenseState.discountPercent != null ? licenseState.discountPercent + '%' : '--' }}</el-descriptions-item>
-          <el-descriptions-item label="推荐人奖励">{{ licenseState.rebatePercent != null ? licenseState.rebatePercent + '%' : '--' }}</el-descriptions-item>
-          <el-descriptions-item label="已授权高级功能" :span="2">
+          <el-descriptions-item :label="t('license.licenseIssuedAt')">{{ licenseState.issuedAt ? formatDateTime(licenseState.issuedAt) : '--' }}</el-descriptions-item>
+          <el-descriptions-item :label="t('license.validity')">{{ licenseState.expiryDate ? formatDateTime(licenseState.expiryDate) : t('license.permanent') }}</el-descriptions-item>
+          <el-descriptions-item :label="t('license.thirdPartyDiscount')">{{ licenseState.discountPercent != null ? licenseState.discountPercent + '%' : '--' }}</el-descriptions-item>
+          <el-descriptions-item :label="t('license.referrerReward')">{{ licenseState.rebatePercent != null ? licenseState.rebatePercent + '%' : '--' }}</el-descriptions-item>
+          <el-descriptions-item :label="t('license.authorizedAdvancedFeatures')" :span="2">
             <el-tag v-for="(enabled, key) in licenseState.features" :key="key" :type="enabled ? 'success' : 'info'" size="small" style="margin:2px">{{ FEATURE_NAMES[key] || key }}</el-tag>
             <span v-if="!Object.keys(licenseState.features).length">--</span>
           </el-descriptions-item>
@@ -51,20 +51,20 @@
           <div class="referral-code-main">
             <el-tag :type="licenseState.referralActivated ? 'success' : 'warning'" size="large" effect="plain" style="font-size:14px;padding:6px 14px">
               <el-icon><Tickets /></el-icon>
-              您的专属推荐码：<strong style="font-size:16px;letter-spacing:2px">{{ licenseState.referralCode }}</strong>
-              <span v-if="licenseState.discountPercent != null" style="margin-left:8px;font-size:12px;color:#409eff">第三方折扣{{ licenseState.discountPercent }}%</span>
-              <span v-if="licenseState.rebatePercent != null" style="margin-left:8px;font-size:12px;color:#67c23a">推荐人奖励{{ licenseState.rebatePercent }}%</span>
+              {{ t('license.yourReferralCode') }}<strong style="font-size:16px;letter-spacing:2px">{{ licenseState.referralCode }}</strong>
+              <span v-if="licenseState.discountPercent != null" style="margin-left:8px;font-size:12px;color:#409eff">{{ t('license.thirdPartyDiscount') }}{{ licenseState.discountPercent }}%</span>
+              <span v-if="licenseState.rebatePercent != null" style="margin-left:8px;font-size:12px;color:#67c23a">{{ t('license.referrerReward') }}{{ licenseState.rebatePercent }}%</span>
             </el-tag>
             <el-button v-if="licenseState.referralActivated" size="small" @click="copyText(licenseState.referralCode)" style="margin-left:8px">
-              <el-icon><CopyDocument /></el-icon> 复制
+              <el-icon><CopyDocument /></el-icon> {{ t('license.copy') }}
             </el-button>
           </div>
           <div v-if="licenseState.referralActivated" class="referral-code-hint" style="color:#67c23a">
-            ✅ 推荐码已激活，分享给其他机构，其他机构购买后您可获得对方实际付费的{{ licenseState.rebatePercent }}%推荐人奖励
+            {{ t('license.referralActivated', { percent: licenseState.rebatePercent }) }}
           </div>
           <div v-else class="referral-code-hint" style="color:#E6A23C">
-            您可以随时推荐码分享给其他机构，其他机构使用后您可获取相应的即时奖励。
-            ⏳ 推荐码尚未激活 — 累计消费 ¥{{ licenseState.totalSpending.toFixed(2) }} / 门槛 ¥{{ licenseState.referralThreshold.toFixed(2) }}，还需消费 ¥{{ Math.max(0, licenseState.referralThreshold - licenseState.totalSpending).toFixed(2) }} 即可激活
+            {{ t('license.referralNotActivated') }}
+            {{ t('license.referralPending', { total: licenseState.totalSpending.toFixed(2), threshold: licenseState.referralThreshold.toFixed(2), remaining: Math.max(0, licenseState.referralThreshold - licenseState.totalSpending).toFixed(2) }) }}
             <el-progress
               :percentage="Math.min(100, licenseState.referralThreshold > 0 ? (licenseState.totalSpending / licenseState.referralThreshold * 100) : 0)"
               :stroke-width="8"
@@ -74,7 +74,7 @@
           </div>
         </div>
         <el-divider />
-        <h4>已授权功能模块</h4>
+        <h4>{{ t('license.authorizedModules') }}</h4>
         <el-row :gutter="12">
           <el-col :xs="12" :sm="8" :md="8" v-for="feat in featureList" :key="feat.key">
             <el-tooltip effect="dark" placement="top" :show-after="300">
@@ -95,14 +95,14 @@
                 <span>{{ feat.name }}</span>
                 <el-tooltip v-if="feat.enabled" effect="dark" placement="top">
                   <template #content>
-                    <div>客户机构: {{ licenseState.organizationName || '--' }}</div>
-                    <div>授权类型: {{ licenseState.licenseTypeName || '--' }}</div>
-                    <div v-if="licenseState.expiryDate">到期时间: {{ formatDateTime(licenseState.expiryDate) }}</div>
-                    <div v-else>有效期: 永久有效</div>
+                    <div>{{ t('license.organization') }}: {{ licenseState.organizationName || '--' }}</div>
+                    <div>{{ t('license.licenseType') }}: {{ licenseState.licenseTypeName || '--' }}</div>
+                    <div v-if="licenseState.expiryDate">{{ t('license.expiryDate') }}: {{ formatDateTime(licenseState.expiryDate) }}</div>
+                    <div v-else>{{ t('license.validity') }}: {{ t('license.permanent') }}</div>
                   </template>
-                  <el-tag type="success" size="small" style="cursor:default">已授权</el-tag>
+                  <el-tag type="success" size="small" style="cursor:default">{{ t('license.authorized') }}</el-tag>
                 </el-tooltip>
-                <el-tag v-else type="info" size="small">未授权</el-tag>
+                <el-tag v-else type="info" size="small">{{ t('license.unauthorized') }}</el-tag>
                 <div v-if="feat.enabled" style="display: flex; gap: 6px; margin-top: 4px;">
                   <el-button
                     type="primary"
@@ -110,7 +110,7 @@
                     plain
                     @click="openFeatureFeedbackDialog(feat)"
                   >
-                    <el-icon><ChatLineSquare /></el-icon> 反馈
+                    <el-icon><ChatLineSquare /></el-icon> {{ t('license.feedback') }}
                   </el-button>
                   <el-button
                     type="danger"
@@ -119,7 +119,7 @@
                     :loading="featureDeactivating === feat.key"
                     @click="handleDeactivateFeature(feat)"
                   >
-                    停用
+                    {{ t('license.deactivate') }}
                   </el-button>
                 </div>
               </el-card>
@@ -131,18 +131,18 @@
           <el-collapse-item name="addon">
             <template #title>
               <el-button class="addon-title-btn" type="warning" size="default" round>
-                <el-icon><Plus /></el-icon> 追加授权
+                <el-icon><Plus /></el-icon> {{ t('license.addonLicense') }}
               </el-button>
             </template>
             <el-alert type="info" :closable="false" show-icon style="margin-bottom:12px">
-              <template #title>授权流程</template>
-              <p>建议先花费极少量费用配置短期试用授权，深度测试相应功能是否满足您机构的需求；满意之后再购买订阅类型或永久类型的授权；</p>
+              <template #title>{{ t('license.licenseFlow') }}</template>
+              <p>{{ t('license.licenseFlowDesc') }}</p>
             </el-alert>
             <div class="steps-container">
               <div class="step-card">
                 <div class="step-header">
                   <span class="step-number">1</span>
-                  <span class="step-title">选择高级功能模块</span>
+                  <span class="step-title">{{ t('license.step1SelectModule') }}</span>
                 </div>
                 <div class="step-body">
                   <el-alert
@@ -151,8 +151,8 @@
                     :closable="false"
                     show-icon
                   >
-                    <template #title>所有功能模块均已授权</template>
-                    目前所有功能模块都是"已授权"状态，如果需要更改授权，请在对应功能模块中点击"停用"按钮停用相应授权后，重新追加授权。注意：1.停用License时，关联的模块功能授权均会被停用；2.追加授权功能模块时，请勿重复选择已授权功能模块；
+                    <template #title>{{ t('license.allModulesAuthorized') }}</template>
+                    {{ t('license.allModulesAuthorizedDesc') }}
                   </el-alert>
                   <el-row :gutter="12" v-else>
                     <el-col :xs="12" :sm="8" :md="8" v-for="opt in addonFeatureOptions" :key="opt.key">
@@ -173,8 +173,8 @@
                         >
                           <el-icon :size="24"><component :is="opt.icon" /></el-icon>
                           <span>{{ opt.name }}</span>
-                          <el-tag v-if="addonSelectedFeatures.includes(opt.key)" type="success" size="small">已选</el-tag>
-                          <el-tag v-else type="info" size="small">点击选择</el-tag>
+                          <el-tag v-if="addonSelectedFeatures.includes(opt.key)" type="success" size="small">{{ t('license.selected') }}</el-tag>
+                          <el-tag v-else type="info" size="small">{{ t('license.clickToSelect') }}</el-tag>
                         </el-card>
                       </el-tooltip>
                     </el-col>
@@ -189,11 +189,11 @@
               <div class="step-card step-card-wide">
                 <div class="step-header">
                   <span class="step-number">2</span>
-                  <span class="step-title">填写信息并申请授权</span>
+                  <span class="step-title">{{ t('license.step2ApplyLicense') }}</span>
                 </div>
                 <div class="step-body">
                   <el-form label-position="top">
-                    <el-form-item label="服务器机器码">
+                    <el-form-item :label="t('license.machineCodeLabel')">
                       <el-input v-model="machineCode" readonly size="small">
                         <template #append>
                           <el-button @click="copyMachineCode" size="small">
@@ -202,55 +202,54 @@
                         </template>
                       </el-input>
                     </el-form-item>
-                    <el-form-item label="授权类型">
+                    <el-form-item :label="t('license.licenseTypeLabel')">
                       <el-radio-group v-model="addonLicenseType" style="line-height:32px">
                         <el-radio v-for="(info, key) in LICENSE_TYPES" :key="key" :value="key" border size="small" style="margin-right:8px;margin-bottom:6px">
-                          {{ info.name }}{{ info.days ? ' (' + info.days + '天)' : ' (永久)' }}
+                          {{ info.name }}{{ info.days ? ' (' + t('license.daysType', { n: info.days }) + ')' : ' (' + t('license.permanentType') + ')' }}
                         </el-radio>
                       </el-radio-group>
                       <div v-if="addonLicenseType && addonSelectedFeatures.length" style="margin-top:8px;padding:8px 12px;background:#f0f9eb;border-radius:4px;border:1px solid #e1f3d8">
-                        <div style="font-size:13px;color:#606266;margin-bottom:4px">费用明细（{{ LICENSE_TYPES[addonLicenseType].name }}{{ LICENSE_TYPES[addonLicenseType].days ? ' / ' + LICENSE_TYPES[addonLicenseType].days + '天' : ' / 永久' }}）：</div>
+                        <div style="font-size:13px;color:#606266;margin-bottom:4px">{{ t('license.costDetail', { name: LICENSE_TYPES[addonLicenseType].name, period: LICENSE_TYPES[addonLicenseType].days ? ' / ' + t('license.daysType', { n: LICENSE_TYPES[addonLicenseType].days }) : ' / ' + t('license.permanentType') }) }}</div>
                         <div v-for="feat in addonSelectedFeatures" :key="feat" style="display:flex;justify-content:space-between;font-size:12px;color:#909399;padding:2px 0">
                           <span>{{ FEATURE_NAMES[feat] || feat }}</span>
                           <span style="color:#409eff;font-weight:500">¥{{ (FEATURE_PRICES[feat] && FEATURE_PRICES[feat][addonLicenseType]) || 0 }}</span>
                         </div>
                         <el-divider style="margin:6px 0" />
                         <div style="display:flex;justify-content:space-between;font-size:14px;font-weight:600">
-                          <span>合计</span>
+                          <span>{{ t('license.total') }}</span>
                           <span style="color:#E6A23C">¥{{ calcTotalPrice(addonSelectedFeatures, addonLicenseType) }}</span>
                         </div>
                       </div>
                     </el-form-item>
                     <el-alert type="warning" :closable="false" show-icon style="margin-bottom:12px">
-                      请务必提供有效的联系信息，以便供应商在必要时能够联系到您。
+                      {{ t('license.contactInfoRequired') }}
                     </el-alert>
-                    <el-form-item label="机构名称" required>
-                      <el-input v-model="orgName" placeholder="请输入机构名称" />
+                    <el-form-item :label="t('license.orgNameLabel')" required>
+                      <el-input v-model="orgName" :placeholder="t('license.orgNamePlaceholder')" />
                     </el-form-item>
-                    <el-form-item label="联系人" required>
-                      <el-input v-model="contactPerson" placeholder="请输入联系人" />
+                    <el-form-item :label="t('license.contactPersonLabel')" required>
+                      <el-input v-model="contactPerson" :placeholder="t('license.contactPersonPlaceholder')" />
                     </el-form-item>
-                    <el-form-item label="联系电话">
-                      <el-input v-model="contactPhone" placeholder="联系电话、电子邮件、联系微信三选一" />
+                    <el-form-item :label="t('license.contactPhoneLabel')">
+                      <el-input v-model="contactPhone" :placeholder="t('license.contactPhonePlaceholder')" />
                     </el-form-item>
-                    <el-form-item label="电子邮件">
-                      <el-input v-model="contactEmail" placeholder="联系电话、电子邮件、联系微信三选一" />
+                    <el-form-item :label="t('license.contactEmailLabel')">
+                      <el-input v-model="contactEmail" :placeholder="t('license.contactEmailPlaceholder')" />
                     </el-form-item>
-                    <el-form-item label="联系微信">
-                      <el-input v-model="contactWechat" placeholder="联系电话、电子邮件、联系微信三选一" />
+                    <el-form-item :label="t('license.contactWechatLabel')">
+                      <el-input v-model="contactWechat" :placeholder="t('license.contactWechatPlaceholder')" />
                     </el-form-item>
-                    <el-form-item label="备注">
-                      <el-input v-model="remarks" type="textarea" :rows="2" placeholder="选填" />
+                    <el-form-item :label="t('license.remarksLabel')">
+                      <el-input v-model="remarks" type="textarea" :rows="2" :placeholder="t('license.remarksPlaceholder')" />
                     </el-form-item>
-                    <el-form-item label="推荐码">
-                      <el-input v-model="addonReferralCode" placeholder="选填，填写推荐码可享第三方折扣优惠" clearable>
+                    <el-form-item :label="t('license.referralCodeLabel')">
+                      <el-input v-model="addonReferralCode" :placeholder="t('license.referralCodePlaceholder')" clearable>
                         <template #prefix>
                           <el-icon><Tickets /></el-icon>
                         </template>
                       </el-input>
                       <div v-if="licenseState.referralCode" style="font-size:12px;color:#E6A23C;margin-top:4px">
-                        ⚠️ 填写自己的专属推荐码 {{ licenseState.referralCode }}无效，请填写其他机构的真实推荐码（供应商可验证）；
-                        您的推荐码提供给其他机构使用后，您可获得对应的即时奖励；
+                        {{ t('license.ownReferralCodeWarning', { code: licenseState.referralCode }) }}
                       </div>
                     </el-form-item>
                     <el-form-item>
@@ -261,7 +260,7 @@
                         :loading="addonApplying"
                         :disabled="!addonSelectedFeatures.length || !addonLicenseType || !orgName || !contactPerson || (!contactPhone && !contactEmail && !contactWechat) || isOwnReferralCode(addonReferralCode)"
                       >
-                        <el-icon><Message /></el-icon> 申请追加授权
+                        <el-icon><Message /></el-icon> {{ t('license.applyAddonLicense') }}
                       </el-button>
                     </el-form-item>
                   </el-form>
@@ -275,30 +274,29 @@
               <div class="step-card">
                 <div class="step-header">
                   <span class="step-number">3</span>
-                  <span class="step-title">购买并接收授权</span>
+                  <span class="step-title">{{ t('license.step3Purchase') }}</span>
                 </div>
                 <div class="step-body">
                   <el-alert type="info" :closable="false" show-icon style="margin-bottom:12px">
-                    <template #title>购买说明</template>
-                    供应商收到授权订购信息后会第一时间联系您，请关注您的手机邮件微信等联系方式（我们郑重承诺对您的信息进行保密管理，不泄露不转发不外传；同时也请您对供应商联系方式同样保密，感谢配合与合作）；如果超过2小时无供应商主动联系，请选择下方备用联系方式通知供应商；
-                双方沟通确认信息及款项无误后，供应商将为您提供对应功能和授权类型的 License Key（授权码）。如果您之前已经购买过永久授权，或者购买过临时授权、订阅授权但尚未过期，但因系统重新部署机器码变更导致原授权码失效，请联系供应商核实后免费更换授权码再激活。
+                    <template #title>{{ t('license.purchaseNote') }}</template>
+                    {{ t('license.purchaseNoteDetail') }}
                   </el-alert>
                   <div v-if="!showAddonSupplierInfo" class="supplier-mask-wrapper">
                     <div class="supplier-mask-overlay">
                       <div class="supplier-mask-content">
                         <el-icon :size="32" color="#909399"><Lock /></el-icon>
-                        <p style="color:#606266;margin:8px 0;font-size:14px">供应商联系信息已隐藏，请输入服务器机器码验证后查看</p>
-                        <el-input v-model="inputAddonMachineCode" placeholder="请输入服务器机器码" @keyup.enter="verifyAddonMachineCode" style="max-width:360px" />
-                        <el-button type="primary" @click="verifyAddonMachineCode" style="margin-top:8px">验证机器码</el-button>
+                        <p style="color:#606266;margin:8px 0;font-size:14px">{{ t('license.supplierInfoHidden') }}</p>
+                        <el-input v-model="inputAddonMachineCode" :placeholder="t('license.inputMachineCodePlaceholder')" @keyup.enter="verifyAddonMachineCode" style="max-width:360px" />
+                        <el-button type="primary" @click="verifyAddonMachineCode" style="margin-top:8px">{{ t('license.verifyMachineCode') }}</el-button>
                       </div>
                     </div>
                   </div>
                   <el-descriptions v-else :column="1" border size="small">
-                    <el-descriptions-item label="📧供应商邮箱">meitianqiusuo@163.com</el-descriptions-item>
-                    <el-descriptions-item label="💬供应商微信">renshengxiubuqi</el-descriptions-item>
-                    <el-descriptions-item label="📞供应商电话">+86-155-5418-6956</el-descriptions-item>
+                    <el-descriptions-item :label="t('license.supplierEmail')">meitianqiusuo@163.com</el-descriptions-item>
+                    <el-descriptions-item :label="t('license.supplierWechat')">renshengxiubuqi</el-descriptions-item>
+                    <el-descriptions-item :label="t('license.supplierPhone')">+86-155-5418-6956</el-descriptions-item>
                   </el-descriptions>
-                  <p style="color:#909399;font-size:12px;margin-top:8px">此步骤无需操作，收到供应商提供的 License Key 后请进入下一步激活。</p>
+                  <p style="color:#909399;font-size:12px;margin-top:8px">{{ t('license.nextStepHint') }}</p>
                 </div>
               </div>
 
@@ -309,17 +307,17 @@
               <div class="step-card">
                 <div class="step-header">
                   <span class="step-number">4</span>
-                  <span class="step-title">激活授权</span>
+                  <span class="step-title">{{ t('license.step4Activate') }}</span>
                 </div>
                 <div class="step-body">
-                  <p style="color:#909399;margin-bottom:12px">收到供应商提供的 License Key 后，请在下方填入并激活，激活成功后供应商会收到通知信息。</p>
+                  <p style="color:#909399;margin-bottom:12px">{{ t('license.activateHint') }}</p>
                   <el-form label-position="top">
                     <el-form-item label="License Key">
                       <el-input
                         v-model="addonLicenseKey"
                         type="textarea"
                         :rows="3"
-                        placeholder="请粘贴供应商提供的追加 License Key"
+                        :placeholder="t('license.licenseKeyPlaceholder')"
                       />
                     </el-form-item>
                     <el-form-item>
@@ -330,7 +328,7 @@
                         :loading="addonActivating"
                         :disabled="!addonLicenseKey.trim() || !addonSelectedFeatures.length"
                       >
-                        <el-icon><Check /></el-icon> 追加授权
+                        <el-icon><Check /></el-icon> {{ t('license.addonLicense') }}
                       </el-button>
                     </el-form-item>
                   </el-form>
@@ -342,28 +340,28 @@
         <el-divider />
         <div style="display: flex; gap: 12px;">
           <el-button type="danger" @click="handleDeactivate" :loading="deactivating">
-            停用 License
+            {{ t('license.deactivateLicense') }}
           </el-button>
           <el-button type="primary" plain @click="openSystemFeedbackDialog">
-            <el-icon><ChatLineSquare /></el-icon> 系统使用反馈
+            <el-icon><ChatLineSquare /></el-icon> {{ t('license.systemFeedback') }}
           </el-button>
         </div>
         <el-collapse v-if="licenseState.deactivatedLicenses.length" v-model="deactivatedCollapse" style="margin-top:16px">
           <el-collapse-item name="history">
             <template #title>
               <span style="font-weight:bold;color:#E6A23C">
-                <el-icon><Warning /></el-icon> 已停用的 License（{{ filteredDeactivatedLicenses.length }} / {{ licenseState.deactivatedLicenses.length }} 条）
+                <el-icon><Warning /></el-icon> {{ t('license.deactivatedLicenses', { filtered: filteredDeactivatedLicenses.length, total: licenseState.deactivatedLicenses.length }) }}
               </span>
             </template>
             <div class="deactivated-filter-bar">
               <el-radio-group v-model="deactivatedStatusFilter" size="small">
-                <el-radio-button value="unexpired">未过期</el-radio-button>
-                <el-radio-button value="expired">已过期</el-radio-button>
-                <el-radio-button value="all">全部</el-radio-button>
+                <el-radio-button value="unexpired">{{ t('license.unexpired') }}</el-radio-button>
+                <el-radio-button value="expired">{{ t('license.expired') }}</el-radio-button>
+                <el-radio-button value="all">{{ t('license.all') }}</el-radio-button>
               </el-radio-group>
               <el-input
                 v-model="deactivatedSearchKeyword"
-                placeholder="搜索机构 / 授权类型 / 功能"
+                :placeholder="t('license.searchPlaceholder')"
                 clearable
                 size="small"
                 style="max-width:280px;margin-left:12px"
@@ -379,25 +377,25 @@
                   <el-button v-if="row.license_key && !isLicenseExpired(row)" type="primary" link size="small" @click="copyText(row.license_key)">
                     <el-icon><CopyDocument /></el-icon>
                   </el-button>
-                  <el-tag v-if="isLicenseExpired(row)" type="danger" size="small">已过期</el-tag>
-                  <el-tooltip v-if="!isLicenseExpired(row) && isMachineCodeChanged(row)" content="您的机器码已变更，当前License无法正常激活相应功能，请联系供应商尽快更换，否则超过有效期无法补发授权码" placement="top">
-                    <el-tag type="warning" size="small" style="margin-left:4px">机器码已变更</el-tag>
+                  <el-tag v-if="isLicenseExpired(row)" type="danger" size="small">{{ t('license.expired') }}</el-tag>
+                  <el-tooltip v-if="!isLicenseExpired(row) && isMachineCodeChanged(row)" :content="t('license.machineCodeChangedTip')" placement="top">
+                    <el-tag type="warning" size="small" style="margin-left:4px">{{ t('license.machineCodeChanged') }}</el-tag>
                   </el-tooltip>
                 </template>
               </el-table-column>
-              <el-table-column prop="organization_name" label="客户机构" min-width="120" show-overflow-tooltip>
+              <el-table-column prop="organization_name" :label="t('license.organization')" min-width="120" show-overflow-tooltip>
                 <template #default="{ row }">{{ row.organization_name || '--' }}</template>
               </el-table-column>
-              <el-table-column prop="license_type_name" label="授权类型" min-width="100" show-overflow-tooltip>
+              <el-table-column prop="license_type_name" :label="t('license.licenseType')" min-width="100" show-overflow-tooltip>
                 <template #default="{ row }">{{ row.license_type_name || '--' }}</template>
               </el-table-column>
-              <el-table-column label="License发布时间" min-width="160" show-overflow-tooltip>
+              <el-table-column :label="t('license.licenseIssuedAt')" min-width="160" show-overflow-tooltip>
                 <template #default="{ row }">
                   <span v-if="row.issued_at">{{ formatDateTime(row.issued_at) }}</span>
                   <span v-else>--</span>
                 </template>
               </el-table-column>
-              <el-table-column label="申请授权功能" min-width="160" show-overflow-tooltip>
+              <el-table-column :label="t('license.appliedFeatures')" min-width="160" show-overflow-tooltip>
                 <template #default="{ row }">
                   <template v-if="row.feature_names && row.feature_names.length">
                     <el-tag v-for="fn in row.feature_names" :key="fn" size="small" style="margin:2px">{{ fn }}</el-tag>
@@ -408,21 +406,21 @@
                   <span v-else>--</span>
                 </template>
               </el-table-column>
-              <el-table-column label="有效期" min-width="160" show-overflow-tooltip>
+              <el-table-column :label="t('license.validity')" min-width="160" show-overflow-tooltip>
                 <template #default="{ row }">
                   <span v-if="row.expiry_date">{{ formatDateTime(row.expiry_date) }}</span>
-                  <span v-else>永久有效</span>
+                  <span v-else>{{ t('license.permanent') }}</span>
                 </template>
               </el-table-column>
-              <el-table-column prop="machine_code" label="服务器机器码" min-width="160" show-overflow-tooltip>
+              <el-table-column prop="machine_code" :label="t('license.machineCode')" min-width="160" show-overflow-tooltip>
                 <template #default="{ row }">
                   <span>{{ row.machine_code || '--' }}</span>
                 </template>
               </el-table-column>
-              <el-table-column prop="deactivated_at" label="停用时间" min-width="160" show-overflow-tooltip>
+              <el-table-column prop="deactivated_at" :label="t('license.deactivatedAt')" min-width="160" show-overflow-tooltip>
                 <template #default="{ row }">{{ formatDateTime(row.deactivated_at) }}</template>
               </el-table-column>
-              <el-table-column label="操作" min-width="140" fixed="right">
+              <el-table-column :label="t('common.operation')" min-width="140" fixed="right">
                 <template #default="{ row }">
                   <el-button
                     v-if="!isLicenseExpired(row) && isMachineCodeChanged(row)"
@@ -432,7 +430,7 @@
                     :loading="replaceLicenseLoading === row.license_key"
                     @click="handleRequestReplaceLicense(row)"
                   >
-                    申请更换
+                    {{ t('license.requestReplace') }}
                   </el-button>
                 </template>
               </el-table-column>
@@ -447,20 +445,20 @@
           <div class="referral-code-main">
             <el-tag :type="licenseState.referralActivated ? 'success' : 'warning'" size="large" effect="plain" style="font-size:14px;padding:6px 14px">
               <el-icon><Tickets /></el-icon>
-              您的专属推荐码：<strong style="font-size:16px;letter-spacing:2px">{{ licenseState.referralCode }}</strong>
-              <span v-if="licenseState.discountPercent != null" style="margin-left:8px;font-size:12px;color:#409eff">第三方折扣{{ licenseState.discountPercent }}%</span>
-              <span v-if="licenseState.rebatePercent != null" style="margin-left:8px;font-size:12px;color:#67c23a">推荐人奖励{{ licenseState.rebatePercent }}%</span>
+              {{ t('license.yourReferralCode') }}<strong style="font-size:16px;letter-spacing:2px">{{ licenseState.referralCode }}</strong>
+              <span v-if="licenseState.discountPercent != null" style="margin-left:8px;font-size:12px;color:#409eff">{{ t('license.thirdPartyDiscount') }}{{ licenseState.discountPercent }}%</span>
+              <span v-if="licenseState.rebatePercent != null" style="margin-left:8px;font-size:12px;color:#67c23a">{{ t('license.referrerReward') }}{{ licenseState.rebatePercent }}%</span>
             </el-tag>
             <el-button v-if="licenseState.referralActivated" size="small" @click="copyText(licenseState.referralCode)" style="margin-left:8px">
-              <el-icon><CopyDocument /></el-icon> 复制
+              <el-icon><CopyDocument /></el-icon> {{ t('license.copy') }}
             </el-button>
           </div>
           <div v-if="licenseState.referralActivated" class="referral-code-hint" style="color:#67c23a">
-            ✅ 推荐码已激活，分享给其他机构，其他机构购买后您可获得对方实际付费的{{ licenseState.rebatePercent }}%推荐人奖励
+            {{ t('license.referralActivated', { percent: licenseState.rebatePercent }) }}
           </div>
           <div v-else class="referral-code-hint" style="color:#E6A23C">
-            您可以随时推荐码分享给其他机构，其他机构使用后您可获取相应的即时奖励。
-            ⏳ 推荐码尚未激活 — 累计消费 ¥{{ licenseState.totalSpending.toFixed(2) }} / 门槛 ¥{{ licenseState.referralThreshold.toFixed(2) }}，还需消费 ¥{{ Math.max(0, licenseState.referralThreshold - licenseState.totalSpending).toFixed(2) }} 即可激活
+            {{ t('license.referralNotActivated') }}
+            {{ t('license.referralPending', { total: licenseState.totalSpending.toFixed(2), threshold: licenseState.referralThreshold.toFixed(2), remaining: Math.max(0, licenseState.referralThreshold - licenseState.totalSpending).toFixed(2) }) }}
             <el-progress
               :percentage="Math.min(100, licenseState.referralThreshold > 0 ? (licenseState.totalSpending / licenseState.referralThreshold * 100) : 0)"
               :stroke-width="8"
@@ -470,28 +468,28 @@
           </div>
         </div>
         <el-alert type="success" :closable="false" show-icon style="margin-top:16px">
-          <template #title>默认已授权模块（无需额外付费）</template>
+          <template #title>{{ t('license.defaultModulesTitle') }}</template>
           <div class="default-modules-grid">
             <span v-for="mod in defaultModules" :key="mod" class="default-module-tag">
               <el-icon><CircleCheck /></el-icon> {{ mod }}
             </span>
           </div>
         </el-alert>
-        <el-alert title="高级功能未授权" type="warning" :closable="false" show-icon style="margin-bottom:16px">
+        <el-alert :title="t('license.advancedNotAuthorized')" type="warning" :closable="false" show-icon style="margin-bottom:16px">
           <template #default>
-            <p>当前系统的高级功能未激活 License，相应高级功能不可用。</p>
+            <p>{{ t('license.advancedNotAuthorizedDesc') }}</p>
           </template>
         </el-alert>
         <el-alert type="info" :closable="false" show-icon style="margin-bottom:16px">
-          <template #title>授权流程</template>
-          <p>建议先花费极少量费用配置短期试用授权，深度测试相应功能是否满足您机构的需求；满意之后再购买订阅类型或永久类型的授权；</p>
+          <template #title>{{ t('license.licenseFlow') }}</template>
+          <p>{{ t('license.licenseFlowDesc') }}</p>
         </el-alert>
 
         <div class="steps-container">
           <div class="step-card">
             <div class="step-header">
               <span class="step-number">1</span>
-              <span class="step-title">选择高级功能模块</span>
+              <span class="step-title">{{ t('license.step1SelectModule') }}</span>
             </div>
             <div class="step-body">
               <el-row :gutter="12">
@@ -513,8 +511,8 @@
                     >
                       <el-icon :size="24"><component :is="opt.icon" /></el-icon>
                       <span>{{ opt.name }}</span>
-                      <el-tag v-if="selectedFeatures.includes(opt.key)" type="success" size="small">已选</el-tag>
-                      <el-tag v-else type="info" size="small">点击选择</el-tag>
+                      <el-tag v-if="selectedFeatures.includes(opt.key)" type="success" size="small">{{ t('license.selected') }}</el-tag>
+                      <el-tag v-else type="info" size="small">{{ t('license.clickToSelect') }}</el-tag>
                     </el-card>
                   </el-tooltip>
                 </el-col>
@@ -529,68 +527,68 @@
           <div class="step-card step-card-wide">
             <div class="step-header">
               <span class="step-number">2</span>
-              <span class="step-title">填写信息并申请授权</span>
+              <span class="step-title">{{ t('license.step2ApplyLicense') }}</span>
             </div>
             <div class="step-body">
               <el-form label-width="100px" label-position="top">
-                <el-form-item label="服务器机器码">
+                <el-form-item :label="t('license.machineCodeLabel')">
                   <el-input v-model="machineCode" readonly>
                     <template #append>
                       <el-button @click="copyMachineCode">
-                        <el-icon><CopyDocument /></el-icon> 复制
+                        <el-icon><CopyDocument /></el-icon> {{ t('license.copy') }}
                       </el-button>
                     </template>
                   </el-input>
                 </el-form-item>
-                <el-form-item label="授权类型">
+                <el-form-item :label="t('license.licenseTypeLabel')">
                   <el-radio-group v-model="selectedLicenseType" style="line-height:32px">
                     <el-radio v-for="(info, key) in LICENSE_TYPES" :key="key" :value="key" border size="small" style="margin-right:8px;margin-bottom:6px">
-                      {{ info.name }}{{ info.days ? ' (' + info.days + '天)' : ' (永久)' }}
+                      {{ info.name }}{{ info.days ? ' (' + t('license.daysType', { n: info.days }) + ')' : ' (' + t('license.permanentType') + ')' }}
                     </el-radio>
                   </el-radio-group>
                   <div v-if="selectedLicenseType && selectedFeatures.length" style="margin-top:8px;padding:8px 12px;background:#f0f9eb;border-radius:4px;border:1px solid #e1f3d8">
-                    <div style="font-size:13px;color:#606266;margin-bottom:4px">费用明细（{{ LICENSE_TYPES[selectedLicenseType].name }}{{ LICENSE_TYPES[selectedLicenseType].days ? ' / ' + LICENSE_TYPES[selectedLicenseType].days + '天' : ' / 永久' }}）：</div>
-                    <div style="font-size:13px;color:#606266;margin-bottom:4px">费用以人民币计算，不包含税金。显示费用为推广时期价格，具体价格以供应商公示价格为准。</div>
+                    <div style="font-size:13px;color:#606266;margin-bottom:4px">{{ t('license.costDetail', { name: LICENSE_TYPES[selectedLicenseType].name, period: LICENSE_TYPES[selectedLicenseType].days ? ' / ' + t('license.daysType', { n: LICENSE_TYPES[selectedLicenseType].days }) : ' / ' + t('license.permanentType') }) }}：</div>
+                    <div style="font-size:13px;color:#606266;margin-bottom:4px">{{ t('license.costNoteCny') }}</div>
                     <div v-for="feat in selectedFeatures" :key="feat" style="display:flex;justify-content:space-between;font-size:12px;color:#909399;padding:2px 0">
                       <span>{{ FEATURE_NAMES[feat] || feat }}</span>
                       <span style="color:#409eff;font-weight:500">¥{{ (FEATURE_PRICES[feat] && FEATURE_PRICES[feat][selectedLicenseType]) || 0 }}</span>
                     </div>
                     <el-divider style="margin:6px 0" />
                     <div style="display:flex;justify-content:space-between;font-size:14px;font-weight:600">
-                      <span>合计</span>
+                      <span>{{ t('license.total') }}</span>
                       <span style="color:#E6A23C">¥{{ calcTotalPrice(selectedFeatures, selectedLicenseType) }}</span>
                     </div>
                   </div>
                 </el-form-item>
                 <el-alert type="warning" :closable="false" show-icon style="margin-bottom:12px">
-                  请务必提供有效的联系信息，以便供应商与您联系沟通。
+                  {{ t('license.contactInfoRequiredShort') }}
                 </el-alert>
-                <el-form-item label="机构名称" required>
-                  <el-input v-model="orgName" placeholder="请输入机构名称" />
+                <el-form-item :label="t('license.orgNameLabel')" required>
+                  <el-input v-model="orgName" :placeholder="t('license.orgNamePlaceholder')" />
                 </el-form-item>
-                <el-form-item label="联系人" required>
-                  <el-input v-model="contactPerson" placeholder="请输入联系人" />
+                <el-form-item :label="t('license.contactPersonLabel')" required>
+                  <el-input v-model="contactPerson" :placeholder="t('license.contactPersonPlaceholder')" />
                 </el-form-item>
-                <el-form-item label="联系电话">
-                  <el-input v-model="contactPhone" placeholder="联系电话、电子邮件、联系微信三选一" />
+                <el-form-item :label="t('license.contactPhoneLabel')">
+                  <el-input v-model="contactPhone" :placeholder="t('license.contactPhonePlaceholder')" />
                 </el-form-item>
-                <el-form-item label="电子邮件">
-                  <el-input v-model="contactEmail" placeholder="联系电话、电子邮件、联系微信三选一" />
+                <el-form-item :label="t('license.contactEmailLabel')">
+                  <el-input v-model="contactEmail" :placeholder="t('license.contactPhonePlaceholder')" />
                 </el-form-item>
-                <el-form-item label="联系微信">
-                  <el-input v-model="contactWechat" placeholder="联系电话、电子邮件、联系微信三选一" />
+                <el-form-item :label="t('license.contactWechatLabel')">
+                  <el-input v-model="contactWechat" :placeholder="t('license.contactPhonePlaceholder')" />
                 </el-form-item>
-                <el-form-item label="备注">
-                  <el-input v-model="remarks" type="textarea" :rows="2" placeholder="选填" />
+                <el-form-item :label="t('license.remarksLabel')">
+                  <el-input v-model="remarks" type="textarea" :rows="2" :placeholder="t('license.remarksPlaceholder')" />
                 </el-form-item>
-                <el-form-item label="推荐码">
-                  <el-input v-model="applyReferralCode" placeholder="选填，填写推荐码可享第三方折扣优惠" clearable>
+                <el-form-item :label="t('license.referralCodeLabel')">
+                  <el-input v-model="applyReferralCode" :placeholder="t('license.referralCodePlaceholder')" clearable>
                     <template #prefix>
                       <el-icon><Tickets /></el-icon>
                     </template>
                   </el-input>
                   <div v-if="licenseState.referralCode" style="font-size:12px;color:#E6A23C;margin-top:4px">
-                    ⚠️ 此处填写您的专属推荐码 {{ licenseState.referralCode }}无效，请填写其他机构的推荐码获得相应折扣优惠；另外您可以随时推荐码分享给其他机构，其他机构使用后您可获取相应的即时奖励。
+                    {{ t('license.ownReferralCodeWarning2', { code: licenseState.referralCode }) }}
                   </div>
                 </el-form-item>
                 <el-form-item>
@@ -601,7 +599,7 @@
                     :loading="applyingLicense"
                     :disabled="!selectedFeatures.length || !selectedLicenseType || !orgName || !contactPerson || (!contactPhone && !contactEmail && !contactWechat) || isOwnReferralCode(applyReferralCode)"
                   >
-                    <el-icon><Message /></el-icon> 申请授权
+                    <el-icon><Message /></el-icon> {{ t('license.applyLicense') }}
                   </el-button>
                 </el-form-item>
               </el-form>
@@ -615,30 +613,29 @@
           <div class="step-card">
             <div class="step-header">
               <span class="step-number">3</span>
-              <span class="step-title">购买并接收授权</span>
+              <span class="step-title">{{ t('license.step3Purchase') }}</span>
             </div>
             <div class="step-body">
               <el-alert type="info" :closable="false" show-icon style="margin-bottom:12px">
-                <template #title>购买说明</template>
-                供应商收到授权订购信息后会第一时间联系您，请关注您的手机邮件微信等联系方式（我们郑重承诺对您的信息进行保密管理，不泄露不转发不外传；同时也请您对供应商联系方式同样保密，感谢配合与合作）；如果超过2小时无供应商主动联系，请选择下方备用联系方式通知供应商；
-                双方沟通确认信息及款项无误后，供应商将为您提供对应功能和授权类型的 License Key（授权码）。
+                <template #title>{{ t('license.purchaseNote') }}</template>
+                {{ t('license.purchaseNoteDetailShort') }}
               </el-alert>
               <div v-if="!showSupplierInfo" class="supplier-mask-wrapper">
                 <div class="supplier-mask-overlay">
                   <div class="supplier-mask-content">
                     <el-icon :size="32" color="#909399"><Lock /></el-icon>
-                    <p style="color:#606266;margin:8px 0;font-size:14px">供应商联系信息已隐藏，请输入服务器机器码验证后查看</p>
-                    <el-input v-model="inputMachineCode" placeholder="请输入服务器机器码" @keyup.enter="verifyMachineCode" style="max-width:360px" />
-                    <el-button type="primary" @click="verifyMachineCode" style="margin-top:8px">验证机器码</el-button>
+                    <p style="color:#606266;margin:8px 0;font-size:14px">{{ t('license.supplierInfoHidden') }}</p>
+                    <el-input v-model="inputMachineCode" :placeholder="t('license.inputMachineCodePlaceholder')" @keyup.enter="verifyMachineCode" style="max-width:360px" />
+                    <el-button type="primary" @click="verifyMachineCode" style="margin-top:8px">{{ t('license.verifyMachineCode') }}</el-button>
                   </div>
                 </div>
               </div>
               <el-descriptions v-else :column="1" border size="small">
-                <el-descriptions-item label="📧供应商邮箱">meitianqiusuo@163.com</el-descriptions-item>
-                <el-descriptions-item label="💬供应商微信">renshengxiubuqi</el-descriptions-item>
-                <el-descriptions-item label="📞供应商电话">+86-155-5418-6956</el-descriptions-item>
+                <el-descriptions-item :label="t('license.supplierEmail')">meitianqiusuo@163.com</el-descriptions-item>
+                <el-descriptions-item :label="t('license.supplierWechat')">renshengxiubuqi</el-descriptions-item>
+                <el-descriptions-item :label="t('license.supplierPhone')">+86-155-5418-6956</el-descriptions-item>
               </el-descriptions>
-              <p style="color:#909399;font-size:12px;margin-top:8px">此步骤根据供应商提示操作，收到供应商提供的 License Key 后请进入下一步激活。</p>
+              <p style="color:#909399;font-size:12px;margin-top:8px">{{ t('license.nextStepHintShort') }}</p>
             </div>
           </div>
 
@@ -649,17 +646,17 @@
           <div class="step-card">
             <div class="step-header">
               <span class="step-number">4</span>
-              <span class="step-title">激活授权</span>
+              <span class="step-title">{{ t('license.step4Activate') }}</span>
             </div>
             <div class="step-body">
-              <p style="color:#909399;margin-bottom:12px">收到供应商提供的 License Key 后，请在下方填入并激活，激活成功后供应商会收到通知信息。</p>
+              <p style="color:#909399;margin-bottom:12px">{{ t('license.activateHint') }}</p>
               <el-form label-position="top">
                 <el-form-item label="License Key">
                   <el-input
                     v-model="licenseKeyInput"
                     type="textarea"
                     :rows="3"
-                    placeholder="请粘贴供应商提供的 License Key"
+                    :placeholder="t('license.licenseKeyPlaceholderNew')"
                   />
                 </el-form-item>
                 <el-form-item>
@@ -670,7 +667,7 @@
                     :loading="activating"
                     :disabled="!licenseKeyInput.trim()"
                   >
-                    <el-icon><Check /></el-icon> 激活授权
+                    <el-icon><Check /></el-icon> {{ t('license.step4Activate') }}
                   </el-button>
                 </el-form-item>
               </el-form>
@@ -682,18 +679,18 @@
           <el-collapse-item name="history">
             <template #title>
               <span style="font-weight:bold;color:#E6A23C">
-                <el-icon><Warning /></el-icon> 已停用的 License（{{ filteredDeactivatedLicenses.length }} / {{ licenseState.deactivatedLicenses.length }} 条）
+                <el-icon><Warning /></el-icon> {{ t('license.deactivatedLicenses', { filtered: filteredDeactivatedLicenses.length, total: licenseState.deactivatedLicenses.length }) }}
               </span>
             </template>
             <div class="deactivated-filter-bar">
               <el-radio-group v-model="deactivatedStatusFilter" size="small">
-                <el-radio-button value="unexpired">未过期</el-radio-button>
-                <el-radio-button value="expired">已过期</el-radio-button>
-                <el-radio-button value="all">全部</el-radio-button>
+                <el-radio-button value="unexpired">{{ t('license.unexpired') }}</el-radio-button>
+                <el-radio-button value="expired">{{ t('license.expired') }}</el-radio-button>
+                <el-radio-button value="all">{{ t('license.all') }}</el-radio-button>
               </el-radio-group>
               <el-input
                 v-model="deactivatedSearchKeyword"
-                placeholder="搜索机构 / 授权类型 / 功能"
+                :placeholder="t('license.searchPlaceholder')"
                 clearable
                 size="small"
                 style="max-width:280px;margin-left:12px"
@@ -709,25 +706,25 @@
                   <el-button v-if="row.license_key && !isLicenseExpired(row)" type="primary" link size="small" @click="copyText(row.license_key)">
                     <el-icon><CopyDocument /></el-icon>
                   </el-button>
-                  <el-tag v-if="isLicenseExpired(row)" type="danger" size="small">已过期</el-tag>
-                  <el-tooltip v-if="!isLicenseExpired(row) && isMachineCodeChanged(row)" content="您的机器码已变更，当前License无法正常激活相应功能，请联系供应商尽快更换，否则超过有效期无法补发授权码" placement="top">
-                    <el-tag type="warning" size="small" style="margin-left:4px">机器码已变更</el-tag>
+                  <el-tag v-if="isLicenseExpired(row)" type="danger" size="small">{{ t('license.expired') }}</el-tag>
+                  <el-tooltip v-if="!isLicenseExpired(row) && isMachineCodeChanged(row)" :content="t('license.machineCodeChangedTip')" placement="top">
+                    <el-tag type="warning" size="small" style="margin-left:4px">{{ t('license.machineCodeChanged') }}</el-tag>
                   </el-tooltip>
                 </template>
               </el-table-column>
-              <el-table-column prop="organization_name" label="客户机构" min-width="120" show-overflow-tooltip>
+              <el-table-column prop="organization_name" :label="t('license.organization')" min-width="120" show-overflow-tooltip>
                 <template #default="{ row }">{{ row.organization_name || '--' }}</template>
               </el-table-column>
-              <el-table-column prop="license_type_name" label="授权类型" min-width="100" show-overflow-tooltip>
+              <el-table-column prop="license_type_name" :label="t('license.licenseType')" min-width="100" show-overflow-tooltip>
                 <template #default="{ row }">{{ row.license_type_name || '--' }}</template>
               </el-table-column>
-              <el-table-column label="License发布时间" min-width="160" show-overflow-tooltip>
+              <el-table-column :label="t('license.licenseIssuedAt')" min-width="160" show-overflow-tooltip>
                 <template #default="{ row }">
                   <span v-if="row.issued_at">{{ formatDateTime(row.issued_at) }}</span>
                   <span v-else>--</span>
                 </template>
               </el-table-column>
-              <el-table-column label="申请授权功能" min-width="160" show-overflow-tooltip>
+              <el-table-column :label="t('license.appliedFeatures')" min-width="160" show-overflow-tooltip>
                 <template #default="{ row }">
                   <template v-if="row.feature_names && row.feature_names.length">
                     <el-tag v-for="fn in row.feature_names" :key="fn" size="small" style="margin:2px">{{ fn }}</el-tag>
@@ -738,21 +735,21 @@
                   <span v-else>--</span>
                 </template>
               </el-table-column>
-              <el-table-column label="有效期" min-width="160" show-overflow-tooltip>
+              <el-table-column :label="t('license.validity')" min-width="160" show-overflow-tooltip>
                 <template #default="{ row }">
                   <span v-if="row.expiry_date">{{ formatDateTime(row.expiry_date) }}</span>
-                  <span v-else>永久有效</span>
+                  <span v-else>{{ t('license.permanent') }}</span>
                 </template>
               </el-table-column>
-              <el-table-column prop="machine_code" label="服务器机器码" min-width="160" show-overflow-tooltip>
+              <el-table-column prop="machine_code" :label="t('license.machineCode')" min-width="160" show-overflow-tooltip>
                 <template #default="{ row }">
                   <span>{{ row.machine_code || '--' }}</span>
                 </template>
               </el-table-column>
-              <el-table-column prop="deactivated_at" label="停用时间" min-width="160" show-overflow-tooltip>
+              <el-table-column prop="deactivated_at" :label="t('license.deactivatedAt')" min-width="160" show-overflow-tooltip>
                 <template #default="{ row }">{{ formatDateTime(row.deactivated_at) }}</template>
               </el-table-column>
-              <el-table-column label="操作" min-width="140" fixed="right">
+              <el-table-column :label="t('common.operation')" min-width="140" fixed="right">
                 <template #default="{ row }">
                   <el-button
                     v-if="!isLicenseExpired(row) && isMachineCodeChanged(row)"
@@ -762,7 +759,7 @@
                     :loading="replaceLicenseLoading === row.license_key"
                     @click="handleRequestReplaceLicense(row)"
                   >
-                    申请更换
+                    {{ t('license.requestReplace') }}
                   </el-button>
                 </template>
               </el-table-column>
@@ -773,54 +770,54 @@
 
       <el-dialog
         v-model="feedbackDialogVisible"
-        :title="feedbackType === 'feature' ? '功能使用反馈' : '系统使用反馈'"
+        :title="feedbackType === 'feature' ? t('license.featureFeedback') : t('license.systemFeedbackTitle')"
         width="520px"
         :close-on-click-modal="false"
         draggable
         destroy-on-close
       >
         <el-form label-position="top">
-          <el-form-item label="客户机构">
-            <el-input v-model="feedbackForm.organization_name" placeholder="请输入机构名称" />
+          <el-form-item :label="t('license.clientOrg')">
+            <el-input v-model="feedbackForm.organization_name" :placeholder="t('license.orgNamePlaceholder')" />
           </el-form-item>
-          <el-form-item label="客户联系人">
-            <el-input v-model="feedbackForm.contact_person" placeholder="请输入联系人姓名" />
+          <el-form-item :label="t('license.clientContact')">
+            <el-input v-model="feedbackForm.contact_person" :placeholder="t('license.contactPersonPlaceholder')" />
           </el-form-item>
-          <el-form-item label="联系方式">
-            <el-input v-model="feedbackForm.contact_info" placeholder="电话/邮箱/微信，方便供应商与您联系" />
+          <el-form-item :label="t('license.contactMethod')">
+            <el-input v-model="feedbackForm.contact_info" :placeholder="t('license.contactMethodPlaceholder')" />
           </el-form-item>
-          <el-form-item v-if="feedbackType === 'feature'" label="功能模块">
+          <el-form-item v-if="feedbackType === 'feature'" :label="t('license.featureModule')">
             <el-input :model-value="feedbackForm.feature_module" readonly />
           </el-form-item>
-          <el-form-item label="反馈时间">
+          <el-form-item :label="t('license.feedbackTime')">
             <el-input :model-value="feedbackForm.feedback_time" readonly />
           </el-form-item>
-          <el-form-item label="使用反馈" required>
+          <el-form-item :label="t('license.usageFeedback')" required>
             <el-input
               v-model="feedbackForm.feedback"
               type="textarea"
               :rows="3"
-              placeholder="请描述您在使用过程中遇到的问题或体验感受"
+              :placeholder="t('license.usageFeedbackPlaceholder')"
             />
           </el-form-item>
-          <el-form-item label="功能建议或需求" required>
+          <el-form-item :label="t('license.suggestionLabel')" required>
             <el-input
               v-model="feedbackForm.suggestion"
               type="textarea"
               :rows="3"
-              placeholder="请描述您期望的功能改进或新需求"
+              :placeholder="t('license.suggestionPlaceholder')"
             />
           </el-form-item>
         </el-form>
         <template #footer>
-          <el-button @click="feedbackDialogVisible = false">取消</el-button>
+          <el-button @click="feedbackDialogVisible = false">{{ t('common.cancel') }}</el-button>
           <el-button
             type="primary"
             :loading="feedbackSubmitting"
             :disabled="!feedbackForm.feedback.trim() || !feedbackForm.suggestion.trim()"
             @click="handleSubmitFeedback"
           >
-            <el-icon><Message /></el-icon> 提交反馈
+            <el-icon><Message /></el-icon> {{ t('license.submitFeedback') }}
           </el-button>
         </template>
       </el-dialog>
@@ -832,6 +829,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { useI18n } from 'vue-i18n'
 import {
   ArrowLeft, ArrowRight, Key, Check, CopyDocument, Plus, Message, Warning,
   CircleCheck, Lock, ChatLineSquare, Tickets, Search,
@@ -844,6 +842,8 @@ import {
   FEATURE_PRICES, calcTotalPrice,
 }  from '@/utils/license'
 
+
+const { t } = useI18n()
 const router = useRouter()
  
 const LAST_CONTACT_KEY = 'license_last_contact'
@@ -920,11 +920,11 @@ const allFeatureOptions = [
   { key: FEATURES.DATABASE_MANAGEMENT, name: FEATURE_NAMES[FEATURES.DATABASE_MANAGEMENT], icon: Coin },
   { key: FEATURES.STUDENT_EVALUATION, name: FEATURE_NAMES[FEATURES.STUDENT_EVALUATION], icon: DataAnalysis },
 ]
-const defaultModules = [
-  '科目管理', '导师管理', '学员管理', '班级管理', '教室管理', '假日管理', '条件管理', '排课管理', '搜索筛选功能',
-  '批量导入', '导出功能', '排课日历视图', '排课列表视图', '用户管理', '日志管理', '机构宣传', '邮件功能',
-  '适配不同终端显示'
-]
+const defaultModules = computed(() => [
+  t('license.defaultModuleCourse'), t('license.defaultModuleTeacher'), t('license.defaultModuleStudent'), t('license.defaultModuleClass'), t('license.defaultModuleRoom'), t('license.defaultModuleHoliday'), t('license.defaultModuleCondition'), t('license.defaultModuleSchedule'), t('license.defaultModuleSearch'),
+  t('license.defaultModuleBatchImport'), t('license.defaultModuleExport'), t('license.defaultModuleCalendarView'), t('license.defaultModuleListView'), t('license.defaultModuleUserMgmt'), t('license.defaultModuleLogMgmt'), t('license.defaultModulePromotion'), t('license.defaultModuleEmail'),
+  t('license.defaultModuleResponsive')
+])
 const addonFeatureOptions = computed(() =>
   allFeatureOptions.filter(opt => !licenseState.features[opt.key])
 )
@@ -959,18 +959,18 @@ function formatDateTime(dateStr) {
 async function copyMachineCode() {
   try {
     await navigator.clipboard.writeText(machineCode.value)
-    ElMessage.success('机器码已复制到剪贴板')
+    ElMessage.success(t('license.machineCodeCopied'))
   } catch {
-    ElMessage.error('复制失败，请手动复制')
+    ElMessage.error(t('license.copyFailed'))
   }
 }
 
 async function copyText(text) {
   try {
     await navigator.clipboard.writeText(text)
-    ElMessage.success('已复制到剪贴板')
+    ElMessage.success(t('license.copiedToClipboard'))
   } catch {
-    ElMessage.error('复制失败，请手动复制')
+    ElMessage.error(t('license.copyFailed'))
   }
 }
 
@@ -1010,9 +1010,9 @@ const replaceLicenseLoading = ref('')
 async function handleRequestReplaceLicense(row) {
   try {
     await ElMessageBox.confirm(
-      '确认向供应商申请更换此License？申请信息将包含客户机构、联系人、原License Key、原授权类型、原机器码、原有效期等信息。',
-      '申请更换License',
-      { confirmButtonText: '确认申请', cancelButtonText: '取消', type: 'warning' }
+      t('license.confirmReplaceLicense'),
+      t('license.replaceLicenseTitle'),
+      { confirmButtonText: t('license.confirmApply'), cancelButtonText: t('common.cancel'), type: 'warning' }
     )
   } catch {
     return
@@ -1027,12 +1027,12 @@ async function handleRequestReplaceLicense(row) {
       original_machine_code: row.machine_code || '',
       expiry_date: row.expiry_date || '',
     })
-    const msgs = ['更换License申请已提交']
-    if (result.webhook_sent) msgs.push('已发送至供应商')
-    if (result.email_sent) msgs.push('已通过邮件通知供应商')
+    const msgs = [t('license.replaceRequestSubmitted')]
+    if (result.webhook_sent) msgs.push(t('license.webhookSent'))
+    if (result.email_sent) msgs.push(t('license.emailSent'))
     ElMessage.success(msgs.join('，'))
   } catch (error) {
-    const detail = error.response?.data?.detail || '申请更换License失败'
+    const detail = error.response?.data?.detail || t('license.replaceFailed')
     ElMessage.error(detail)
   } finally {
     replaceLicenseLoading.value = ''
@@ -1065,15 +1065,15 @@ function toggleAddonFeature(key) {
 
 async function verifyMachineCode() {
   if (!inputMachineCode.value.trim()) {
-    ElMessage.warning('请输入服务器机器码')
+    ElMessage.warning(t('license.inputMachineCode'))
     return
   }
   if (inputMachineCode.value.trim() === machineCode.value.trim()) {
     showSupplierInfo.value = true
     try {
       await notifySupplierView({
-        organization_name: orgName.value || '未填写',
-        contact_person: contactPerson.value || '未填写',
+        organization_name: orgName.value || t('license.unfilled'),
+        contact_person: contactPerson.value || t('license.unfilled'),
         contact_phone: contactPhone.value || '',
         contact_email: contactEmail.value || '',
         contact_wechat: contactWechat.value || '',
@@ -1083,23 +1083,23 @@ async function verifyMachineCode() {
     } catch {
       // webhook发送失败不影响用户查看
     }
-    ElMessage.success('机器码验证成功，已显示供应商信息')
+    ElMessage.success(t('license.machineCodeVerified'))
   } else {
-    ElMessage.error('机器码输入错误，请核对后重新输入')
+    ElMessage.error(t('license.machineCodeError'))
   }
 }
 
 async function verifyAddonMachineCode() {
   if (!inputAddonMachineCode.value.trim()) {
-    ElMessage.warning('请输入服务器机器码')
+    ElMessage.warning(t('license.inputMachineCode'))
     return
   }
   if (inputAddonMachineCode.value.trim() === machineCode.value.trim()) {
     showAddonSupplierInfo.value = true
     try {
       await notifySupplierView({
-        organization_name: orgName.value || '未填写',
-        contact_person: contactPerson.value || '未填写',
+        organization_name: orgName.value || t('license.unfilled'),
+        contact_person: contactPerson.value || t('license.unfilled'),
         contact_phone: contactPhone.value || '',
         contact_email: contactEmail.value || '',
         contact_wechat: contactWechat.value || '',
@@ -1109,34 +1109,34 @@ async function verifyAddonMachineCode() {
     } catch {
       // webhook发送失败不影响用户查看
     }
-    ElMessage.success('机器码验证成功，已显示供应商信息')
+    ElMessage.success(t('license.machineCodeVerified'))
   } else {
-    ElMessage.error('机器码输入错误，请核对后重新输入')
+    ElMessage.error(t('license.machineCodeError'))
   }
 }
 async function handleApplyLicense() {
   if (!selectedFeatures.value.length) {
-    ElMessage.warning('请至少选择一个功能模块')
+    ElMessage.warning(t('license.selectOneModule'))
     return
   }
   if (!orgName.value) {
-    ElMessage.warning('请填写机构名称')
+    ElMessage.warning(t('license.fillOrgName'))
     return
   }
   if (!contactPerson.value) {
-    ElMessage.warning('请填写联系人')
+    ElMessage.warning(t('license.fillContactPerson'))
     return
   }
   if (!contactPhone.value && !contactEmail.value && !contactWechat.value) {
-    ElMessage.warning('联系电话、电子邮件、联系微信至少填写一项')
+    ElMessage.warning(t('license.fillOneContact'))
     return
   }
   if (!selectedLicenseType.value) {
-    ElMessage.warning('请选择授权类型')
+    ElMessage.warning(t('license.selectLicenseType'))
     return
   }
   if (applyReferralCode.value && licenseState.referralCode && applyReferralCode.value.trim() === licenseState.referralCode.trim()) {
-    ElMessage.warning('不能使用自己的推荐码')
+    ElMessage.warning(t('license.cannotUseOwnReferralCode'))
     return
   }
   applyingLicense.value = true
@@ -1149,10 +1149,10 @@ async function handleApplyLicense() {
       contact_wechat: contactWechat.value,
       remarks: remarks.value,
     }, selectedFeatures.value, 'new', selectedLicenseType.value, applyReferralCode.value.trim())
-    ElMessage.success('授权申请已成功发送，请等待供应商联系您')
+    ElMessage.success(t('license.applySuccess'))
     saveLastContact()
   } catch (error) {
-    const detail = error.response?.data?.detail || '申请发送失败'
+    const detail = error.response?.data?.detail || t('license.applyFailed')
     ElMessage.error(detail)
   } finally {
     applyingLicense.value = false
@@ -1161,27 +1161,27 @@ async function handleApplyLicense() {
  
 async function handleApplyAddon() {
   if (!addonSelectedFeatures.value.length) {
-    ElMessage.warning('请至少选择一个功能模块')
+    ElMessage.warning(t('license.selectOneModule'))
     return
   }
   if (!orgName.value) {
-    ElMessage.warning('请填写机构名称')
+    ElMessage.warning(t('license.fillOrgName'))
     return
   }
   if (!contactPerson.value) {
-    ElMessage.warning('请填写联系人')
+    ElMessage.warning(t('license.fillContactPerson'))
     return
   }
   if (!contactPhone.value && !contactEmail.value && !contactWechat.value) {
-    ElMessage.warning('联系电话、电子邮件、联系微信至少填写一项')
+    ElMessage.warning(t('license.fillOneContact'))
     return
   }
   if (!addonLicenseType.value) {
-    ElMessage.warning('请选择授权类型')
+    ElMessage.warning(t('license.selectLicenseType'))
     return
   }
   if (addonReferralCode.value && licenseState.referralCode && addonReferralCode.value.trim() === licenseState.referralCode.trim()) {
-    ElMessage.warning('不能使用自己的推荐码')
+    ElMessage.warning(t('license.cannotUseOwnReferralCode'))
     return
   }
   addonApplying.value = true
@@ -1194,10 +1194,10 @@ async function handleApplyAddon() {
       contact_wechat: contactWechat.value,
       remarks: remarks.value,
     }, addonSelectedFeatures.value, 'addon', addonLicenseType.value, addonReferralCode.value.trim())
-    ElMessage.success('追加授权申请已成功发送，请等待供应商联系您')
+    ElMessage.success(t('license.addonApplySuccess'))
     saveLastContact()
   } catch (error) {
-    const detail = error.response?.data?.detail || '申请发送失败'
+    const detail = error.response?.data?.detail || t('license.applyFailed')
     ElMessage.error(detail)
   } finally {
     addonApplying.value = false
@@ -1205,7 +1205,7 @@ async function handleApplyAddon() {
 }
 async function handleActivate() {
   if (!licenseKeyInput.value.trim()) {
-    ElMessage.warning('请输入 License Key')
+    ElMessage.warning(t('license.inputLicenseKey'))
     return
   }
   activating.value = true
@@ -1218,13 +1218,13 @@ async function handleActivate() {
       contact_wechat: contactWechat.value,
       remarks: remarks.value,
     })
-    ElMessage.success(`License 激活成功！授权类型: ${result.license_type_name}`)
+    ElMessage.success(t('license.activateSuccess', { type: result.license_type_name }))
     saveLastContact()
     licenseKeyInput.value = ''
     selectedFeatures.value = []
     selectedLicenseType.value = ''
   } catch (error) {
-    const detail = error.response?.data?.detail || '激活失败'
+    const detail = error.response?.data?.detail || t('license.activateFailed')
     ElMessage.error(detail)
   } finally {
     activating.value = false
@@ -1233,11 +1233,11 @@ async function handleActivate() {
 
 async function handleAddonActivate() {
   if (!addonLicenseKey.value.trim()) {
-    ElMessage.warning('请输入追加的 License Key')
+    ElMessage.warning(t('license.inputAddonLicenseKey'))
     return
   }
   if (!addonSelectedFeatures.value.length) {
-    ElMessage.warning('请至少选择一个功能')
+    ElMessage.warning(t('license.selectOneFeature'))
     return
   }
   addonActivating.value = true
@@ -1250,13 +1250,13 @@ async function handleAddonActivate() {
       contact_wechat: contactWechat.value,
       remarks: remarks.value,
     })
-    ElMessage.success(`追加授权成功！新增功能类型: ${result.license_type_name}`)
+    ElMessage.success(t('license.addonActivateSuccess', { type: result.license_type_name }))
     saveLastContact()
     addonLicenseKey.value = ''
     addonSelectedFeatures.value = []
     addonLicenseType.value = ''
   } catch (error) {
-    const detail = error.response?.data?.detail || '追加失败'
+    const detail = error.response?.data?.detail || t('license.addonActivateFailed')
     ElMessage.error(detail)
   } finally {
     addonActivating.value = false
@@ -1266,18 +1266,18 @@ async function handleAddonActivate() {
 async function handleDeactivateFeature(feat) {
   try {
     const enabledCount = Object.values(licenseState.features).filter(Boolean).length
-    let confirmMsg = `确定停用"${feat.name}"功能？`
+    let confirmMsg = t('license.confirmDeactivateFeature', { name: feat.name })
     if (enabledCount > 1) {
-      confirmMsg = `当前 License 包含 ${enabledCount} 个已授权功能，停用"${feat.name}"将同时停用该 License 下所有功能（包括：${Object.entries(licenseState.features).filter(([,v]) => v).map(([k]) => FEATURE_NAMES[k] || k).join('、')}），确定继续？`
+      confirmMsg = t('license.confirmDeactivateFeatureMulti', { count: enabledCount, name: feat.name, features: Object.entries(licenseState.features).filter(([,v]) => v).map(([k]) => FEATURE_NAMES[k] || k).join('、') })
     }
     await ElMessageBox.confirm(
       confirmMsg,
-      '确认停用',
-      { confirmButtonText: '确定停用', cancelButtonText: '取消', type: 'warning' }
+      t('license.confirmDeactivateTitle'),
+      { confirmButtonText: t('license.confirmDeactivate'), cancelButtonText: t('common.cancel'), type: 'warning' }
     )
     featureDeactivating.value = feat.key
     await deactivateLicense()
-    ElMessage.success('License 已停用，所有授权功能已关闭')
+    ElMessage.success(t('license.licenseDeactivatedAll'))
   } catch {
     // 取消
   } finally {
@@ -1288,13 +1288,13 @@ async function handleDeactivateFeature(feat) {
 async function handleDeactivate() {
   try {
     await ElMessageBox.confirm(
-      '停用 License 后所有高级功能将不可用，确定继续？',
-      '确认停用',
-      { confirmButtonText: '确定停用', cancelButtonText: '取消', type: 'warning' }
+      t('license.confirmDeactivateLicense'),
+      t('license.confirmDeactivateTitle'),
+      { confirmButtonText: t('license.confirmDeactivate'), cancelButtonText: t('common.cancel'), type: 'warning' }
     )
     deactivating.value = true
     await deactivateLicense()
-    ElMessage.success('License 已停用')
+    ElMessage.success(t('license.licenseDeactivated'))
   } catch {
     // 取消
   } finally {
@@ -1341,7 +1341,7 @@ function openSystemFeedbackDialog() {
     organization_name: licenseState.organizationName || orgName.value || '',
     contact_person: contactPerson.value || '',
     contact_info: contactPhone.value || contactEmail.value || contactWechat.value || '',
-    feature_module: '整体系统',
+    feature_module: t('license.systemFeedbackTitle'),
     feedback_time: getCurrentTimeStr(),
     feedback: '',
     suggestion: '',
@@ -1351,11 +1351,11 @@ function openSystemFeedbackDialog() {
 
 async function handleSubmitFeedback() {
   if (!feedbackForm.value.feedback.trim()) {
-    ElMessage.warning('请填写使用反馈内容')
+    ElMessage.warning(t('license.fillFeedback'))
     return
   }
   if (!feedbackForm.value.suggestion.trim()) {
-    ElMessage.warning('请填写功能建议或需求')
+    ElMessage.warning(t('license.fillSuggestion'))
     return
   }
   feedbackSubmitting.value = true
@@ -1370,13 +1370,13 @@ async function handleSubmitFeedback() {
       suggestion: feedbackForm.value.suggestion || undefined,
       feedback_type: feedbackType.value,
     })
-    const msgs = ['反馈已成功提交']
-    if (result.webhook_sent) msgs.push('已发送至供应商')
-    if (result.email_sent) msgs.push('已通过邮件通知供应商')
+    const msgs = [t('license.feedbackSubmitted')]
+    if (result.webhook_sent) msgs.push(t('license.webhookSent'))
+    if (result.email_sent) msgs.push(t('license.emailSent'))
     ElMessage.success(msgs.join('，'))
     feedbackDialogVisible.value = false
   } catch (error) {
-    const detail = error.response?.data?.detail || '反馈提交失败'
+    const detail = error.response?.data?.detail || t('license.feedbackSubmitFailed')
     ElMessage.error(detail)
   } finally {
     feedbackSubmitting.value = false

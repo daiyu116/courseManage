@@ -5,74 +5,72 @@
     <el-card class="login-card">
       <template #header>
         <div class="card-header">
-          <h2>后台管理系统登录</h2>
+          <h2>{{ t('login.title') }}</h2>
         </div>
       </template>
       <el-form :model="loginForm" :rules="rules" ref="loginFormRef" label-width="80px">
-        <el-form-item label="用户名" prop="username">
-          <el-input v-model="loginForm.username" placeholder="请输入用户名" />
+        <el-form-item :label="t('login.username')" prop="username">
+          <el-input v-model="loginForm.username" :placeholder="t('login.usernamePlaceholder')" />
         </el-form-item>
-        <el-form-item label="密码" prop="password">
-          <el-input v-model="loginForm.password" type="password" placeholder="请输入密码" @keyup.enter="handleLogin" />
+        <el-form-item :label="t('login.password')" prop="password">
+          <el-input v-model="loginForm.password" type="password" :placeholder="t('login.passwordPlaceholder')" @keyup.enter="handleLogin" />
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="handleLogin" :loading="loading" style="width: 100%">
-            登录
+            {{ t('login.loginButton') }}
           </el-button>
           <div style="display: flex; justify-content: space-between; width: 100%; margin-top: 10px;">
-            <el-button link @click="showForgotPasswordDialog">忘记密码？</el-button>
-            <el-tooltip :content="openRegistrationEnabled ? '点击注册新账户' : '开放注册未启用，请联系管理员开启'" placement="top">
-              <el-button link :type="openRegistrationEnabled ? 'success' : 'info'" :disabled="!openRegistrationEnabled" @click="showRegisterDialog">注册新账户</el-button>
+            <el-button link @click="showForgotPasswordDialog">{{ t('login.forgotPassword') }}</el-button>
+            <el-tooltip :content="openRegistrationEnabled ? t('login.registerTooltipEnabled') : t('login.registerTooltipDisabled')" placement="top">
+              <el-button link :type="openRegistrationEnabled ? 'success' : 'info'" :disabled="!openRegistrationEnabled" @click="showRegisterDialog">{{ t('login.registerNew') }}</el-button>
             </el-tooltip>
           </div>
         </el-form-item>
       </el-form>
       <div class="default-account-hint">
-        <el-divider content-position="center">首次登录</el-divider>
-        <p>默认账号：<strong>admin</strong> / <strong>admin123</strong></p>
-        <p>登录后请立即修改密码</p>
+        <el-divider content-position="center">{{ t('login.firstLogin') }}</el-divider>
+        <p>{{ t('login.defaultAccount') }}<strong>admin</strong> / <strong>admin123</strong></p>
+        <p>{{ t('login.changePasswordAfterLogin') }}</p>
       </div>
     </el-card>
-    <!-- 忘记密码对话框 -->
-    <el-dialog v-model="forgotPasswordDialogVisible" title="忘记密码" width="400px">
+    <el-dialog v-model="forgotPasswordDialogVisible" :title="t('login.forgotPasswordTitle')" width="400px">
         <el-form :model="forgotPasswordForm" :rules="forgotPasswordRules" ref="forgotPasswordFormRef" label-width="80px">
-            <el-form-item label="用户名" prop="username">
-            <el-input v-model="forgotPasswordForm.username" placeholder="请输入用户名" />
+            <el-form-item :label="t('login.username')" prop="username">
+            <el-input v-model="forgotPasswordForm.username" :placeholder="t('login.usernamePlaceholder')" />
             </el-form-item>
         </el-form>
         <template #footer>
-            <el-button @click="forgotPasswordDialogVisible = false">取消</el-button>
-            <el-button type="primary" @click="handleForgotPassword">确认忘记</el-button>
+            <el-button @click="forgotPasswordDialogVisible = false">{{ t('common.cancel') }}</el-button>
+            <el-button type="primary" @click="handleForgotPassword">{{ t('login.forgotPasswordConfirm') }}</el-button>
         </template>
     </el-dialog>
-    <!-- 注册对话框 -->
-    <el-dialog v-model="registerDialogVisible" title="注册新账户" width="450px" :close-on-click-modal="false">
+    <el-dialog v-model="registerDialogVisible" :title="t('login.registerTitle')" width="450px" :close-on-click-modal="false">
       <el-alert
         type="warning"
         :closable="false"
         style="margin-bottom: 15px;"
       >
         <template #title>
-          <span style="font-size: 13px;">开放注册为临时功能，注册后默认角色为<strong>课程管理员</strong>，请填写真实邮箱以接收确认邮件。</span>
+          <span style="font-size: 13px;">{{ t('login.registerWarning') }}</span>
         </template>
       </el-alert>
       <el-form :model="registerForm" :rules="registerRules" ref="registerFormRef" label-width="80px">
-        <el-form-item label="用户名" prop="username">
-          <el-input v-model="registerForm.username" placeholder="请输入用户名（2-50个字符）" />
+        <el-form-item :label="t('login.username')" prop="username">
+          <el-input v-model="registerForm.username" :placeholder="t('login.usernamePlaceholder2')" />
         </el-form-item>
-        <el-form-item label="邮箱" prop="email">
-          <el-input v-model="registerForm.email" placeholder="请输入邮箱地址" />
+        <el-form-item :label="t('login.email')" prop="email">
+          <el-input v-model="registerForm.email" :placeholder="t('login.emailPlaceholder')" />
         </el-form-item>
-        <el-form-item label="密码" prop="password">
-          <el-input v-model="registerForm.password" type="password" show-password placeholder="请输入密码（至少6位）" />
+        <el-form-item :label="t('login.password')" prop="password">
+          <el-input v-model="registerForm.password" type="password" show-password :placeholder="t('login.passwordPlaceholder2')" />
         </el-form-item>
-        <el-form-item label="确认密码" prop="confirmPassword">
-          <el-input v-model="registerForm.confirmPassword" type="password" show-password placeholder="请再次输入密码" />
+        <el-form-item :label="t('login.confirmPassword')" prop="confirmPassword">
+          <el-input v-model="registerForm.confirmPassword" type="password" show-password :placeholder="t('login.confirmPasswordPlaceholder')" />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="registerDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleRegister" :loading="registerLoading">提交注册</el-button>
+        <el-button @click="registerDialogVisible = false">{{ t('common.cancel') }}</el-button>
+        <el-button type="primary" @click="handleRegister" :loading="registerLoading">{{ t('login.registerSubmit') }}</el-button>
       </template>
     </el-dialog>
   </div>
@@ -82,8 +80,10 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { useI18n } from 'vue-i18n'
 import api from '@/utils/api'
 
+const { t } = useI18n()
 const router = useRouter()
 const loginFormRef = ref(null)
 const loading = ref(false)
@@ -97,16 +97,15 @@ const checkOpenRegistration = async () => {
       headers: { 'Cache-Control': 'no-cache' }
     })
     if (!response.ok) {
-      console.error('[OpenRegistration] API响应异常:', response.status)
+      console.error('[OpenRegistration] API response error:', response.status)
       openRegistrationEnabled.value = false
       return
     }
     const data = await response.json()
     openRegistrationEnabled.value = data.enabled
-    console.log('[OpenRegistration] API响应:', response.status, data)
   } catch (error) {
     openRegistrationEnabled.value = false
-    console.error('[OpenRegistration] API调用失败:', error)
+    console.error('[OpenRegistration] API call failed:', error)
   }
 }
 
@@ -120,8 +119,8 @@ const loginForm = reactive({
 })
 
 const rules = {
-  username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
-  password: [{ required: true, message: '请输入密码', trigger: 'blur' }]
+  username: [{ required: true, message: () => t('login.usernameRequired'), trigger: 'blur' }],
+  password: [{ required: true, message: () => t('login.passwordRequired'), trigger: 'blur' }]
 }
 
 const handleLogin = async () => {
@@ -167,7 +166,7 @@ const handleLogin = async () => {
             localStorage.setItem('operation_managers', JSON.stringify(settingsResponse.data.operation_managers))
           }
         } catch (error) {
-          window.logger.error('获取站点配置失败:', error)
+          window.logger.error('Failed to load site settings:', error)
         }
 
         window.dispatchEvent(new CustomEvent('user-logged-in', { 
@@ -180,15 +179,15 @@ const handleLogin = async () => {
             is_subject_teacher: response.data.is_subject_teacher || false
           } 
         }))
-        ElMessage.success('登录成功')
+        ElMessage.success(t('login.loginSuccess'))
         if (response.data.must_change_password) {
-          ElMessage.warning('检测到您使用的是默认密码，请立即修改密码！')
+          ElMessage.warning(t('login.mustChangePassword'))
           router.push('/admin/dashboard?force_change_password=1')
         } else {
           router.push('/admin/dashboard')
         }
       } catch (error) {
-        window.logger.error('登录失败:', error)
+        window.logger.error('Login failed:', error)
       } finally {
         loading.value = false
       }
@@ -203,7 +202,7 @@ const forgotPasswordForm = ref({
 const forgotPasswordFormRef = ref(null)
 
 const forgotPasswordRules = {
-  username: [{ required: true, message: '请输入用户名', trigger: 'blur' }]
+  username: [{ required: true, message: () => t('login.usernameRequired'), trigger: 'blur' }]
 }
 
 const showForgotPasswordDialog = () => {
@@ -217,22 +216,22 @@ const handleForgotPassword = async () => {
     if (valid) {
       try {
         await ElMessageBox.confirm(
-          `确认忘记密码？我们将向管理员发送重置请求，请等待管理员处理。`,
-          '提示',
+          t('login.forgotPasswordConfirm'),
+          t('common.tip'),
           {
-            confirmButtonText: '确认',
-            cancelButtonText: '取消',
+            confirmButtonText: t('common.confirm'),
+            cancelButtonText: t('common.cancel'),
             type: 'warning'
           }
         )
         
         await api.post('/auth/forgot-password', forgotPasswordForm.value)
-        ElMessage.success('密码重置请求已发送，请等待管理员处理')
+        ElMessage.success(t('login.forgotPasswordSuccess'))
         forgotPasswordDialogVisible.value = false
         forgotPasswordForm.value = { username: '' }
       } catch (error) {
         if (error !== 'cancel') {
-          window.logger.error('发送密码重置请求失败:', error)
+          window.logger.error('Failed to send password reset request:', error)
         }
       }
     }
@@ -251,9 +250,9 @@ const registerForm = reactive({
 
 const validateConfirmPassword = (rule, value, callback) => {
   if (value === '') {
-    callback(new Error('请再次输入密码'))
+    callback(new Error(t('login.confirmPasswordRequired')))
   } else if (value !== registerForm.password) {
-    callback(new Error('两次输入的密码不一致'))
+    callback(new Error(t('login.passwordMismatch')))
   } else {
     callback()
   }
@@ -261,16 +260,16 @@ const validateConfirmPassword = (rule, value, callback) => {
 
 const registerRules = {
   username: [
-    { required: true, message: '请输入用户名', trigger: 'blur' },
-    { min: 2, max: 50, message: '用户名长度为2-50个字符', trigger: 'blur' }
+    { required: true, message: () => t('login.usernameRequired'), trigger: 'blur' },
+    { min: 2, max: 50, message: () => t('login.usernameLength'), trigger: 'blur' }
   ],
   email: [
-    { required: true, message: '请输入邮箱地址', trigger: 'blur' },
-    { type: 'email', message: '请输入有效的邮箱地址', trigger: 'blur' }
+    { required: true, message: () => t('login.emailRequired'), trigger: 'blur' },
+    { type: 'email', message: () => t('login.emailInvalid'), trigger: 'blur' }
   ],
   password: [
-    { required: true, message: '请输入密码', trigger: 'blur' },
-    { min: 6, message: '密码长度不能少于6位', trigger: 'blur' }
+    { required: true, message: () => t('login.passwordRequired'), trigger: 'blur' },
+    { min: 6, message: () => t('login.passwordMin'), trigger: 'blur' }
   ],
   confirmPassword: [
     { required: true, validator: validateConfirmPassword, trigger: 'blur' }
@@ -297,10 +296,10 @@ const handleRegister = async () => {
           email: registerForm.email,
           password: registerForm.password
         })
-        ElMessage.success('注册申请已提交！请查收邮箱确认邮件完成注册。')
+        ElMessage.success(t('login.registerSuccess'))
         registerDialogVisible.value = false
       } catch (error) {
-        window.logger.error('注册失败:', error)
+        window.logger.error('Registration failed:', error)
       } finally {
         registerLoading.value = false
       }

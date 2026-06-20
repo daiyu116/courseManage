@@ -1,7 +1,8 @@
-// SPDX-License-Identifier: AGPL-3.0-only
-// Copyright (C) 2024-2026 courseManage Contributors
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
+import i18n from '@/locales'
+
+const { t } = i18n.global
 
 let errorMessageQueue = []
 let errorTimer = null
@@ -19,7 +20,7 @@ function showError(message) {
       if (uniqueMessages.length === 1) {
         ElMessage.error(uniqueMessages[0])
       } else {
-        ElMessage.error(`发生 ${uniqueMessages.length} 个错误，请检查网络连接`)
+        ElMessage.error(t('api.multipleErrors', { n: uniqueMessages.length }))
       }
       errorMessageQueue = []
     }
@@ -98,20 +99,20 @@ api.interceptors.response.use(
         localStorage.removeItem('user')
         
         if (!isLoginPage && currentPath.startsWith('/admin')) {
-          ElMessage.error('登录已过期，请重新登录')
+          ElMessage.error(t('api.loginExpired'))
           setTimeout(() => {
             window.location.href = '/admin/login'
           }, 300)
         }
       } else if (status === 403) {
-        showError('权限不足，需要管理员权限')
+        showError(t('api.permissionDenied'))
       } else {
-        showError(data.detail || '请求失败')
+        showError(data.detail || t('api.requestFailed'))
       }
     } else if (error.code === 'ECONNABORTED') {
-      showError('请求超时，请检查网络连接')
+      showError(t('api.requestTimeout'))
     } else {
-      showError('网络错误')
+      showError(t('api.networkError'))
     }
     return Promise.reject(error)
   }

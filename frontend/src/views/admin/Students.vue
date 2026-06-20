@@ -8,49 +8,49 @@
         <el-col :span="3">
           <el-button type="primary" @click="goToPage('/admin/dashboard')" style="width: 100%;height: 100%;">
             <el-icon><Reading /></el-icon>
-            面板
+            {{ t('nav.dashboard') }}
           </el-button>
         </el-col>
         <el-col :span="3">
           <el-button type="primary" @click="goToPage('/admin/courses')" style="width: 100%;height: 100%;">
             <el-icon><Reading /></el-icon>
-            科目管理
+            {{ t('nav.courses') }}
           </el-button>
         </el-col>
         <el-col :span="3">
           <el-button type="success" @click="goToPage('/admin/teachers')" style="width: 100%;height: 100%;">
             <el-icon><User /></el-icon>
-            导师管理
+            {{ t('nav.teachers') }}
           </el-button>
         </el-col>
         <el-col :span="3">
           <el-button type="success" @click="goToPage('/admin/classes')" style="width: 100%;height: 100%;">
             <el-icon><User /></el-icon>
-            班级管理
+            {{ t('nav.classes') }}
           </el-button>
         </el-col>
         <el-col :span="3">
           <el-button type="info" @click="goToPage('/admin/rooms')" style="width: 100%;height: 100%;">
             <el-icon><OfficeBuilding /></el-icon>
-            教室管理
+            {{ t('nav.rooms') }}
           </el-button>
         </el-col>
         <el-col :span="3">
           <el-button type="danger" @click="goToPage('/admin/leaves')" style="width: 100%;height: 100%;">
             <el-icon><Calendar /></el-icon>
-            假日管理
+            {{ t('nav.leaves') }}
           </el-button>
         </el-col>
         <el-col :span="3">
           <el-button type="primary" @click="goToPage('/admin/schedules')" style="width: 100%;height: 100%;">
             <el-icon><Clock /></el-icon>
-            排课管理
+            {{ t('nav.schedules') }}
           </el-button>
         </el-col>
         <el-col :span="3">
           <el-button type="primary" @click="goToPage('/admin/conditions')" style="width: 100%;height: 100%;">
             <el-icon><Setting /></el-icon>
-            条件管理
+            {{ t('nav.conditions') }}
           </el-button>
         </el-col>
       </el-row>
@@ -59,49 +59,49 @@
     <el-card>
       <template #header>
         <div class="card-header">
-          <span>学员管理</span>
+          <span>{{ t('students.title') }}</span>
           <div class="button-group">
             <el-button type="info" @click="goBack">
               <el-icon><ArrowLeft /></el-icon>
-              返回上一页
+              {{ t('common.back') }}
             </el-button>
             <el-button v-if="canAccessFeeManagement" type="danger" @click="goToFeeManagement">
               <el-icon><Money /></el-icon>
-              费用管理
+              {{ t('students.feeManagement') }}
             </el-button>
-            <el-tooltip v-else-if="hasFeeManagementRole" content="费用管理为授权功能，请在系统授权管理中激活" placement="bottom">
+            <el-tooltip v-else-if="hasFeeManagementRole" :content="t('students.feeManagementTip')" placement="bottom">
               <el-button type="danger" disabled>
                 <el-icon><Lock /></el-icon>
-                费用管理
+                {{ t('students.feeManagement') }}
               </el-button>
             </el-tooltip>
             <el-button v-if="canAccessGradeManagement && hasFeature('grade_trend')" type="warning" @click="goToGradeManagement">
               <el-icon><Document /></el-icon>
-              成绩管理
+              {{ t('students.gradeManagement') }}
             </el-button>
-            <el-tooltip v-else-if="canAccessGradeManagement" content="成绩管理为授权功能，请在系统授权管理中激活" placement="bottom">
+            <el-tooltip v-else-if="canAccessGradeManagement" :content="t('students.gradeManagementTip')" placement="bottom">
               <el-button type="warning" disabled>
                 <el-icon><Lock /></el-icon>
-                成绩管理
+                {{ t('students.gradeManagement') }}
               </el-button>
             </el-tooltip>
             <el-button v-if="canAccessEvaluationManagement" type="warning" @click="goToEvaluationManagement">
               <el-icon><DataAnalysis /></el-icon>
-              评价管理
+              {{ t('students.evaluationManagement') }}
             </el-button>
-            <el-tooltip v-else-if="canAccessGradeManagement" content="学员评价为授权功能，请在系统授权管理中激活" placement="bottom">
+            <el-tooltip v-else-if="canAccessGradeManagement" :content="t('students.evaluationManagementTip')" placement="bottom">
               <el-button type="warning" disabled>
                 <el-icon><Lock /></el-icon>
-                评价管理
+                {{ t('students.evaluationManagement') }}
               </el-button>
             </el-tooltip>
             <el-button type="primary" @click="showAddDialog">
               <el-icon><Plus /></el-icon>
-              新增学员
+              {{ t('students.addStudent') }}
             </el-button>
             <el-button type="success" @click="showBatchAddDialog">
               <el-icon><Upload /></el-icon>
-              批量添加
+              {{ t('common.batchAdd') }}
             </el-button>
           </div>
         </div>
@@ -110,7 +110,7 @@
       <div class="search-bar">
         <el-input
           v-model="searchKeyword"
-          placeholder="姓名、代码、学校、年级或联系信息"
+          :placeholder="t('students.searchPlaceholder')"
           style="width: 350px"
           clearable
           @clear="resetFilters"
@@ -122,11 +122,11 @@
             </el-button>
           </template>
         </el-input>
-        <el-select v-model="isActiveFilter" placeholder="本机构在读状态" clearable style="width: 150px" @change="handleFilterChange">
-          <el-option label="在读" :value="true" />
-          <el-option label="非在读" :value="false" />
+        <el-select v-model="isActiveFilter" :placeholder="t('students.isActiveStatus')" clearable style="width: 150px" @change="handleFilterChange">
+          <el-option :label="t('students.active')" :value="true" />
+          <el-option :label="t('students.inactive')" :value="false" />
         </el-select>
-        <el-button @click="resetFilters" style="width: 50px">重置</el-button>
+        <el-button @click="resetFilters" style="width: 50px">{{ t('common.reset') }}</el-button>
       </div>
 
       <div class="fake-scrollbar" ref="topScrollbarRef">
@@ -134,96 +134,96 @@
       </div>
       <el-table :data="students" stripe v-loading="loading" style="margin-top: 0" @sort-change="handleSortChange" ref="mainTableRef">
           <el-table-column prop="id" label="ID" width="70" sortable />
-          <el-table-column prop="code" label="学员代码" width="120" sortable />
-          <el-table-column prop="name" label="学员姓名" width="120" sortable>
+          <el-table-column prop="code" :label="t('students.studentCode')" width="120" sortable />
+          <el-table-column prop="name" :label="t('students.studentName')" width="120" sortable>
             <template #default="{ row }">
               <el-tooltip placement="top" effect="light">
                 <template #content>
                   <div v-if="row.classes && row.classes.length > 0">
-                    <div><strong>本机构所属班级：</strong></div>
+                    <div><strong>{{ t('students.ownClasses') }}：</strong></div>
                     <div v-for="cls in row.classes" :key="cls.id" style="margin-left: 10px;">
                       {{ cls.name }}
                     </div>
                   </div>
                   <div v-else>
-                    <div><strong>本机构所属班级：</strong>无</div>
+                    <div><strong>{{ t('students.ownClasses') }}：</strong>{{ t('students.none') }}</div>
                   </div>
                   <div>
-                    <div><strong>本机构是否在读：</strong>{{ row.is_active ? '在读' : '非在读' }}</div>
+                    <div><strong>{{ t('students.isActiveStatus') }}：</strong>{{ row.is_active ? t('students.active') : t('students.inactive') }}</div>
                   </div>
                 </template>
                 <span style="cursor: help; color: #409EFF;">{{ row.name }}</span>
               </el-tooltip>
             </template>
           </el-table-column>
-          <el-table-column prop="school" label="就读学校" width="150" sortable />
-          <el-table-column prop="grade" label="就读年级" width="120" sortable />
-          <el-table-column label="进入机构日期" width="150" sortable>
+          <el-table-column prop="school" :label="t('students.school')" width="150" sortable />
+          <el-table-column prop="grade" :label="t('students.grade')" width="120" sortable />
+          <el-table-column :label="t('students.enrollmentDate')" width="150" sortable>
             <template #default="{ row }">
               {{ row.enrollment_date ? new Date(row.enrollment_date).toLocaleDateString('zh-CN') : '-' }}
             </template>
           </el-table-column>
-          <el-table-column label="联系人" width="120" sortable >
+          <el-table-column :label="t('students.contactPerson')" width="120" sortable >
             <template #default="{ row }">
               {{ row.contact_person || '-' }}
             </template>
           </el-table-column>
-          <el-table-column label="联系电话" width="120" sortable >
+          <el-table-column :label="t('students.contactPhone')" width="120" sortable >
             <template #default="{ row }">
               {{ row.contact_phone || '-' }}
             </template>
           </el-table-column>
-          <el-table-column label="电子邮箱" width="200" sortable >
+          <el-table-column :label="t('students.email')" width="200" sortable >
             <template #default="{ row }">
               {{ row.email || '-' }}
             </template>
           </el-table-column>
-          <el-table-column label="非节假每周可安排日" width="200">
+          <el-table-column :label="t('students.availableDays')" width="200">
               <template #default="{ row }">
                   <el-tag v-for="day in parseAvailableDays(row.available_days)" :key="day" size="small" style="margin-right: 5px; margin-bottom: 5px;">
                   {{ day }}
                   </el-tag>
               </template>
           </el-table-column>
-          <el-table-column label="可安排课时段" width="300">
+          <el-table-column :label="t('students.availableTimeSlots')" width="300">
               <template #default="{ row }">
                   <el-tag v-for="slot in parseAvailableTimeSlots(row.available_time_slots)" :key="slot" size="small" style="margin-right: 5px; margin-bottom: 5px;">
                   {{ slot }}
                   </el-tag>
               </template>
           </el-table-column>
-          <el-table-column label="节假日可排课" width="120">
+          <el-table-column :label="t('students.holidayScheduling')" width="120">
             <template #default="{ row }">
               <el-tag :type="row.allow_holiday_scheduling ? 'success' : 'info'">
-                {{ row.allow_holiday_scheduling ? '可排课' : '不可排课' }}
+                {{ row.allow_holiday_scheduling ? t('students.schedulable') : t('students.notSchedulable') }}
               </el-tag>
             </template>
           </el-table-column>
-          <el-table-column label="本机构在读状态" width="100">
+          <el-table-column :label="t('students.isActiveStatus')" width="100">
             <template #default="{ row }">
               <el-tag :type="row.is_active ? 'success' : 'info'">
-                {{ row.is_active ? '在读' : '非在读' }}
+                {{ row.is_active ? t('students.active') : t('students.inactive') }}
               </el-tag>
             </template>
           </el-table-column>
-          <el-table-column label="操作" width="300" fixed="right">
+          <el-table-column :label="t('common.operation')" width="300" fixed="right">
             <template #default="{ row }">
-              <el-button size="small" @click="showEditDialog(row)">编辑</el-button>
-              <el-button v-if="hasFeature('grade_trend')" size="small" type="primary" @click="showGradeCurve(row)">成绩曲线</el-button>
-              <el-tooltip v-else content="学员成绩曲线为授权功能，请在系统授权管理中激活" placement="top">
+              <el-button size="small" @click="showEditDialog(row)">{{ t('common.edit') }}</el-button>
+              <el-button v-if="hasFeature('grade_trend')" size="small" type="primary" @click="showGradeCurve(row)">{{ t('students.gradeCurve') }}</el-button>
+              <el-tooltip v-else :content="t('students.gradeCurveTip')" placement="top">
                 <el-button size="small" type="primary" disabled>
                   <el-icon><Lock /></el-icon>
-                  成绩曲线
+                  {{ t('students.gradeCurve') }}
                 </el-button>
               </el-tooltip>
-              <el-button v-if="canAccessEvaluationManagement" size="small" type="warning" @click="showStudentEvaluation(row)">评价内容</el-button>
-              <el-tooltip v-else content="学员评价为授权功能，请在系统授权管理中激活" placement="top">
+              <el-button v-if="canAccessEvaluationManagement" size="small" type="warning" @click="showStudentEvaluation(row)">{{ t('students.evaluationContent') }}</el-button>
+              <el-tooltip v-else :content="t('students.evaluationManagementTip')" placement="top">
                 <el-button size="small" type="warning" disabled>
                   <el-icon><Lock /></el-icon>
-                  评价内容
+                  {{ t('students.evaluationContent') }}
                 </el-button>
               </el-tooltip>
-              <el-button v-if="currentUser && (currentUser.role === 'super_admin' || currentUser.role === 'course_admin')" size="small" type="danger" @click="handleDelete(row)">删除</el-button>
+              <el-button v-if="currentUser && (currentUser.role === 'super_admin' || currentUser.role === 'course_admin')" size="small" type="danger" @click="handleDelete(row)">{{ t('common.delete') }}</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -241,40 +241,40 @@
 
     <el-dialog v-model="dialogVisible" :title="dialogTitle" width="600px" draggable>
       <el-form :model="form" :rules="rules" ref="formRef" label-width="120px">
-        <el-form-item label="学员代码" prop="code">
-          <el-input v-model="form.code" :placeholder="lastStudentCode ? `请输入学员代码(不能与现有重复否则无法创建，当前已到：${lastStudentCode})` : '请输入学员代码(不能与现有重复)'" :disabled="!!form.id" />
+        <el-form-item :label="t('students.studentCode')" prop="code">
+          <el-input v-model="form.code" :placeholder="lastStudentCode ? t('students.studentCodePlaceholderWithLast', { code: lastStudentCode }) : t('students.studentCodePlaceholder')" :disabled="!!form.id" />
         </el-form-item>
-        <el-form-item label="学员姓名" prop="name">
-          <el-input v-model="form.name" placeholder="请输入学员姓名" />
+        <el-form-item :label="t('students.studentName')" prop="name">
+          <el-input v-model="form.name" :placeholder="t('students.studentNamePlaceholder')" />
         </el-form-item>
-        <el-form-item label="就读学校" prop="school">
-          <el-input v-model="form.school" placeholder="请输入就读学校" />
+        <el-form-item :label="t('students.school')" prop="school">
+          <el-input v-model="form.school" :placeholder="t('students.schoolPlaceholder')" />
         </el-form-item>
-        <el-form-item label="就读年级" prop="grade">
-          <el-select v-model="form.grade" placeholder="请选择就读年级" clearable filterable allow-create style="width: 100%">
+        <el-form-item :label="t('students.grade')" prop="grade">
+          <el-select v-model="form.grade" :placeholder="t('students.gradeSelectPlaceholder')" clearable filterable allow-create style="width: 100%">
             <el-option v-for="g in gradeOptions" :key="g" :label="g" :value="g" />
           </el-select>
         </el-form-item>
-        <el-form-item label="联系人" prop="contact_person">
-          <el-input v-model="form.contact_person" placeholder="请输入联系人（家长或监护人）" />
+        <el-form-item :label="t('students.contactPerson')" prop="contact_person">
+          <el-input v-model="form.contact_person" :placeholder="t('students.contactPersonFullPlaceholder')" />
         </el-form-item>
-        <el-form-item label="联系电话" prop="contact_phone">
-          <el-input v-model="form.contact_phone" placeholder="请输入手机号码或座机号码" />
+        <el-form-item :label="t('students.contactPhone')" prop="contact_phone">
+          <el-input v-model="form.contact_phone" :placeholder="t('students.contactPhoneFullPlaceholder')" />
         </el-form-item>
-        <el-form-item label="电子邮箱" prop="email">
-          <el-input v-model="form.email" placeholder="请输入电子邮箱" />
+        <el-form-item :label="t('students.email')" prop="email">
+          <el-input v-model="form.email" :placeholder="t('students.emailPlaceholder')" />
         </el-form-item>
-        <el-form-item label="进入机构日期" prop="enrollment_date">
+        <el-form-item :label="t('students.enrollmentDate')" prop="enrollment_date">
           <el-date-picker
             v-model="form.enrollment_date"
             type="date"
-            placeholder="选择进入机构日期"
+            :placeholder="t('students.selectEnrollmentDate')"
             value-format="YYYY-MM-DD"
             style="width: 100%"
           />
         </el-form-item>
-        <el-form-item label="本机构所属班级" prop="class_ids">
-          <el-select v-model="form.class_ids" multiple filterable placeholder="请选择班级" clearable style="width: 100%">
+        <el-form-item :label="t('students.ownClasses')" prop="class_ids">
+          <el-select v-model="form.class_ids" multiple filterable :placeholder="t('students.selectClassesPlaceholder')" clearable style="width: 100%">
             <el-option
               v-for="class_ in classes"
               :key="class_.id"
@@ -284,30 +284,29 @@
             <el-tooltip placement="right" :show-after="200">
               <template #content>
                 <div v-if="getActiveClassStudents(class_.id).length > 0">
-                  <div style="font-weight: bold; margin-bottom: 8px; color: #67c23a;">在读学员:</div>
+                  <div style="font-weight: bold; margin-bottom: 8px; color: #67c23a;">{{ t('students.activeStudents') }}:</div>
                   <div v-for="student in getActiveClassStudents(class_.id)" :key="student.id" style="margin-bottom: 4px;">
                     {{ student.name }}
                   </div>
                 </div>
                 <div v-if="getInactiveClassStudents(class_.id).length > 0">
-                  <div style="font-weight: bold; margin-bottom: 8px; margin-top: 12px; color: #909399;">非在读学员:</div>
+                  <div style="font-weight: bold; margin-bottom: 8px; margin-top: 12px; color: #909399;">{{ t('students.inactiveStudents') }}:</div>
                   <div v-for="student in getInactiveClassStudents(class_.id)" :key="student.id" style="margin-bottom: 4px;">
                     {{ student.name }}
                   </div>
                 </div>
                 <div v-if="getActiveClassStudents(class_.id).length === 0 && getInactiveClassStudents(class_.id).length === 0">
-                  暂无学员
+                  {{ t('students.noStudents') }}
                 </div>
-                <!-- 添加班级对应的导师信息 -->
                 <div v-if="getClassTeachers(class_.id).length > 0" style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #eee;">
-                  <div style="font-weight: bold; margin-bottom: 8px; color: #409EFF;">班级导师:</div>
+                  <div style="font-weight: bold; margin-bottom: 8px; color: #409EFF;">{{ t('students.classTeachers') }}:</div>
                   <div v-for="teacher in getClassTeachers(class_.id)" :key="teacher.id" style="margin-bottom: 4px;">
                     {{ teacher.name }}
                     <span v-if="teacher.contact_phone" style="color: #999; font-size: 12px;">（{{ teacher.contact_phone }}）</span>
                   </div>
                 </div>
                 <div v-else style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #eee;">
-                  <div style="color: #999;">暂无导师</div>
+                  <div style="color: #999;">{{ t('students.noTeachers') }}</div>
                 </div>
               </template>
               <span>{{ class_.name }}</span>
@@ -315,28 +314,28 @@
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="非节假每周可安排日" prop="available_days">
+        <el-form-item :label="t('students.availableDays')" prop="available_days">
             <el-checkbox-group v-model="selectedDays">
-                <el-checkbox :value="1">周一</el-checkbox>
-                <el-checkbox :value="2">周二</el-checkbox>
-                <el-checkbox :value="3">周三</el-checkbox>
-                <el-checkbox :value="4">周四</el-checkbox>
-                <el-checkbox :value="5">周五</el-checkbox>
-                <el-checkbox :value="6">周六</el-checkbox>
-                <el-checkbox :value="7">周日</el-checkbox>
+                <el-checkbox :value="1">{{ t('students.mon') }}</el-checkbox>
+                <el-checkbox :value="2">{{ t('students.tue') }}</el-checkbox>
+                <el-checkbox :value="3">{{ t('students.wed') }}</el-checkbox>
+                <el-checkbox :value="4">{{ t('students.thu') }}</el-checkbox>
+                <el-checkbox :value="5">{{ t('students.fri') }}</el-checkbox>
+                <el-checkbox :value="6">{{ t('students.sat') }}</el-checkbox>
+                <el-checkbox :value="7">{{ t('students.sun') }}</el-checkbox>
             </el-checkbox-group>
         </el-form-item>
-        <el-form-item label="节假日可排课">
+        <el-form-item :label="t('students.holidayScheduling')">
           <el-switch v-model="form.allow_holiday_scheduling" />
           <span style="margin-left: 10px; color: #999; font-size: 12px;">
-            勾选后，节假日(包含法定与自定义假日)也可以安排课程
+            {{ t('students.holidaySchedulingTip') }}
           </span>
         </el-form-item>
-        <el-form-item label="可安排课时段" prop="available_time_slots">
+        <el-form-item :label="t('students.availableTimeSlots')" prop="available_time_slots">
             <el-row :gutter="10">
                 <el-col :span="12">
                 <div style="margin-bottom: 5px; font-size: 12px; color: #909399;">
-                    <el-icon><InfoFilled /></el-icon> 上午
+                    <el-icon><InfoFilled /></el-icon> {{ t('students.morning') }}
                 </div>
                 <el-checkbox-group v-model="selectedTimeSlots" @change="handleTimeSlotChange">
                     <div style="margin-bottom: 5px;">
@@ -349,7 +348,7 @@
                 </el-col>
                 <el-col :span="12">
                 <div style="margin-bottom: 5px; font-size: 12px; color: #909399;">
-                    <el-icon><InfoFilled /></el-icon> 下午（重叠时间段）
+                    <el-icon><InfoFilled /></el-icon> {{ t('students.afternoonOverlap') }}
                 </div>
                 <el-checkbox-group v-model="selectedTimeSlots" @change="handleTimeSlotChange">
                     <div style="margin-bottom: 5px;">
@@ -392,65 +391,65 @@
                 </el-col>
             </el-row>
             <div style="margin-top: 10px; font-size: 12px; color: #909399;">
-              <el-icon><InfoFilled /></el-icon> 
-              说明：纵坐标显示成绩比例（当次考试成绩÷当次科目总分×100%），实线表示有成绩数据，虚线表示该考试阶段无成绩数据（过渡显示）
+              <el-icon><InfoFilled /></el-icon>
+              {{ t('students.gradeCurveFormTip') }}
             </div>
         </el-form-item>
-        <el-form-item label="本机构在读状态" prop="is_active">
+        <el-form-item :label="t('students.isActiveStatus')" prop="is_active">
           <el-switch v-model="form.is_active" />
         </el-form-item>
-        <el-form-item label="结束日期" prop="end_date" v-if="!form.is_active">
+        <el-form-item :label="t('students.endDate')" prop="end_date" v-if="!form.is_active">
           <el-date-picker
             v-model="form.end_date"
             type="date"
-            placeholder="选择结束日期"
+            :placeholder="t('students.selectEndDate')"
             value-format="YYYY-MM-DD"
             style="width: 100%"
           />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleSubmit">确定</el-button>
+        <el-button @click="dialogVisible = false">{{ t('common.cancel') }}</el-button>
+        <el-button type="primary" @click="handleSubmit">{{ t('common.confirm') }}</el-button>
       </template>
     </el-dialog>
     <!-- 批量添加学员对话框 -->
-    <el-dialog v-model="batchAddDialogVisible" title="批量添加学员" width="800px" draggable>
+    <el-dialog v-model="batchAddDialogVisible" :title="t('students.batchAddTitle')" width="800px" draggable>
       <div style="margin-bottom: 20px;">
         <el-alert
-          title="批量添加说明"
+          :title="t('students.batchAddInfo')"
           type="info"
           :closable="false"
           show-icon
         >
           <template #default>
-            <div>请按照以下格式输入学员信息，每行一个学员：</div>
+            <div>{{ t('students.batchAddFormat') }}</div>
             <div style="margin-top: 10px; font-family: monospace; background: #f5f7fa; padding: 10px; border-radius: 4px;">
-              代码(*必填),姓名(*必填),进入日期(YYYY-MM-DD),学校,年级,联系人,联系方式,电子邮箱,可排课日(1-7,逗号分隔)
+              {{ t('students.batchAddFormatLineFull') }}
             </div>
-            <div style="margin-top: 10px;">例如：</div>
+            <div style="margin-top: 10px;">{{ t('students.batchAddExample') }}</div>
             <div style="margin-top: 5px; font-family: monospace; background: #f5f7fa; padding: 10px; border-radius: 4px;">
-              S001,张三,2024-01-15,第一中学,高一,张爸爸,13800138000,zhangsan@example.com,6,7<br/>
-              S002,李四,2024-02-20,第二中学,高二,李妈妈,13900139000,lisi@example.com,1,2,3,4,5<br/>
-              S003,王五,, , , , , ,6,7
+              S001,{{ t('students.batchAddExampleName1') }},2024-01-15,{{ t('students.batchAddExampleSchool1') }},{{ t('students.batchAddExampleGrade1') }},{{ t('students.batchAddExampleContact1') }},13800138000,zhangsan@example.com,6,7<br/>
+              S002,{{ t('students.batchAddExampleName2') }},2024-02-20,{{ t('students.batchAddExampleSchool2') }},{{ t('students.batchAddExampleGrade2') }},{{ t('students.batchAddExampleContact2') }},13900139000,lisi@example.com,1,2,3,4,5<br/>
+              S003,{{ t('students.batchAddExampleName3') }},, , , , , ,6,7
             </div>
-            <div style="margin-top: 10px;">注意：</div>
+            <div style="margin-top: 10px;">{{ t('students.batchAddNote') }}</div>
             <ul style="margin-top: 5px;">
-              <li>代码不能与现有学员重复否则无法创建，上一个学员代码：<span v-if="lastStudentCode">{{ lastStudentCode }}</span><span v-else>无</span>，请在这个代码+1的基础上开始</li>
-              <li>可排课日：1=周一, 2=周二, 3=周三, 4=周四, 5=周五, 6=周六, 7=周日</li>
-              <li>可排课日支持多个值，用逗号分隔，如：6,7 表示周六和周日</li>
-              <li>可在上方选择班级和可排课时间段，所有批量添加的学员都会应用相同的设置</li>
+              <li>{{ t('students.batchAddNoteCode') }}<span v-if="lastStudentCode">{{ lastStudentCode }}</span><span v-else>{{ t('students.batchAddNoteNone') }}</span>{{ t('students.batchAddNoteCodeContinue') }}</li>
+              <li>{{ t('students.batchAddNoteDayMapping') }}</li>
+              <li>{{ t('students.batchAddNoteDayMulti') }}</li>
+              <li>{{ t('students.batchAddNoteClassAndTime') }}</li>
             </ul>
           </template>
         </el-alert>
       </div>
       <el-form>
-        <el-form-item label="所属班级">
+        <el-form-item :label="t('students.ownClasses')">
           <el-select
             v-model="selectedBatchClassIds"
             multiple
             filterable
-            placeholder="请选择班级（可多选，不选则不分配班级）"
+            :placeholder="t('students.selectClassesMultiPlaceholder')"
             style="width: 100%"
           >
             <el-option
@@ -461,11 +460,11 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="可排课时间段">
+        <el-form-item :label="t('students.availableTimeSlots')">
           <el-select
             v-model="selectedBatchTimeSlots"
             multiple
-            placeholder="请选择可排课时间段（可多选，不选则使用默认）"
+            :placeholder="t('students.selectTimeSlotsPlaceholder')"
             style="width: 100%"
             @change="handleBatchTimeSlotChange"
           >
@@ -485,33 +484,33 @@
             <el-option label="20:30-22:30" value="20:30-22:30" />
           </el-select>
           <div style="margin-top: 5px; font-size: 12px; color: #909399;">
-            <el-icon><InfoFilled /></el-icon> 说明：选择的时间段不能重叠，重叠的时间段会自动取消选择
+            <el-icon><InfoFilled /></el-icon> {{ t('students.timeSlotOverlapTip') }}
           </div>
         </el-form-item>
-        <el-form-item label="学员信息">
+        <el-form-item :label="t('students.studentInfo')">
           <el-input
             v-model="batchAddText"
             type="textarea"
             :rows="15"
-            placeholder="请输入学员信息，每行一个学员"
+            :placeholder="t('students.batchAddPlaceholder')"
           />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="batchAddDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleBatchAddSubmit" :loading="batchAddLoading">批量添加</el-button>
+        <el-button @click="batchAddDialogVisible = false">{{ t('common.cancel') }}</el-button>
+        <el-button type="primary" @click="handleBatchAddSubmit" :loading="batchAddLoading">{{ t('common.batchAdd') }}</el-button>
       </template>
     </el-dialog>
     <!-- 成绩比例曲线对话框 -->
-    <el-dialog v-model="gradeCurveDialogVisible" :title="`成绩比例曲线 - ${currentStudentName}`" width="90%" top="5vh" draggable>
+    <el-dialog v-model="gradeCurveDialogVisible" :title="t('students.gradeCurveTitle', { name: currentStudentName })" width="90%" top="5vh" draggable>
       <div v-loading="gradeCurveLoading">
         <div v-if="!gradeCurveLoading && (!gradeCurveData || !gradeCurveData.courses || gradeCurveData.courses.length === 0)" style="text-align: center; padding: 40px; color: #909399;">
-          <el-empty description="暂无成绩数据" />
+          <el-empty :description="t('students.noGradeData')" />
         </div>
         <div v-else>
           <div ref="gradeCurveChart" style="width: 100%; height: 600px;"></div>
           <div style="margin-top: 20px; padding: 15px; background: #f5f7fa; border-radius: 4px;">
-            <h4 style="margin-top: 0; margin-bottom: 10px;">图例说明：</h4>
+            <h4 style="margin-top: 0; margin-bottom: 10px;">{{ t('students.legendDescription') }}：</h4>
             <div style="display: flex; flex-wrap: wrap; gap: 15px;">
               <div v-for="course in gradeCurveData?.courses" :key="course.course_name" style="display: flex; align-items: center; gap: 5px;">
                 <div :style="{ width: '20px', height: '3px', backgroundColor: course.color }"></div>
@@ -519,14 +518,14 @@
               </div>
             </div>
             <div style="margin-top: 10px; font-size: 12px; color: #909399;">
-              <el-icon><InfoFilled /></el-icon> 
-              说明：实线表示有成绩数据，虚线表示该考试阶段无成绩数据（过渡显示）
+              <el-icon><InfoFilled /></el-icon>
+              {{ t('students.solidLineTip') }}
             </div>
           </div>
         </div>
       </div>
       <template #footer>
-        <el-button @click="gradeCurveDialogVisible = false">关闭</el-button>
+        <el-button @click="gradeCurveDialogVisible = false">{{ t('common.close') }}</el-button>
       </template>
     </el-dialog>
   </div>
@@ -540,7 +539,10 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import api from '@/utils/api'
 import { hasFeature } from '@/utils/license'
 import * as echarts from 'echarts'
+import { useI18n } from 'vue-i18n'
 
+
+const { t, locale } = useI18n()
 const mainTableRef = ref(null)
 const topScrollbarRef = ref(null)
 const scrollbarWidth = ref(0)
@@ -560,14 +562,18 @@ const selectedDays = ref([1, 2, 3, 4, 5, 6, 7])
 const selectedTimeSlots = ref([])
 const classes = ref([])
 
-const defaultGradeOptions = [
-  '小学一年级', '小学二年级', '小学三年级', '小学四年级', '小学五年级', '小学六年级',
-  '初中一年级', '初中二年级', '初中三年级',
-  '高中一年级', '高中二年级', '高中三年级',
-  '大学一年级', '大学二年级', '大学三年级', '大学四年级',
-  '研究生一年级', '研究生二年级', '研究生三年级'
-]
-const gradeOptions = ref([...defaultGradeOptions])
+const defaultGradeOptions = computed(() => [
+  t('students.gradePrimary', { n: 1 }), t('students.gradePrimary', { n: 2 }), t('students.gradePrimary', { n: 3 }), t('students.gradePrimary', { n: 4 }), t('students.gradePrimary', { n: 5 }), t('students.gradePrimary', { n: 6 }),
+  t('students.gradeJunior', { n: 1 }), t('students.gradeJunior', { n: 2 }), t('students.gradeJunior', { n: 3 }),
+  t('students.gradeSenior', { n: 1 }), t('students.gradeSenior', { n: 2 }), t('students.gradeSenior', { n: 3 }),
+  t('students.gradeCollege', { n: 1 }), t('students.gradeCollege', { n: 2 }), t('students.gradeCollege', { n: 3 }), t('students.gradeCollege', { n: 4 }),
+  t('students.gradeGraduate', { n: 1 }), t('students.gradeGraduate', { n: 2 }), t('students.gradeGraduate', { n: 3 })
+])
+const gradeOptions = ref([])
+
+watch(defaultGradeOptions, (newVal) => {
+  gradeOptions.value = [...newVal]
+}, { immediate: true })
 
 const goBack = () => {
   router.back()
@@ -755,7 +761,7 @@ const handleTimeSlotChange = (value) => {
   
   // 如果有重叠的时间段，显示提示
   if (overlappingSlots.length > 0) {
-    ElMessage.warning(`以下时间段与其他时间段重叠，已自动取消选择：${overlappingSlots.join(', ')}`)
+    ElMessage.warning(t('students.overlappingSlotWarning', { slots: overlappingSlots.join(', ') }))
   }
   
   // 更新选中的时间段
@@ -791,7 +797,7 @@ const handleBatchTimeSlotChange = (value) => {
   
   // 如果有重叠的时间段，显示提示
   if (overlappingSlots.length > 0) {
-    ElMessage.warning(`以下时间段与其他时间段重叠，已自动取消选择：${overlappingSlots.join(', ')}`)
+    ElMessage.warning(t('students.overlappingSlotWarning', { slots: overlappingSlots.join(', ') }))
   }
   
   // 更新选中的时间段
@@ -873,8 +879,8 @@ const originalForm = ref({
 })
 
 const rules = {
-  code: [{ required: true, message: '请输入学员代码', trigger: 'blur' }],
-  name: [{ required: true, message: '请输入学员姓名', trigger: 'blur' }]
+  code: [{ required: true, message: t('students.studentCodeRequired'), trigger: 'blur' }],
+  name: [{ required: true, message: t('students.studentNameRequired'), trigger: 'blur' }]
 }
 
 // 更新URL参数以反映当前筛选状态
@@ -921,7 +927,7 @@ watch(selectedTimeSlots, (newVal) => {
 
 const parseAvailableDays = (daysStr) => {
   const days = daysStr.split(',').map(d => parseInt(d.trim()))
-  const dayNames = ['', '周一', '周二', '周三', '周四', '周五', '周六', '周日']
+  const dayNames = ['', t('students.mon'), t('students.tue'), t('students.wed'), t('students.thu'), t('students.fri'), t('students.sat'), t('students.sun')]
   return days.map(d => dayNames[d] || '')
 }
 
@@ -1028,7 +1034,7 @@ const goToEvaluationManagement = () => {
 }
 
 const showAddDialog = async () => {
-  dialogTitle.value = '新增学员'
+  dialogTitle.value = t('students.addStudentTitle')
   
   // 确保加载所有学员数据到allStudents，以便班级悬浮信息能正确显示
   if (allStudents.value.length === 0) {
@@ -1085,7 +1091,7 @@ const showBatchAddDialog = () => {
 }
 const handleBatchAddSubmit = async () => {
   if (!batchAddText.value.trim()) {
-    ElMessage.warning('请输入学员信息')
+    ElMessage.warning(t('students.batchAddWarning'))
     return
   }
   
@@ -1099,7 +1105,7 @@ const handleBatchAddSubmit = async () => {
     
     const parts = line.split(',').map(p => p.trim())
     if (parts.length < 2) {
-      errors.push(`第${i + 1}行：格式错误，至少需要代码和姓名`)
+      errors.push(t('students.rowError', { row: i + 1, message: t('students.lineFormatError') }))
       continue
     }
     
@@ -1123,14 +1129,14 @@ const handleBatchAddSubmit = async () => {
   }
   
   if (errors.length > 0) {
-    ElMessage.error(`发现${errors.length}个错误：\n${errors.join('\n')}`)
+    ElMessage.error(t('students.errorsFound', { count: errors.length }) + '：\n' + errors.join('\n'))
     if (studentsToAdd.length === 0) {
       return
     }
   }
   
   if (studentsToAdd.length === 0) {
-    ElMessage.warning('没有有效的学员信息')
+    ElMessage.warning(t('students.batchAddNoValid'))
     return
   }
   
@@ -1146,14 +1152,14 @@ const handleBatchAddSubmit = async () => {
         successCount++
       } catch (error) {
         failCount++
-        failMessages.push(`${student.code}(${student.name}): ${error.response?.data?.detail || error.message}`)
+        failMessages.push(t('students.batchAddFailDetail', { code: student.code, name: student.name, detail: error.response?.data?.detail || error.message }))
       }
     }
     
     if (failCount > 0) {
-      ElMessage.warning(`批量添加完成：成功${successCount}个，失败${failCount}个\n失败详情：\n${failMessages.join('\n')}`)
+      ElMessage.warning(t('students.batchAddPartialDetail', { success: successCount, fail: failCount, details: failMessages.join('\n') }))
     } else {
-      ElMessage.success(`批量添加成功，共添加${successCount}个学员`)
+      ElMessage.success(t('students.batchAddSuccess', { n: successCount }))
     }
     
     batchAddDialogVisible.value = false
@@ -1167,14 +1173,14 @@ const handleBatchAddSubmit = async () => {
     }
   } catch (error) {
     window.logger.error('批量添加学员失败:', error)
-    ElMessage.error('批量添加学员失败')
+    ElMessage.error(t('students.batchAddFailed'))
   } finally {
     batchAddLoading.value = false
   }
 }
 
 const showEditDialog = async (row) => {
-  dialogTitle.value = '编辑学员'
+  dialogTitle.value = t('students.editStudentTitle')
   
   // 确保加载所有学员数据到allStudents，以便班级悬浮信息能正确显示
   if (allStudents.value.length === 0) {
@@ -1272,13 +1278,13 @@ const handleSubmit = async () => {
             form.value.end_date !== originalForm.value.end_date
           
           if (!isChanged) {
-            ElMessage.warning('内容未发生改变，无需保存')
+            ElMessage.warning(t('common.noChange'))
             return
           }
           
           // 编辑学员
           await api.put(`/students/${form.value.id}`, form.value)
-          ElMessage.success('更新成功')
+          ElMessage.success(t('common.updateSuccess'))
           // 重新加载allStudents数据
           try {
             const allStudentsResponse = await api.get('/students', { params: { skip: 0, limit: 100000 } })
@@ -1289,7 +1295,7 @@ const handleSubmit = async () => {
         } else {
           // 新建学员
           await api.post('/students', form.value)
-          ElMessage.success('创建成功')
+          ElMessage.success(t('common.createSuccess'))
           // 重新加载allStudents数据
           try {
             const allStudentsResponse = await api.get('/students', { params: { skip: 0, limit: 100000 } })
@@ -1305,9 +1311,9 @@ const handleSubmit = async () => {
         if (error.response) {
           window.logger.error('错误状态:', error.response.status)
           window.logger.error('错误详情:', error.response.data)
-          ElMessage.error(`操作失败: ${error.response.status} - ${JSON.stringify(error.response.data)}`)
+          ElMessage.error(t('students.operationFailedDetail', { status: error.response.status, detail: JSON.stringify(error.response.data) }))
         } else {
-          ElMessage.error('操作失败，请检查网络连接')
+          ElMessage.error(t('common.operationFailedNetwork'))
         }
       }
     }
@@ -1315,14 +1321,14 @@ const handleSubmit = async () => {
 }
 
 const handleDelete = (row) => {
-  ElMessageBox.confirm('确定要删除该学员吗？', '提示', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
+  ElMessageBox.confirm(t('students.confirmDeleteStudent'), t('common.tip'), {
+    confirmButtonText: t('common.confirm'),
+    cancelButtonText: t('common.cancel'),
     type: 'warning'
   }).then(async () => {
     try {
       await api.delete(`/students/${row.id}`)
-      ElMessage.success('删除成功')
+      ElMessage.success(t('common.deleteSuccess'))
       fetchStudents()
       // 重新加载allStudents数据
       try {
@@ -1361,7 +1367,7 @@ const showGradeCurve = async (row) => {
     renderGradeCurveChart(response.data)
   } catch (error) {
     window.logger.error('获取成绩曲线数据失败:', error)
-    ElMessage.error('获取成绩曲线数据失败')
+    ElMessage.error(t('students.fetchGradeCurveFailed'))
   } finally {
     gradeCurveLoading.value = false
   }
@@ -1383,7 +1389,7 @@ const renderGradeCurveChart = (data) => {
   if (!data.exam_stages || data.exam_stages.length === 0) {
     const option = {
       title: {
-        text: `${data.student_name} 成绩趋势图`,
+        text: t('students.gradeTrendChartTitle', { name: data.student_name }),
         left: 'center',
         textStyle: {
           fontSize: 18,
@@ -1395,7 +1401,7 @@ const renderGradeCurveChart = (data) => {
         left: 'center',
         top: 'middle',
         style: {
-          text: '暂无成绩数据',
+          text: t('students.noGradeDataChart'),
           fill: '#999',
           fontSize: 16
         }
@@ -1457,7 +1463,7 @@ const renderGradeCurveChart = (data) => {
   
   const option = {
     title: {
-      text: `${data.student_name} 成绩比例趋势图`,
+      text: t('students.gradeRatioChartTitle', { name: data.student_name }),
       left: 'center',
       textStyle: {
         fontSize: 18,
@@ -1475,16 +1481,16 @@ const renderGradeCurveChart = (data) => {
             const ratio = param.data.ratio !== null && param.data.ratio !== undefined ? param.data.ratio : 0
             
             html += `${param.marker} ${param.seriesName}:<br/>`
-            html += `&nbsp;&nbsp;当次考试成绩: ${Number(score).toFixed(1)}分<br/>`
-            html += `&nbsp;&nbsp;当次科目总分: ${Number(totalScore).toFixed(1)}分<br/>`
+            html += `&nbsp;&nbsp;${t('students.examScore')}: ${Number(score).toFixed(1)}<br/>`
+            html += `&nbsp;&nbsp;${t('students.subjectTotalScore')}: ${Number(totalScore).toFixed(1)}<br/>`
             
             if (ratio !== null && ratio !== undefined) {
-              html += `&nbsp;&nbsp;成绩比例: ${Number(ratio).toFixed(1)}%<br/>`
+              html += `&nbsp;&nbsp;${t('students.gradeRatio')}: ${Number(ratio).toFixed(1)}%<br/>`
             } else {
-              html += `&nbsp;&nbsp;成绩比例: 未计算（总分可能为0）<br/>`
+              html += `&nbsp;&nbsp;${t('students.gradeRatio')}: ${t('students.gradeRatioNotCalculated')}<br/>`
             }
           } else {
-            html += `${param.marker} ${param.seriesName}: 无数据<br/>`
+            html += `${param.marker} ${param.seriesName}: ${t('students.noData')}<br/>`
           }
         })
         return html
@@ -1518,7 +1524,7 @@ const renderGradeCurveChart = (data) => {
       type: 'value',
       min: 0,
       max: 100,
-      name: '比例(%)',
+      name: t('students.ratioAxis'),
       axisLabel: {
         formatter: '{value}%'
       }
@@ -1662,6 +1668,12 @@ onMounted(async () => {
     currentUser.value = JSON.parse(userStr)
   }
   
+  watch(locale, () => {
+    if (gradeCurveDialogVisible.value && gradeCurveData.value) {
+      renderGradeCurveChart(gradeCurveData.value)
+    }
+  })
+  
   // 检查是否有来自智能指令的搜索参数
   const urlParams = new URLSearchParams(window.location.search)
   const searchQuery = urlParams.get('search')
@@ -1715,7 +1727,7 @@ onMounted(async () => {
         try {
           const smartData = JSON.parse(sessionStorage.getItem('smartCommandData'))
           if (smartData.target_path && smartData.target_label) {
-            ElMessage.info(`已找到学员"${searchQuery}"，正在跳转到${smartData.target_label}...`)
+            ElMessage.info(t('students.foundStudentJumping', { name: searchQuery, target: smartData.target_label }))
             setTimeout(() => {
               window.location.href = `${smartData.target_path}?filter_by=student&filter_value=${encodeURIComponent(searchQuery)}`
             }, 1500)
@@ -1756,7 +1768,7 @@ onMounted(async () => {
         }
       } catch (error) {
         window.logger.error('获取学员信息失败:', error)
-        ElMessage.error('无法加载学员信息')
+        ElMessage.error(t('students.loadStudentFailed'))
       }
     }
   }
@@ -1783,7 +1795,7 @@ watch(() => route.query, (newQuery) => {
         }
       }).catch(error => {
         window.logger.error('获取学员信息失败:', error)
-        ElMessage.error('无法加载学员信息')
+        ElMessage.error(t('students.loadStudentFailed'))
       })
     }
   }

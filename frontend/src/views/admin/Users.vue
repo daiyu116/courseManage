@@ -5,36 +5,36 @@
     <el-card>
       <template #header>
         <div class="card-header">
-          <span>用户管理</span>
+          <span>{{ t('users.title') }}</span>
           <div class="header-actions">
             <el-button type="info" @click="goBack">
               <el-icon><ArrowLeft /></el-icon>
-              返回上一页
+              {{ t('common.goBack') }}
             </el-button>
             <el-button type="primary" @click="showAddDialog">
               <el-icon><Plus /></el-icon>
-              新增用户
+              {{ t('users.addUser') }}
             </el-button>
           </div>
         </div>
       </template>
 
       <el-form :inline="true" :model="searchForm">
-        <el-form-item label="用户名">
-          <el-input v-model="searchForm.search" placeholder="请输入用户名" clearable @clear="fetchUsers" />
+        <el-form-item :label="t('users.username')">
+          <el-input v-model="searchForm.search" :placeholder="t('users.usernamePlaceholder')" clearable @clear="fetchUsers" />
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="fetchUsers">
             <el-icon><Search /></el-icon>
-            搜索
+            {{ t('common.search') }}
           </el-button>
         </el-form-item>
       </el-form>
 
       <el-table :data="users" border stripe>
         <el-table-column prop="id" label="ID" width="80" />
-        <el-table-column prop="username" label="用户名" />
-        <el-table-column prop="teacher_id" label="绑定导师" width="150">
+        <el-table-column prop="username" :label="t('users.username')" />
+        <el-table-column prop="teacher_id" :label="t('users.boundTeacher')" width="150">
           <template #default="{ row }">
             <span v-if="row.role === 'course_admin' && row.teacher_id">
               {{ getTeacherName(row.teacher_id) }}
@@ -42,22 +42,22 @@
             <span v-else style="color: #909399;">-</span>
           </template>
         </el-table-column>
-        <el-table-column prop="role" label="角色" width="180">
+        <el-table-column prop="role" :label="t('users.role')" width="180">
           <template #default="{ row }">
             <el-tag :type="getRoleType(row.role)">
               {{ getRoleText(row.role) }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="created_at" label="创建时间(UTC时间)" width="180">
+        <el-table-column prop="created_at" :label="t('users.createdAt')" width="180">
           <template #default="{ row }">
             {{ formatDate(row.created_at) }}
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="200">
+        <el-table-column :label="t('common.operation')" width="200">
           <template #default="{ row }">
-            <el-button size="small" @click="showEditDialog(row)">编辑</el-button>
-            <el-button size="small" type="danger" @click="handleDelete(row.id)">删除</el-button>
+            <el-button size="small" @click="showEditDialog(row)">{{ t('common.edit') }}</el-button>
+            <el-button size="small" type="danger" @click="handleDelete(row.id)">{{ t('common.delete') }}</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -65,25 +65,25 @@
 
     <el-dialog v-model="dialogVisible" :title="dialogTitle" width="500px" @opened="fetchTeachers">
       <el-form :model="form" :rules="rules" ref="formRef" label-width="100px">
-        <el-form-item label="用户名" prop="username">
+        <el-form-item :label="t('users.username')" prop="username">
           <el-input v-model="form.username" :disabled="!!form.id" />
         </el-form-item>
-        <el-form-item label="密码" prop="password">
-          <el-input v-model="form.password" type="password" show-password placeholder="不修改请留空" />
+        <el-form-item :label="t('users.password')" prop="password">
+          <el-input v-model="form.password" type="password" show-password :placeholder="t('users.passwordPlaceholder')" />
         </el-form-item>
-        <el-form-item label="角色" prop="role">
-          <el-select v-model="form.role" placeholder="请选择角色" @change="handleRoleChange">
-            <el-option label="超级管理员" value="super_admin" />
-            <el-option label="系统管理员" value="system_admin" />
-            <el-option label="课程管理员" value="course_admin" />
-            <el-option label="系统审计员" value="system_audit" />
+        <el-form-item :label="t('users.role')" prop="role">
+          <el-select v-model="form.role" :placeholder="t('users.rolePlaceholder')" @change="handleRoleChange">
+            <el-option :label="t('users.superAdmin')" value="super_admin" />
+            <el-option :label="t('users.systemAdmin')" value="system_admin" />
+            <el-option :label="t('users.courseAdmin')" value="course_admin" />
+            <el-option :label="t('users.systemAudit')" value="system_audit" />
           </el-select>
         </el-form-item>
         <!-- 导师绑定 -->
-        <el-form-item label="关联导师" prop="teacher_id" v-if="form.role === 'course_admin'">
+        <el-form-item :label="t('users.relatedTeacher')" prop="teacher_id" v-if="form.role === 'course_admin'">
           <el-select 
             v-model="form.teacher_id" 
-            placeholder="请选择关联的导师" 
+            :placeholder="t('users.relatedTeacherPlaceholder')" 
             clearable 
             filterable
             style="width: 100%"
@@ -96,30 +96,30 @@
             />
           </el-select>
           <div style="font-size: 12px; color: #909399; margin-top: 5px;">
-            提示：绑定后，该用户登录后能且仅能看到对应导师姓名相关的科目、班级和排课。
+            {{ t('users.relatedTeacherTip') }}
             <br>
-            当前导师数量: {{ teachers.length }}
+            {{ t('users.currentTeacherCount') }} {{ teachers.length }}
           </div>
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleSubmit">确定</el-button>
+        <el-button @click="dialogVisible = false">{{ t('common.cancel') }}</el-button>
+        <el-button type="primary" @click="handleSubmit">{{ t('common.confirm') }}</el-button>
       </template>
     </el-dialog>
 
-    <el-dialog v-model="passwordDialogVisible" title="修改密码" width="500px">
+    <el-dialog v-model="passwordDialogVisible" :title="t('users.changePasswordTitle')" width="500px">
       <el-form :model="passwordForm" :rules="passwordRules" ref="passwordFormRef" label-width="100px">
-        <el-form-item label="旧密码" prop="old_password">
+        <el-form-item :label="t('users.oldPassword')" prop="old_password">
           <el-input v-model="passwordForm.old_password" type="password" show-password />
         </el-form-item>
-        <el-form-item label="新密码" prop="new_password">
+        <el-form-item :label="t('users.newPassword')" prop="new_password">
           <el-input v-model="passwordForm.new_password" type="password" show-password />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="passwordDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handlePasswordChange">确定</el-button>
+        <el-button @click="passwordDialogVisible = false">{{ t('common.cancel') }}</el-button>
+        <el-button type="primary" @click="handlePasswordChange">{{ t('common.confirm') }}</el-button>
       </template>
     </el-dialog>
   </div>
@@ -131,13 +131,16 @@ import { ref, reactive, onMounted } from 'vue'
 import { Plus, Search , ArrowLeft} from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import api from '@/utils/api'
+import { useI18n } from 'vue-i18n'
 
+
+const { t } = useI18n()
 const router = useRouter()
 const users = ref([])
 const teachers = ref([])
 const dialogVisible = ref(false)
 const passwordDialogVisible = ref(false)
-const dialogTitle = ref('新增用户')
+const dialogTitle = ref(t('users.addUser'))
 const formRef = ref(null)
 const passwordFormRef = ref(null)
 
@@ -163,14 +166,14 @@ const passwordForm = ref({
 })
 
 const rules = {
-  username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
+  username: [{ required: true, message: t('users.usernameRequired'), trigger: 'blur' }],
   password: [
     { 
       validator: (rule, value, callback) => {
         if (!form.id && !value) { // 如果是新增且没填密码
-          callback(new Error('请输入密码'));
+          callback(new Error(t('users.passwordRequired')));
         } else if (value && value.length < 6) {
-          callback(new Error('密码长度不能少于6位'));
+          callback(new Error(t('users.passwordMinLength')));
         } else {
           callback();
         }
@@ -181,10 +184,10 @@ const rules = {
 }
 
 const passwordRules = {
-  old_password: [{ required: true, message: '请输入旧密码', trigger: 'blur' }],
+  old_password: [{ required: true, message: t('users.oldPasswordRequired'), trigger: 'blur' }],
   new_password: [
-    { required: true, message: '请输入新密码', trigger: 'blur' },
-    { min: 6, message: '密码长度不能少于6位', trigger: 'blur' }
+    { required: true, message: t('users.newPasswordRequired'), trigger: 'blur' },
+    { min: 6, message: t('users.passwordMinLength'), trigger: 'blur' }
   ]
 }
 
@@ -225,7 +228,7 @@ const handleRoleChange = (val) => {
 }
 
 const showAddDialog = () => {
-  dialogTitle.value = '新增用户'
+  dialogTitle.value = t('users.addUser')
   Object.assign(form, {
     id: null,
     username: '',
@@ -238,7 +241,7 @@ const showAddDialog = () => {
 }
 
 const showEditDialog = (row) => {
-  dialogTitle.value = '编辑用户'
+  dialogTitle.value = t('users.editUser')
   Object.assign(form, {
     id: row.id,
     username: row.username,
@@ -264,30 +267,30 @@ const handleSubmit = async () => {
 
         if (form.id) {
           await api.put(`/auth/${form.id}`, payload)
-          ElMessage.success('更新成功')
+          ElMessage.success(t('common.updateSuccess'))
         } else {
           await api.post('/auth', payload)
-          ElMessage.success('创建成功')
+          ElMessage.success(t('common.createSuccess'))
         }
         dialogVisible.value = false
         fetchUsers()
       } catch (error) {
         window.logger.error('操作失败:', error)
-        ElMessage.error(error.response?.data?.detail || '操作失败')
+        ElMessage.error(error.response?.data?.detail || t('common.operationFailed'))
       }
     }
   })
 }
 
 const handleDelete = (row) => {
-  ElMessageBox.confirm('确定要删除该用户吗？', '提示', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
+  ElMessageBox.confirm(t('users.confirmDeleteUser'), t('common.confirm'), {
+    confirmButtonText: t('common.confirm'),
+    cancelButtonText: t('common.cancel'),
     type: 'warning'
   }).then(async () => {
     try {
       await api.delete(`/auth/${row.id}`)
-      ElMessage.success('删除成功')
+      ElMessage.success(t('common.deleteSuccess'))
       fetchUsers()
     } catch (error) {
       window.logger.error('删除失败:', error)
@@ -302,7 +305,7 @@ const handlePasswordChange = async () => {
     if (valid) {
       try {
         await api.post('/auth/change-password', passwordForm.value)
-        ElMessage.success('密码修改成功')
+        ElMessage.success(t('users.passwordChangeSuccess'))
         passwordDialogVisible.value = false
         passwordForm.value = {
           old_password: '',
@@ -331,10 +334,10 @@ const getRoleType = (role) => {
  
 const getRoleText = (role) => {
   const textMap = {
-    'super_admin': '超级管理员',
-    'system_admin': '系统管理员',
-    'course_admin': '课程管理员',
-    'system_audit': '系统审计员'
+    'super_admin': t('users.superAdmin'),
+    'system_admin': t('users.systemAdmin'),
+    'course_admin': t('users.courseAdmin'),
+    'system_audit': t('users.systemAudit')
   }
   return textMap[role] || role
 }

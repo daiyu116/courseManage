@@ -7,49 +7,49 @@
         <el-col :span="3">
           <el-button type="primary" @click="goToPage('/admin/dashboard')" style="width: 100%;height: 100%;">
             <el-icon><Reading /></el-icon>
-            面板
+            {{ t('nav.dashboard') }}
           </el-button>
         </el-col>
         <el-col :span="3">
           <el-button type="primary" @click="goToPage('/admin/courses')" style="width: 100%;height: 100%;">
             <el-icon><Reading /></el-icon>
-            科目管理
+            {{ t('nav.courses') }}
           </el-button>
         </el-col>
         <el-col :span="3">
           <el-button type="success" @click="goToPage('/admin/teachers')" style="width: 100%;height: 100%;">
             <el-icon><User /></el-icon>
-            导师管理
+            {{ t('nav.teachers') }}
           </el-button>
         </el-col>
         <el-col :span="3">
           <el-button type="info" @click="goToPage('/admin/students')" style="width: 100%;height: 100%;">
             <el-icon><UserFilled /></el-icon>
-            学员管理
+            {{ t('nav.students') }}
           </el-button>
         </el-col>
         <el-col :span="3">
           <el-button type="info" @click="goToPage('/admin/rooms')" style="width: 100%;height: 100%;">
             <el-icon><OfficeBuilding /></el-icon>
-            教室管理
+            {{ t('nav.rooms') }}
           </el-button>
         </el-col>
         <el-col :span="3">
           <el-button type="danger" @click="goToPage('/admin/leaves')" style="width: 100%;height: 100%;">
             <el-icon><Calendar /></el-icon>
-            假日管理
+            {{ t('nav.leaves') }}
           </el-button>
         </el-col>
         <el-col :span="3">
           <el-button type="primary" @click="goToPage('/admin/schedules')" style="width: 100%;height: 100%;">
             <el-icon><Clock /></el-icon>
-            排课管理
+            {{ t('nav.schedules') }}
           </el-button>
         </el-col>
         <el-col :span="3">
           <el-button type="primary" @click="goToPage('/admin/conditions')" style="width: 100%;height: 100%;">
             <el-icon><Setting /></el-icon>
-            条件管理
+            {{ t('nav.conditions') }}
           </el-button>
         </el-col>
       </el-row>
@@ -58,19 +58,19 @@
     <el-card>
       <template #header>
         <div class="card-header">
-          <span>班级管理</span>
+          <span>{{ t('classes.title') }}</span>
           <div class="button-group">
             <el-button type="info" @click="goBack">
               <el-icon><ArrowLeft /></el-icon>
-              返回上一页
+              {{ t('common.back') }}
             </el-button>
             <el-button type="primary" @click="showAddDialog">
               <el-icon><Plus /></el-icon>
-              新增班级
+              {{ t('classes.addClass') }}
             </el-button>
             <el-button type="success" @click="showBatchAddDialog">
               <el-icon><Upload /></el-icon>
-              批量添加
+              {{ t('common.batchAdd') }}
             </el-button>
           </div>
         </div>
@@ -78,7 +78,7 @@
       <div class="search-bar">
         <el-input
           v-model="searchKeyword"
-          placeholder="搜索班级名称、代码或描述"
+          :placeholder="t('classes.searchPlaceholder')"
           style="width: 300px"
           clearable
           @clear="resetFilters"
@@ -90,11 +90,11 @@
             </el-button>
           </template>
         </el-input>
-        <el-select v-model="isActiveFilter" placeholder="是否启用" clearable style="width: 150px" @change="handleFilterChange">
-          <el-option label="启用" :value="true" />
-          <el-option label="禁用" :value="false" />
+        <el-select v-model="isActiveFilter" :placeholder="t('classes.isActive')" clearable style="width: 150px" @change="handleFilterChange">
+          <el-option :label="t('classes.enabled')" :value="true" />
+          <el-option :label="t('classes.disabled')" :value="false" />
         </el-select>
-        <el-button @click="resetFilters" style="width: 50px">重置</el-button>
+        <el-button @click="resetFilters" style="width: 50px">{{ t('common.reset') }}</el-button>
       </div>
       <el-table 
         :data="classes" 
@@ -105,8 +105,8 @@
         @sort-change="handleSortChange"
       >
         <el-table-column prop="id" label="ID" width="70" sortable />
-        <el-table-column prop="code" label="班级代码" width="120" sortable />
-        <el-table-column prop="name" label="班级名称" min-width="150">
+        <el-table-column prop="code" :label="t('classes.classCode')" width="120" sortable />
+        <el-table-column prop="name" :label="t('classes.className')" min-width="150">
           <template #default="{ row }">
             <el-popover placement="right" :width="300" trigger="hover">
               <template #reference>
@@ -114,42 +114,42 @@
               </template>
               <div>
                 <div v-if="getActiveClassStudents(row.id).length > 0">
-                  <div style="font-weight: bold; margin-bottom: 8px; color: #67c23a;">在读学员:</div>
+                  <div style="font-weight: bold; margin-bottom: 8px; color: #67c23a;">{{ t('classes.activeStudents') }}</div>
                   <div v-for="student in getActiveClassStudents(row.id)" :key="student.id" style="margin-bottom: 4px;">
                     {{ student.name }}
                   </div>
                 </div>
                 <div v-if="getInactiveClassStudents(row.id).length > 0">
-                  <div style="font-weight: bold; margin-bottom: 8px; margin-top: 12px; color: #909399;">非在读学员:</div>
+                  <div style="font-weight: bold; margin-bottom: 8px; margin-top: 12px; color: #909399;">{{ t('classes.inactiveStudents') }}</div>
                   <div v-for="student in getInactiveClassStudents(row.id)" :key="student.id" style="margin-bottom: 4px;">
                     {{ student.name }}
                   </div>
                 </div>
                 <div v-if="getActiveClassStudents(row.id).length === 0 && getInactiveClassStudents(row.id).length === 0">
-                  暂无学员
+                  {{ t('classes.noStudents') }}
                 </div>
                 <!-- 添加班级对应的导师信息 -->
                 <div v-if="getClassTeachers(row.id).length > 0" style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #eee;">
-                  <div style="font-weight: bold; margin-bottom: 8px; color: #409EFF;">班级导师:</div>
+                  <div style="font-weight: bold; margin-bottom: 8px; color: #409EFF;">{{ t('classes.classTeachers') }}</div>
                   <div v-for="teacher in getClassTeachers(row.id)" :key="teacher.id" style="margin-bottom: 4px;">
                     {{ teacher.name }}
                     <span v-if="teacher.contact_phone" style="color: #999; font-size: 12px;">（{{ teacher.contact_phone }}）</span>
                   </div>
                 </div>
                 <div v-else style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #eee;">
-                  <div style="color: #999;">暂无导师</div>
+                  <div style="color: #999;">{{ t('classes.noTeacher') }}</div>
                 </div>
               </div>
             </el-popover>
           </template>
         </el-table-column>
-        <el-table-column prop="description" label="班级描述" min-width="150" sortable />
-        <el-table-column label="Webhook地址" min-width="300">
+        <el-table-column prop="description" :label="t('classes.classDescription')" min-width="150" sortable />
+        <el-table-column :label="t('classes.webhookUrl')" min-width="300">
           <template #default="{ row }">
             <div style="display: flex; gap: 5px; align-items: center;">
               <el-input
                 v-model="row.wechat_webhook"
-                placeholder="请输入企业微信群Webhook地址"
+                :placeholder="t('classes.webhookPlaceholder')"
                 size="small"
                 style="flex: 1"
                 @change="handleWebhookChange(row)"
@@ -160,33 +160,33 @@
                 :loading="testingWebhook === row.id"
                 @click="testWebhook(row)"
               >
-                测试
+                {{ t('classes.testWebhook') }}
               </el-button>
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="非在读学员数量" width="150" sortable >
+        <el-table-column :label="t('classes.inactiveStudentCount')" width="150" sortable >
           <template #default="{ row }">
             {{ getStudentCount(row.id) }}
           </template>
         </el-table-column>
-        <el-table-column label="在读学员数量" width="150" sortable >
+        <el-table-column :label="t('classes.activeStudentCount')" width="150" sortable >
           <template #default="{ row }">
             {{ getActiveStudentCount(row.id) }}
           </template>
         </el-table-column>
-        <el-table-column label="是否启用" width="100">
+        <el-table-column :label="t('classes.isActive')" width="100">
           <template #default="{ row }">
             <el-tag :type="row.is_active ? 'success' : 'info'">
-              {{ row.is_active ? '启用' : '禁用' }}
+              {{ row.is_active ? t('classes.enabled') : t('classes.disabled') }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="90" fixed="right">
+        <el-table-column :label="t('common.operation')" width="90" fixed="right">
             <template #default="{ row }">
-                <el-button size="small" @click="showStudentsDialog(row)">查看学员</el-button>
-                <el-button size="small" @click="showEditDialog(row)">编辑</el-button>
-                <el-button v-if="currentUser && (currentUser.role === 'super_admin' || currentUser.role === 'course_admin')" size="small" type="danger" @click="handleDelete(row)">删除</el-button>
+                <el-button size="small" @click="showStudentsDialog(row)">{{ t('classes.viewStudents') }}</el-button>
+                <el-button size="small" @click="showEditDialog(row)">{{ t('common.edit') }}</el-button>
+                <el-button v-if="currentUser && (currentUser.role === 'super_admin' || currentUser.role === 'course_admin')" size="small" type="danger" @click="handleDelete(row)">{{ t('common.delete') }}</el-button>
             </template>
         </el-table-column>
       </el-table>
@@ -204,22 +204,22 @@
 
     <el-dialog v-model="dialogVisible" :title="dialogTitle" width="800px" draggable>
         <el-form :model="form" :rules="rules" ref="formRef" label-width="120px">
-            <el-form-item label="班级代码" prop="code">
-              <el-input v-model="form.code" :placeholder="lastClassCode ? `请输入班级代码(不能与现有重复否则无法创建，当前已到：${lastClassCode})` : '请输入班级代码(不能与现有重复)'" :disabled="!!form.id" />
+            <el-form-item :label="t('classes.classCode')" prop="code">
+              <el-input v-model="form.code" :placeholder="lastClassCode ? t('classes.classCodePlaceholderWithLast', { code: lastClassCode }) : t('classes.classCodePlaceholder')" :disabled="!!form.id" />
             </el-form-item>
-            <el-form-item label="班级名称" prop="name">
-              <el-input v-model="form.name" placeholder="请输入班级名称" />
+            <el-form-item :label="t('classes.className')" prop="name">
+              <el-input v-model="form.name" :placeholder="t('classes.classNamePlaceholder')" />
             </el-form-item>
-            <el-form-item label="班级描述" prop="description">
-              <el-input v-model="form.description" type="textarea" :rows="3" placeholder="请输入班级描述" />
+            <el-form-item :label="t('classes.classDescription')" prop="description">
+              <el-input v-model="form.description" type="textarea" :rows="3" :placeholder="t('classes.classDescriptionPlaceholder')" />
             </el-form-item>
-            <el-form-item label="选择学员" prop="student_ids">
+            <el-form-item :label="t('classes.selectStudents')" prop="student_ids">
               <el-select
                   v-model="selectedStudentIds"
                   multiple
                   filterable
                   value-key="id"
-                  placeholder="请选择要加入该班级的学员"
+                  :placeholder="t('classes.selectStudentsPlaceholder')"
                   style="width: 100%"
               >
                   <el-option
@@ -231,13 +231,13 @@
                     <el-tooltip placement="right" :show-after="200">
                       <template #content>
                         <div style="min-width: 200px;">
-                          <div><strong>学员：</strong>{{ student.name }}</div>
-                          <div v-if="student.code"><strong>代码：</strong>{{ student.code }}</div>
-                          <div v-if="student.school"><strong>学校：</strong>{{ student.school }}</div>
-                          <div v-if="student.grade"><strong>年级：</strong>{{ student.grade }}</div>
-                          <div v-if="student.contact_person"><strong>联系人：</strong>{{ student.contact_person }}</div>
-                          <div v-if="student.contact_phone"><strong>联系电话：</strong>{{ student.contact_phone }}</div>
-                          <div><strong>是否在读：</strong>{{ student.is_active ? '是' : '否' }}</div>
+                          <div><strong>{{ t('classes.studentLabel') }}</strong>{{ student.name }}</div>
+                          <div v-if="student.code"><strong>{{ t('classes.codeLabel') }}</strong>{{ student.code }}</div>
+                          <div v-if="student.school"><strong>{{ t('classes.schoolLabel') }}</strong>{{ student.school }}</div>
+                          <div v-if="student.grade"><strong>{{ t('classes.gradeLabel') }}</strong>{{ student.grade }}</div>
+                          <div v-if="student.contact_person"><strong>{{ t('classes.contactPersonLabel') }}</strong>{{ student.contact_person }}</div>
+                          <div v-if="student.contact_phone"><strong>{{ t('classes.contactPhoneLabel') }}</strong>{{ student.contact_phone }}</div>
+                          <div><strong>{{ t('classes.isActiveLabel') }}</strong>{{ student.is_active ? t('common.yes') : t('common.no') }}</div>
                         </div>
                       </template>
                       <span>{{ student.code }} - {{ student.name }}</span>
@@ -245,57 +245,56 @@
                   </el-option>
               </el-select>
               <div style="margin-top: 5px; font-size: 12px; color: #909399;">
-                  <el-icon><InfoFilled /></el-icon> 提示：编辑班级时可以添加或移除学员
+                  <el-icon><InfoFilled /></el-icon> {{ t('classes.editStudentTip') }}
               </div>
             </el-form-item>
-            <el-form-item label="是否启用" prop="is_active">
+            <el-form-item :label="t('classes.isActive')" prop="is_active">
               <el-switch v-model="form.is_active" />
             </el-form-item>
         </el-form>
         <template #footer>
-            <el-button @click="dialogVisible = false">取消</el-button>
-            <el-button type="primary" @click="handleSubmit">确定</el-button>
+            <el-button @click="dialogVisible = false">{{ t('common.cancel') }}</el-button>
+            <el-button type="primary" @click="handleSubmit">{{ t('common.confirm') }}</el-button>
         </template>
     </el-dialog>
     <!-- 学员列表对话框 -->
-    <el-dialog v-model="studentsDialogVisible" title="班级学员列表" width="800px" draggable>
+    <el-dialog v-model="studentsDialogVisible" :title="t('classes.studentListTitle')" width="800px" draggable>
         <div style="margin-bottom: 15px;">
             <el-button type="primary" size="small" @click="showAddStudentDialog">
             <el-icon><Plus /></el-icon>
-            添加学员
+            {{ t('classes.addStudent') }}
             </el-button>
             <el-button type="danger" size="small" @click="handleRemoveStudents">
             <el-icon><Delete /></el-icon>
-            移除选中学员
+            {{ t('classes.removeSelectedStudents') }}
             </el-button>
         </div>
         <el-table :data="classStudents" stripe @selection-change="handleSelectionChange" style="width: 100%">
             <el-table-column type="selection" width="55" />
             <el-table-column prop="id" label="ID" width="80" />
-            <el-table-column prop="code" label="学员代码" width="120" />
-            <el-table-column prop="name" label="学员姓名" width="120" />
-            <el-table-column prop="school" label="就读学校" min-width="150" />
-            <el-table-column prop="grade" label="就读年级" width="100" />
-            <el-table-column label="状态" width="80">
+            <el-table-column prop="code" :label="t('classes.studentCode')" width="120" />
+            <el-table-column prop="name" :label="t('classes.studentName')" width="120" />
+            <el-table-column prop="school" :label="t('classes.studentSchool')" min-width="150" />
+            <el-table-column prop="grade" :label="t('classes.studentGrade')" width="100" />
+            <el-table-column :label="t('classes.status')" width="80">
             <template #default="{ row }">
                 <el-tag :type="row.is_active ? 'success' : 'info'">
-                {{ row.is_active ? '在读' : '非在读' }}
+                {{ row.is_active ? t('classes.activeStudent') : t('classes.inactiveStudent') }}
                 </el-tag>
             </template>
             </el-table-column>
         </el-table>
         <template #footer>
-            <el-button @click="studentsDialogVisible = false">关闭</el-button>
+            <el-button @click="studentsDialogVisible = false">{{ t('common.close') }}</el-button>
         </template>
     </el-dialog>
-    <!-- 添加学员对话框 -->
-    <el-dialog v-model="addStudentDialogVisible" title="添加学员到班级" width="600px" draggable>
+    <el-dialog v-model="addStudentDialogVisible" :title="t('classes.addStudentToClass')" width="600px" draggable>
         <el-select
             v-model="selectedStudents"
             multiple
             filterable
             value-key="id"
-            placeholder="请选择要添加的学员"
+            :placeholder="t('classes.selectStudentsPlaceholder')"
             style="width: 100%"
         >
             <el-option
@@ -307,13 +306,13 @@
                 <el-tooltip placement="right" :show-after="200">
                     <template #content>
                         <div style="min-width: 200px;">
-                            <div><strong>学员：</strong>{{ student.name }}</div>
-                            <div v-if="student.code"><strong>代码：</strong>{{ student.code }}</div>
-                            <div v-if="student.school"><strong>学校：</strong>{{ student.school }}</div>
-                            <div v-if="student.grade"><strong>年级：</strong>{{ student.grade }}</div>
-                            <div v-if="student.contact_person"><strong>联系人：</strong>{{ student.contact_person }}</div>
-                            <div v-if="student.contact_phone"><strong>联系电话：</strong>{{ student.contact_phone }}</div>
-                            <div><strong>是否在读：</strong>{{ student.is_active ? '是' : '否' }}</div>
+                            <div><strong>{{ t('classes.studentLabel') }}</strong>{{ student.name }}</div>
+                            <div v-if="student.code"><strong>{{ t('classes.codeLabel') }}</strong>{{ student.code }}</div>
+                            <div v-if="student.school"><strong>{{ t('classes.schoolLabel') }}</strong>{{ student.school }}</div>
+                            <div v-if="student.grade"><strong>{{ t('classes.gradeLabel') }}</strong>{{ student.grade }}</div>
+                            <div v-if="student.contact_person"><strong>{{ t('classes.contactPersonLabel') }}</strong>{{ student.contact_person }}</div>
+                            <div v-if="student.contact_phone"><strong>{{ t('classes.contactPhoneLabel') }}</strong>{{ student.contact_phone }}</div>
+                            <div><strong>{{ t('classes.isActiveLabel') }}</strong>{{ student.is_active ? t('common.yes') : t('common.no') }}</div>
                         </div>
                     </template>
                     <span>{{ student.code }} - {{ student.name }}</span>
@@ -321,51 +320,51 @@
             </el-option>
         </el-select>
         <template #footer>
-            <el-button @click="addStudentDialogVisible = false">取消</el-button>
-            <el-button type="primary" @click="handleAddStudents">确定</el-button>
+            <el-button @click="addStudentDialogVisible = false">{{ t('common.cancel') }}</el-button>
+            <el-button type="primary" @click="handleAddStudents">{{ t('common.confirm') }}</el-button>
         </template>
     </el-dialog>
     <!-- 批量添加班级对话框 -->
-    <el-dialog v-model="batchAddDialogVisible" title="批量添加班级" width="800px" draggable>
+    <el-dialog v-model="batchAddDialogVisible" :title="t('classes.batchAddTitle')" width="800px" draggable>
       <div style="margin-bottom: 20px;">
         <el-alert
-          title="批量添加说明"
+          :title="t('classes.batchAddInfo')"
           type="info"
           :closable="false"
           show-icon
         >
           <template #default>
-            <div>请按照以下格式输入班级信息，每行一个班级：</div>
+            <div>{{ t('classes.batchAddFormat') }}</div>
             <div style="margin-top: 10px; font-family: monospace; background: #f5f7fa; padding: 10px; border-radius: 4px;">
-              代码(*必填),名称(*必填),描述,Webhook地址
+              {{ t('classes.batchAddFormatLine') }}
             </div>
-            <div style="margin-top: 10px;">例如：</div>
+            <div style="margin-top: 10px;">{{ t('courses.batchAddExample') }}</div>
             <div style="margin-top: 5px; font-family: monospace; background: #f5f7fa; padding: 10px; border-radius: 4px;">
-              CLASS001,高一数学班,针对高一学生的数学辅导,https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=xxx<br/>
-              CLASS002,高二英语班,针对高二学生的英语辅导,
+              CLASS001,{{ t('classes.batchAddExampleMath') }},{{ t('classes.batchAddExampleMathDesc') }},https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=xxx<br/>
+              CLASS002,{{ t('classes.batchAddExampleEnglish') }},{{ t('classes.batchAddExampleEnglishDesc') }},
             </div>
-            <div style="margin-top: 10px;">注意：</div>
+            <div style="margin-top: 10px;">{{ t('teachers.batchAddNote') }}</div>
             <ul style="margin-top: 5px;">
-              <li>代码不能与现有班级重复否则无法创建，上一个班级代码：<span v-if="lastClassCode">{{ lastClassCode }}</span><span v-else>无</span>，请在这个代码+1的基础上开始</li>
+              <li>{{ t('classes.batchAddNoteCode') }}<span v-if="lastClassCode">{{ lastClassCode }}</span><span v-else>{{ t('teachers.batchAddNoteNone') }}</span>{{ t('teachers.batchAddNoteCodeContinue') }}</li>
             </ul>
           </template>
         </el-alert>
       </div>
       
       <el-form label-width="120px">
-        <el-form-item label="班级信息">
+        <el-form-item :label="t('classes.batchAddClassInfo')">
           <el-input
             v-model="batchAddText"
             type="textarea"
             :rows="15"
-            placeholder="请输入班级信息，每行一个班级"
+            :placeholder="t('classes.batchAddPlaceholder')"
           />
         </el-form-item>
       </el-form>
       
       <template #footer>
-        <el-button @click="batchAddDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleBatchAddSubmit" :loading="batchAddLoading">批量添加</el-button>
+        <el-button @click="batchAddDialogVisible = false">{{ t('common.cancel') }}</el-button>
+        <el-button type="primary" @click="handleBatchAddSubmit" :loading="batchAddLoading">{{ t('common.batchAdd') }}</el-button>
       </template>
     </el-dialog>
   </div>
@@ -377,7 +376,10 @@ import { useRouter, useRoute } from 'vue-router'
 import { ArrowLeft, Plus, Delete, InfoFilled, Reading, User, UserFilled, OfficeBuilding, Calendar, Setting, Search, Upload } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import api from '@/utils/api'
+import { useI18n } from 'vue-i18n'
 
+
+const { t } = useI18n()
 const currentUser = ref(null)
 const router = useRouter()
 const route = useRoute()
@@ -446,7 +448,7 @@ const showStudentsDialog = async (class_) => {
     studentsDialogVisible.value = true
   } catch (error) {
     window.logger.error('获取班级学员失败:', error)
-    ElMessage.error('获取班级学员失败')
+    ElMessage.error(t('classes.fetchClassStudentsFailed'))
   }
 }
 
@@ -459,23 +461,23 @@ const showAddStudentDialog = async () => {
     addStudentDialogVisible.value = true
   } catch (error) {
     window.logger.error('获取可用学员失败:', error)
-    ElMessage.error('获取可用学员失败')
+    ElMessage.error(t('classes.fetchAvailableStudentsFailed'))
   }
 }
 
 const handleAddStudents = async () => {
   if (selectedStudents.value.length === 0) {
-    ElMessage.warning('请选择要添加的学员')
+    ElMessage.warning(t('classes.selectStudentWarning'))
     return
   }
 
   try {
     await ElMessageBox.confirm(
-      `确定要将选中的 ${selectedStudents.value.length} 名学员添加到班级 "${currentClass.value.name}" 吗？`,
-      '提示',
+      t('classes.confirmAddStudents', { count: selectedStudents.value.length, name: currentClass.value.name }),
+      t('common.tip'),
       {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
+        confirmButtonText: t('common.confirm'),
+        cancelButtonText: t('common.cancel'),
         type: 'warning'
       }
     )
@@ -489,13 +491,13 @@ const handleAddStudents = async () => {
       await api.put(`/students/${student.id}`, { class_ids: newClassIds })
     }
 
-    ElMessage.success('添加成功')
+    ElMessage.success(t('classes.addSuccess'))
     addStudentDialogVisible.value = false
     showStudentsDialog(currentClass.value) // 刷新学员列表
   } catch (error) {
     if (error !== 'cancel') {
       window.logger.error('添加学员失败:', error)
-      ElMessage.error('添加学员失败')
+      ElMessage.error(t('classes.addStudentFailed'))
     }
   }
 }
@@ -506,17 +508,17 @@ const handleSelectionChange = (selection) => {
 
 const handleRemoveStudents = async () => {
   if (selectedStudents.value.length === 0) {
-    ElMessage.warning('请选择要移除的学员')
+    ElMessage.warning(t('classes.selectRemoveStudentWarning'))
     return
   }
 
   try {
     await ElMessageBox.confirm(
-      `确定要将选中的 ${selectedStudents.value.length} 名学员从班级 "${currentClass.value.name}" 中移除吗？`,
-      '提示',
+      t('classes.confirmRemoveStudents', { count: selectedStudents.value.length, name: currentClass.value.name }),
+      t('common.tip'),
       {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
+        confirmButtonText: t('common.confirm'),
+        cancelButtonText: t('common.cancel'),
         type: 'warning'
       }
     )
@@ -530,7 +532,7 @@ const handleRemoveStudents = async () => {
       await api.put(`/students/${student.id}`, { class_ids: newClassIds })
     }
 
-    ElMessage.success('移除成功')
+    ElMessage.success(t('classes.removeSuccess'))
     showStudentsDialog(currentClass.value) // 刷新学员列表
   } catch (error) {
     if (error !== 'cancel') {
@@ -538,9 +540,9 @@ const handleRemoveStudents = async () => {
       if (error.response) {
         window.logger.error('错误状态:', error.response.status)
         window.logger.error('错误详情:', error.response.data)
-        ElMessage.error(`移除学员失败: ${error.response.status} - ${JSON.stringify(error.response.data)}`)
+        ElMessage.error(t('classes.removeStudentFailed') + `: ${error.response.status} - ${JSON.stringify(error.response.data)}`)
       } else {
-        ElMessage.error('移除学员失败，请检查网络连接')
+        ElMessage.error(t('classes.removeStudentFailedNetwork'))
       }
     }
   }
@@ -563,8 +565,8 @@ const originalForm = ref({
 const originalStudentIds = ref([])
 
 const rules = {
-  code: [{ required: true, message: '请输入班级代码', trigger: 'blur' }],
-  name: [{ required: true, message: '请输入班级名称', trigger: 'blur' }]
+  code: [{ required: true, message: t('classes.classCodeRequired'), trigger: 'blur' }],
+  name: [{ required: true, message: t('classes.classNameRequired'), trigger: 'blur' }]
 }
 
 const fetchClasses = async () => {
@@ -602,7 +604,7 @@ const fetchClasses = async () => {
   } catch (error) {
     window.logger.error('获取班级列表失败:', error)
     window.logger.error('DEBUG: fetchClasses - 错误详情:', error.response?.data || error.message)
-    ElMessage.error('获取班级列表失败')
+    ElMessage.error(t('classes.fetchClassesFailed'))
   } finally {
     loading.value = false
   }
@@ -710,7 +712,7 @@ const fetchAvailableStudents = async () => {
 }
 
 const showAddDialog = () => {
-  dialogTitle.value = '新增班级'
+  dialogTitle.value = t('classes.addClass')
   
   // 检查是否有预填充数据
   const storageData = sessionStorage.getItem('smartCommandData')
@@ -742,7 +744,7 @@ const showBatchAddDialog = () => {
 }
 const handleBatchAddSubmit = async () => {
   if (!batchAddText.value.trim()) {
-    ElMessage.warning('请输入班级信息')
+    ElMessage.warning(t('classes.batchAddWarning'))
     return
   }
   
@@ -756,7 +758,7 @@ const handleBatchAddSubmit = async () => {
     
     const parts = line.split(',').map(p => p.trim())
     if (parts.length < 2) {
-      errors.push(`第${i + 1}行：格式错误，至少需要代码和名称`)
+      errors.push(t('classes.batchAddLineError', { line: i + 1 }))
       continue
     }
     
@@ -772,14 +774,14 @@ const handleBatchAddSubmit = async () => {
   }
   
   if (errors.length > 0) {
-    ElMessage.error(`发现${errors.length}个错误：\n${errors.join('\n')}`)
+    ElMessage.error(t('classes.batchAddErrorCount', { count: errors.length }) + '\n' + errors.join('\n'))
     if (classesToAdd.length === 0) {
       return
     }
   }
   
   if (classesToAdd.length === 0) {
-    ElMessage.warning('没有有效的班级信息')
+    ElMessage.warning(t('classes.batchAddNoValid'))
     return
   }
   
@@ -800,23 +802,23 @@ const handleBatchAddSubmit = async () => {
     }
     
     if (failCount > 0) {
-      ElMessage.warning(`批量添加完成：成功${successCount}个，失败${failCount}个\n失败详情：\n${failMessages.join('\n')}`)
+      ElMessage.warning(t('classes.batchAddPartial', { success: successCount, fail: failCount }) + '\n' + failMessages.join('\n'))
     } else {
-      ElMessage.success(`批量添加成功，共添加${successCount}个班级`)
+      ElMessage.success(t('classes.batchAddSuccess', { n: successCount }))
     }
     
     batchAddDialogVisible.value = false
     await fetchClasses()
   } catch (error) {
     window.logger.error('批量添加班级失败:', error)
-    ElMessage.error('批量添加班级失败')
+    ElMessage.error(t('classes.batchAddFailed'))
   } finally {
     batchAddLoading.value = false
   }
 }
 
 const showEditDialog = async (row) => {
-  dialogTitle.value = '编辑班级'
+  dialogTitle.value = t('classes.editClass')
   form.value = {
     id: row.id,
     code: row.code,
@@ -890,7 +892,7 @@ const handleSubmit = async () => {
             JSON.stringify(selectedStudentIds.value.sort()) !== JSON.stringify(originalStudentIds.value.sort())
           
           if (!isFormChanged && !isStudentsChanged) {
-            ElMessage.warning('内容未发生改变，无需保存')
+            ElMessage.warning(t('common.noChange'))
             return
           }
           
@@ -937,7 +939,7 @@ const handleSubmit = async () => {
             }
           }
           
-          ElMessage.success('更新成功')
+          ElMessage.success(t('common.updateSuccess'))
         } else {
           // 新建班级
           const response = await api.post('/classes', form.value)
@@ -961,7 +963,7 @@ const handleSubmit = async () => {
             }
           }
           
-          ElMessage.success('创建成功')
+          ElMessage.success(t('common.createSuccess'))
         }
         dialogVisible.value = false
         fetchClasses()
@@ -970,9 +972,9 @@ const handleSubmit = async () => {
         if (error.response) {
           window.logger.error('错误状态:', error.response.status)
           window.logger.error('错误详情:', error.response.data)
-          ElMessage.error(`操作失败: ${error.response.status} - ${JSON.stringify(error.response.data)}`)
+          ElMessage.error(t('common.operationFailed') + `: ${error.response.status} - ${JSON.stringify(error.response.data)}`)
         } else {
-          ElMessage.error('操作失败，请检查网络连接')
+          ElMessage.error(t('common.operationFailedNetwork'))
         }
       }
     }
@@ -980,14 +982,14 @@ const handleSubmit = async () => {
 }
 
 const handleDelete = (row) => {
-  ElMessageBox.confirm('确定要删除该班级吗？', '提示', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
+  ElMessageBox.confirm(t('classes.confirmDeleteClass'), t('common.tip'), {
+    confirmButtonText: t('common.confirm'),
+    cancelButtonText: t('common.cancel'),
     type: 'warning'
   }).then(async () => {
     try {
       await api.delete(`/classes/${row.id}`)
-      ElMessage.success('删除成功')
+      ElMessage.success(t('common.deleteSuccess'))
       fetchClasses()
     } catch (error) {
       window.logger.error('删除失败:', error)
@@ -1002,27 +1004,27 @@ const goToPage = (path) => {
 const handleWebhookChange = async (row) => {
   try {
     await api.put(`/classes/${row.id}`, { wechat_webhook: row.wechat_webhook })
-    ElMessage.success('Webhook地址更新成功')
+    ElMessage.success(t('classes.webhookUpdateSuccess'))
   } catch (error) {
     window.logger.error('更新Webhook地址失败:', error)
-    ElMessage.error('更新Webhook地址失败')
+    ElMessage.error(t('classes.webhookUpdateFailed'))
     fetchClasses()
   }
 }
 
 const testWebhook = async (row) => {
   if (!row.wechat_webhook) {
-    ElMessage.warning('请先填写Webhook地址')
+    ElMessage.warning(t('classes.webhookRequired'))
     return
   }
   
   testingWebhook.value = row.id
   try {
     await api.post('/settings/test-wechat-url', { webhook_url: row.wechat_webhook })
-    ElMessage.success('测试消息发送成功！')
+    ElMessage.success(t('classes.webhookTestSuccess'))
   } catch (error) {
     window.logger.error('测试发送失败:', error)
-    ElMessage.error(error.response?.data?.detail || '测试发送失败')
+    ElMessage.error(error.response?.data?.detail || t('classes.webhookTestFailed'))
   } finally {
     testingWebhook.value = null
   }
@@ -1083,7 +1085,7 @@ onMounted(() => {
         try {
           const smartData = JSON.parse(sessionStorage.getItem('smartCommandData'))
           if (smartData.target_path && smartData.target_label) {
-            ElMessage.info(`已找到班级"${searchQuery}"，正在跳转到${smartData.target_label}...`)
+            ElMessage.info(t('classes.foundClassJump', { name: searchQuery, label: smartData.target_label }))
             setTimeout(() => {
               window.location.href = `${smartData.target_path}?filter_by=class&filter_value=${encodeURIComponent(searchQuery)}`
             }, 1500)
@@ -1100,7 +1102,7 @@ onMounted(() => {
           if (firstClass) {
             showEditDialog(firstClass)
           } else {
-            ElMessage.warning(`未找到班级"${searchQuery}"`)
+            ElMessage.warning(t('classes.noMatchingClass'))
           }
         }, 1000)
       }

@@ -5,13 +5,13 @@
     <el-card>
       <template #header>
         <div class="card-header">
-          <span>课费管理</span>
+          <span>{{ t('fee.title') }}</span>
           <div class="header-actions">
             <el-button type="info" @click="goBack">
               <el-icon><ArrowLeft /></el-icon>
-              返回上一页
+              {{ t('fee.goBack') }}
             </el-button>
-            <el-button type="primary" @click="showAddDialog">新增学员课费项</el-button>
+            <el-button type="primary" @click="showAddDialog">{{ t('fee.addStudentFeeItem') }}</el-button>
           </div>
         </div>
       </template>
@@ -20,7 +20,7 @@
       <div class="search-bar">
        <el-input
           v-model="searchKeyword"
-          placeholder="搜索学员或科目"
+          :placeholder="t('fee.searchPlaceholder')"
           style="width: 200px"
           clearable
           @clear="resetFilters"
@@ -32,15 +32,15 @@
         
         <el-button type="warning" @click="showAlerts">
           <el-icon><Bell /></el-icon>
-          收费提醒
+          {{ t('fee.feeReminder') }}
         </el-button>
         <el-button type="success" @click="exportPaymentRecords">
           <el-icon><Download /></el-icon>
-          导出所有课费项列表
+          {{ t('fee.exportAllFeeItems') }}
         </el-button>
         <el-button type="danger" @click="exportFeeLogs">
           <el-icon><Download /></el-icon>
-          导出所有课时费记录
+          {{ t('fee.exportAllFeeLogs') }}
         </el-button>
         
       </div>
@@ -51,49 +51,49 @@
       </div>
         <el-table :data="studentFees" stripe v-loading="loading" style="margin-top: 0" @sort-change="handleSortChange" ref="mainTableRef">
           <el-table-column prop="id" label="ID" width="80" sortable />
-          <el-table-column prop="student_name" label="学员" width="120" sortable>
+          <el-table-column prop="student_name" :label="t('fee.student')" width="120" sortable>
             <template #default="{ row }">
               <el-tooltip placement="top" effect="light">
                 <template #content>
                   <div v-if="row.student_school">
-                    <div><strong>学校：</strong>{{ row.student_school }}</div>
+                    <div><strong>{{ t('fee.school') }}：</strong>{{ row.student_school }}</div>
                   </div>
                   <div v-if="row.student_grade">
-                    <div><strong>年级：</strong>{{ row.student_grade }}</div>
+                    <div><strong>{{ t('fee.grade') }}：</strong>{{ row.student_grade }}</div>
                   </div>
                   <div v-if="row.student_contact_person">
-                    <div><strong>联系人：</strong>{{ row.student_contact_person }}</div>
+                    <div><strong>{{ t('fee.contact') }}：</strong>{{ row.student_contact_person }}</div>
                   </div>
                   <div v-if="row.student_contact_phone">
-                    <div><strong>联系方式：</strong>{{ row.student_contact_phone }}</div>
+                    <div><strong>{{ t('fee.contactInfo') }}：</strong>{{ row.student_contact_phone }}</div>
                   </div>
                   <div v-if="row.student_classes && row.student_classes.length > 0">
-                    <div><strong>本机构所属班级：</strong></div>
+                    <div><strong>{{ t('fee.classLabel') }}：</strong></div>
                     <div v-for="class_ in row.student_classes" :key="class_.id" style="margin-left: 10px;">
                       {{ class_.name }}
                     </div>
                   </div>
                   <div>
-                    <div><strong>本机构是否在读：</strong>{{ row.student_is_active ? '在读' : '非在读' }}</div>
+                    <div><strong>{{ t('fee.isActiveLabel') }}：</strong>{{ row.student_is_active ? t('fee.reading') : t('fee.notReading') }}</div>
                   </div>
                 </template>
                 <span style="cursor: help; color: #409EFF;">{{ row.student_name }}</span>
               </el-tooltip>
             </template>
           </el-table-column>
-          <el-table-column prop="course_name" label="科目" width="120" sortable>
+          <el-table-column prop="course_name" :label="t('fee.course')" width="120" sortable>
             <template #default="{ row }">
               <el-tooltip placement="top" effect="light">
                 <template #content>
                   <div v-if="row.course_teachers && row.course_teachers.length > 0">
-                    <div><strong>教授导师：</strong></div>
+                    <div><strong>{{ t('fee.teacherLabel') }}：</strong></div>
                     <div v-for="teacher in row.course_teachers" :key="teacher.id" style="margin-left: 10px;">
                       {{ teacher.name }}
                       <div v-if="teacher.contact_phone" style="margin-left: 10px; color: #909399;">
-                        联系电话：{{ teacher.contact_phone }}
+                        {{ t('fee.contactPhoneLabel') }}：{{ teacher.contact_phone }}
                       </div>
                       <div v-if="teacher.email" style="margin-left: 10px; color: #909399;">
-                        电子邮件：{{ teacher.email }}
+                        {{ t('fee.emailLabel') }}：{{ teacher.email }}
                       </div>
                     </div>
                   </div>
@@ -102,12 +102,12 @@
               </el-tooltip>
             </template>
           </el-table-column>
-          <el-table-column prop="start_date" label="起算日期" width="120" sortable>
+          <el-table-column prop="start_date" :label="t('fee.startDate')" width="120" sortable>
             <template #default="{ row }">
               {{ formatDate(row.start_date) }}
             </template>
           </el-table-column>
-          <el-table-column prop="remaining_hours" label="当前科目剩余课时数" width="180" sortable>
+          <el-table-column prop="remaining_hours" :label="t('fee.remainingHours')" width="180" sortable>
             <template #default="{ row }">
               <span :style="{ 
                 color: row.remaining_hours <= row.alert_threshold ? '#ff0000' : '#67C23A',
@@ -119,21 +119,21 @@
                 backgroundColor: row.remaining_hours <= row.alert_threshold ? '#fef0f0' : '#f0f9ff',
                 border: row.remaining_hours <= row.alert_threshold ? '1px solid #f56c6c' : '1px solid #67C23A'
               }">
-                {{ row.remaining_hours.toFixed(2) }} 小时
+                {{ row.remaining_hours.toFixed(2) }} {{ t('fee.hours') }}
               </span>
             </template>
           </el-table-column>
-          <el-table-column prop="consumed_hours" label="累计已消耗课时" width="160" sortable>
+          <el-table-column prop="consumed_hours" :label="t('fee.consumedHours')" width="160" sortable>
             <template #default="{ row }">
-              {{ row.consumed_hours.toFixed(2) }} 小时
+              {{ row.consumed_hours.toFixed(2) }} {{ t('fee.hours') }}
             </template>
           </el-table-column>
-          <el-table-column prop="hourly_fee" label="课时费/小时" width="140" sortable>
+          <el-table-column prop="hourly_fee" :label="t('fee.hourlyFee')" width="140" sortable>
             <template #default="{ row }">
               ¥{{ row.hourly_fee.toFixed(2) }}
             </template>
           </el-table-column>
-          <el-table-column prop="current_remaining_amount" label="每学员每科目累计真正收入" width="270" sortable>
+          <el-table-column prop="current_remaining_amount" :label="t('fee.currentRemainingAmount')" width="270" sortable>
             <template #default="{ row }">
               <span :style="{ 
                 color: (row.total_actual_amount - row.total_refund_amount) <= row.alert_threshold * row.hourly_fee ? '#ff0000' : '#67C23A',
@@ -149,42 +149,42 @@
               </span>
             </template>
           </el-table-column>
-          <el-table-column prop="total_receivable_amount" label="累计应收金额" width="140" sortable>
+          <el-table-column prop="total_receivable_amount" :label="t('fee.totalReceivableAmount')" width="140" sortable>
             <template #default="{ row }">
               ¥{{ row.total_receivable_amount.toFixed(2) }}
             </template>
           </el-table-column>
-          <el-table-column prop="total_actual_amount" label="累计实收金额" width="140" sortable>
+          <el-table-column prop="total_actual_amount" :label="t('fee.totalActualAmount')" width="140" sortable>
             <template #default="{ row }">
               ¥{{ row.total_actual_amount.toFixed(2) }}
             </template>
           </el-table-column>
-          <el-table-column prop="total_refund_amount" label="累计退费金额" width="140" sortable>
+          <el-table-column prop="total_refund_amount" :label="t('fee.totalRefundAmountLabel')" width="140" sortable>
             <template #default="{ row }">
               ¥{{ row.total_refund_amount.toFixed(2) }}
             </template>
           </el-table-column>
-          <el-table-column prop="alert_threshold" label="预警阈值(小时)" width="160" sortable>
+          <el-table-column prop="alert_threshold" :label="t('fee.alertThreshold')" width="160" sortable>
             <template #default="{ row }">
-              {{ row.alert_threshold.toFixed(2) }} 小时
+              {{ row.alert_threshold.toFixed(2) }} {{ t('fee.hours') }}
             </template>
           </el-table-column>
-          <el-table-column label="状态" width="80">
+          <el-table-column :label="t('fee.status')" width="80">
             <template #default="{ row }">
               <el-tag :type="row.is_active ? 'success' : 'info'">
-                {{ row.is_active ? '启用' : '禁用' }}
+                {{ row.is_active ? t('fee.enabled') : t('fee.disabled') }}
               </el-tag>
             </template>
           </el-table-column>
-          <el-table-column label="操作" width="115" fixed="right">
+          <el-table-column :label="t('fee.action')" width="115" fixed="right">
             <template #default="{ row }">
-              <el-button size="small" @click="showEditDialog(row)">编辑</el-button>
-              <el-button size="small" @click="showPaymentDialog(row)">追缴</el-button>
-              <el-button size="small" @click="showRefundDialog(row)">退费</el-button>
-              <el-button size="small" @click="showFeeLogsDialog(row)">记录</el-button>
-              <el-button size="small" type="warning" @click="debugAutoConsume(row)">调试</el-button>
-              <el-button size="small" type="success" @click="triggerAutoConsume(row)">触发消耗</el-button>
-              <el-button size="small" type="danger" @click="handleDelete(row)">删除</el-button>
+              <el-button size="small" @click="showEditDialog(row)">{{ t('fee.editParams') }}</el-button>
+              <el-button size="small" @click="showPaymentDialog(row)">{{ t('fee.collectPayment') }}</el-button>
+              <el-button size="small" @click="showRefundDialog(row)">{{ t('fee.refund') }}</el-button>
+              <el-button size="small" @click="showFeeLogsDialog(row)">{{ t('fee.viewLogs') }}</el-button>
+              <el-button size="small" type="warning" @click="debugAutoConsume(row)">{{ t('fee.debug') }}</el-button>
+              <el-button size="small" type="success" @click="triggerAutoConsume(row)">{{ t('fee.triggerConsume') }}</el-button>
+              <el-button size="small" type="danger" @click="handleDelete(row)">{{ t('fee.delete') }}</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -201,10 +201,10 @@
     </el-card>
 
     <!-- 新增学员课费项对话框 -->
-    <el-dialog v-model="addDialogVisible" title="新增学员课费项" width="600px" draggable>
+    <el-dialog v-model="addDialogVisible" :title="t('fee.addStudentFeeItem')" width="600px" draggable>
       <el-form :model="addForm" :rules="addFormRules" ref="addFormRef" label-width="140px">
-        <el-form-item label="学员" prop="student_id">
-          <el-select v-model="addForm.student_id" filterable placeholder="请选择学员" style="width: 100%">
+        <el-form-item :label="t('fee.student')" prop="student_id">
+          <el-select v-model="addForm.student_id" filterable :placeholder="t('fee.selectStudent')" style="width: 100%">
             <el-option
               v-for="student in students"
               :key="student.id"
@@ -214,17 +214,17 @@
               <el-tooltip placement="right" :show-after="200">
                 <template #content>
                   <div style="min-width: 200px;">
-                    <div><strong>学员：</strong>{{ student.name }}</div>
-                    <div v-if="student.school"><strong>学校：</strong>{{ student.school }}</div>
-                    <div v-if="student.grade"><strong>年级：</strong>{{ student.grade }}</div>
+                    <div><strong>{{ t('fee.student') }}：</strong>{{ student.name }}</div>
+                    <div v-if="student.school"><strong>{{ t('fee.school') }}：</strong>{{ student.school }}</div>
+                    <div v-if="student.grade"><strong>{{ t('fee.grade') }}：</strong>{{ student.grade }}</div>
                     <div v-if="student.classes && student.classes.length > 0">
-                      <strong>本机构所属班级：</strong>
+                      <strong>{{ t('fee.classLabel') }}：</strong>
                       <div v-for="cls in student.classes" :key="cls.id" style="margin-left: 10px;">
                         {{ cls.name }}
                       </div>
                     </div>
-                    <div v-else><strong>本机构所属班级：</strong>无</div>
-                    <div><strong>本机构是否在读：</strong>{{ student.is_active ? '是' : '否' }}</div>
+                    <div v-else><strong>{{ t('fee.classLabel') }}：</strong>{{ t('fee.noClass') }}</div>
+                    <div><strong>{{ t('fee.isActiveLabel') }}：</strong>{{ student.is_active ? t('fee.yes') : t('fee.no') }}</div>
                   </div>
                 </template>
                 <span>{{ student.name }}</span>
@@ -232,8 +232,8 @@
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="科目" prop="course_id">
-          <el-select v-model="addForm.course_id" filterable placeholder="请选择科目" style="width: 100%">
+        <el-form-item :label="t('fee.course')" prop="course_id">
+          <el-select v-model="addForm.course_id" filterable :placeholder="t('fee.selectCourse')" style="width: 100%">
             <el-option
               v-for="course in courses"
               :key="course.id"
@@ -243,16 +243,16 @@
               <el-tooltip placement="right" :show-after="200">
                 <template #content>
                   <div style="min-width: 200px;">
-                    <div><strong>科目：</strong>{{ course.name }}</div>
+                    <div><strong>{{ t('fee.course') }}：</strong>{{ course.name }}</div>
                     <div v-if="course.teachers && course.teachers.length > 0">
-                      <strong>教授导师：</strong>
+                      <strong>{{ t('fee.teacherLabel') }}：</strong>
                       <div v-for="teacher in course.teachers" :key="teacher.id" style="margin-left: 10px;">
                         {{ teacher.name }}
                         <span v-if="teacher.contact_phone" style="color: #999; font-size: 12px;">（{{ teacher.contact_phone }}）</span>
                         <span v-if="teacher.email" style="color: #999; font-size: 12px;">（{{ teacher.email }}）</span>
                       </div>
                     </div>
-                    <div v-else><strong>教授导师：</strong>无</div>
+                    <div v-else><strong>{{ t('fee.teacherLabel') }}：</strong>{{ t('fee.noClass') }}</div>
                   </div>
                 </template>
                 <span>{{ course.name }}</span>
@@ -260,287 +260,287 @@
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="起算日期" prop="start_date">
+        <el-form-item :label="t('fee.startDate')" prop="start_date">
           <el-date-picker
             v-model="addForm.start_date"
             type="date"
-            placeholder="请选择起算日期"
+            :placeholder="t('fee.selectStartDate')"
             value-format="YYYY-MM-DD"
             style="width: 100%"
           />
         </el-form-item>
-        <el-form-item label="课时费/小时" prop="hourly_fee">
+        <el-form-item :label="t('fee.hourlyFee')" prop="hourly_fee">
           <el-input-number v-model="addForm.hourly_fee" :min="0" :precision="2" style="width: 100%" @change="calculateAddPaymentAmount" :value-on-clear="0" />
         </el-form-item>
-        <el-form-item label="本次新增课节数" prop="lesson_count">
+        <el-form-item :label="t('fee.lessonCount')" prop="lesson_count">
           <el-input-number v-model="addForm.lesson_count" :min="0" :step="1" :precision="0" style="width: 100%" @change="calculateAddPaymentAmount" :value-on-clear="0" />
-          <span style="margin-left: 10px; color: #999; font-size: 12px;">默认一课节数=2课时数=2小时</span>
+          <span style="margin-left: 10px; color: #999; font-size: 12px;">{{ t('fee.lessonCountTip') }}</span>
         </el-form-item>
-        <el-form-item label="应收金额">
+        <el-form-item :label="t('fee.receivableAmount')">
           <span style="color: #409EFF; font-weight: bold;">¥{{ addForm.receivable_amount.toFixed(2) }}</span>
         </el-form-item>
-        <el-form-item label="本次总优惠金额" prop="discount_amount">
+        <el-form-item :label="t('fee.discountAmountLabel')" prop="discount_amount">
           <el-input-number v-model="addForm.discount_amount" :min="0" :precision="2" style="width: 100%" @change="calculateAddActualAmount" :value-on-clear="0" />
         </el-form-item>
-        <el-form-item label="实收金额">
+        <el-form-item :label="t('fee.actualAmount')">
           <span style="color: #67C23A; font-weight: bold;">¥{{ addForm.actual_amount.toFixed(2) }}</span>
         </el-form-item>
-        <el-form-item label="收费日期" prop="payment_date">
+        <el-form-item :label="t('fee.chargeDate')" prop="payment_date">
           <el-date-picker
             v-model="addForm.payment_date"
             type="date"
-            placeholder="请选择收费日期"
+            :placeholder="t('fee.selectChargeDate')"
             value-format="YYYY-MM-DD"
             style="width: 100%"
           />
         </el-form-item>
-        <el-form-item label="收费途径" prop="payment_method">
-          <el-select v-model="addForm.payment_method" placeholder="请选择收费途径" style="width: 100%">
-            <el-option label="微信" value="微信" />
-            <el-option label="支付宝" value="支付宝" />
-            <el-option label="现金" value="现金" />
-            <el-option label="银行卡" value="银行卡" />
+        <el-form-item :label="t('fee.chargeMethod')" prop="payment_method">
+          <el-select v-model="addForm.payment_method" :placeholder="t('fee.selectPaymentMethod')" style="width: 100%">
+            <el-option :label="t('fee.wechat')" value="微信" />
+            <el-option :label="t('fee.alipay')" value="支付宝" />
+            <el-option :label="t('fee.cash')" value="现金" />
+            <el-option :label="t('fee.bankCard')" value="银行卡" />
           </el-select>
         </el-form-item>
-        <el-form-item label="预警阈值（小时）" prop="alert_threshold">
+        <el-form-item :label="t('fee.alertThresholdLabel')" prop="alert_threshold">
           <el-input-number v-model="addForm.alert_threshold" :min="0" :precision="1" style="width: 100%" :value-on-clear="0" />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="addDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleAdd" :loading="isSubmitting">确定</el-button>
+        <el-button @click="addDialogVisible = false">{{ t('fee.cancel') }}</el-button>
+        <el-button type="primary" @click="handleAdd" :loading="isSubmitting">{{ t('fee.confirm') }}</el-button>
       </template>
     </el-dialog>
 
     <!-- 编辑课费项参数对话框 -->
-    <el-dialog v-model="editDialogVisible" title="编辑课费项参数" width="600px" draggable>
+    <el-dialog v-model="editDialogVisible" :title="t('fee.editFeeParams')" width="600px" draggable>
       <el-form :model="editForm" :rules="editFormRules" ref="editFormRef" label-width="140px">
-        <el-form-item label="学员">
+        <el-form-item :label="t('fee.student')">
           <span>{{ currentFee.student_name }}</span>
         </el-form-item>
-        <el-form-item label="科目">
+        <el-form-item :label="t('fee.course')">
           <span>{{ currentFee.course_name }}</span>
         </el-form-item>
-        <el-form-item label="起算日期" prop="start_date">
+        <el-form-item :label="t('fee.startDate')" prop="start_date">
           <el-date-picker
             v-model="editForm.start_date"
             type="date"
-            placeholder="请选择起算日期"
+            :placeholder="t('fee.selectStartDate')"
             value-format="YYYY-MM-DD"
             style="width: 100%"
           />
         </el-form-item>
-        <el-form-item label="课时费/小时" prop="hourly_fee">
+        <el-form-item :label="t('fee.hourlyFee')" prop="hourly_fee">
           <el-input-number v-model="editForm.hourly_fee" :min="0" :precision="2" style="width: 100%" />
         </el-form-item>
-        <el-form-item label="总实收金额">
+        <el-form-item :label="t('fee.totalActualAmountLabel')">
           <span style="color: #409EFF; font-weight: bold;">¥{{ currentFee.total_amount.toFixed(2) }}</span>
         </el-form-item>
-        <el-form-item label="总剩余金额">
+        <el-form-item :label="t('fee.totalRemainingAmount')">
           <span :style="{ color: currentFee.remaining_amount <= currentFee.alert_threshold * currentFee.hourly_fee ? 'red' : 'green', fontWeight: 'bold' }">
             ¥{{ currentFee.remaining_amount.toFixed(2) }}
           </span>
         </el-form-item>
-        <el-form-item label="总剩余课时">
+        <el-form-item :label="t('fee.totalRemainingHours')">
           <span :style="{ color: currentFee.remaining_hours <= currentFee.alert_threshold ? 'red' : 'green', fontWeight: 'bold' }">
-            {{ currentFee.remaining_hours.toFixed(2) }} 小时
+            {{ currentFee.remaining_hours.toFixed(2) }} {{ t('fee.hours') }}
           </span>
         </el-form-item>
-        <el-form-item label="预警阈值（小时）" prop="alert_threshold">
+        <el-form-item :label="t('fee.alertThresholdLabel')" prop="alert_threshold">
           <el-input-number v-model="editForm.alert_threshold" :min="0" :precision="1" style="width: 100%" />
         </el-form-item>
-        <el-form-item label="状态" prop="is_active">
+        <el-form-item :label="t('fee.status')" prop="is_active">
           <el-switch v-model="editForm.is_active" />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="editDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleEdit">确定</el-button>
+        <el-button @click="editDialogVisible = false">{{ t('fee.cancel') }}</el-button>
+        <el-button type="primary" @click="handleEdit">{{ t('fee.confirm') }}</el-button>
       </template>
     </el-dialog>
     <!-- 追缴对话框 -->
-    <el-dialog v-model="paymentDialogVisible" title="追缴" width="600px" draggable>
+    <el-dialog v-model="paymentDialogVisible" :title="t('fee.collectPaymentTitle')" width="600px" draggable>
       <el-form :model="paymentForm" :rules="paymentRules" ref="paymentFormRef" label-width="140px">
-        <el-form-item label="学员">
+        <el-form-item :label="t('fee.student')">
           <span>{{ currentFee.student_name }}</span>
         </el-form-item>
-        <el-form-item label="科目">
+        <el-form-item :label="t('fee.course')">
           <span>{{ currentFee.course_name }}</span>
         </el-form-item>
-        <el-form-item label="本次新增课节数" prop="lesson_count">
+        <el-form-item :label="t('fee.lessonCount')" prop="lesson_count">
           <el-input-number v-model="paymentForm.lesson_count" :min="0" :step="1" :precision="0" style="width: 100%" @change="calculatePaymentAmount" :value-on-clear="0" />
-          <span style="margin-left: 10px; color: #999; font-size: 12px;">默认一节课=2课时=2小时</span>
+          <span style="margin-left: 10px; color: #999; font-size: 12px;">{{ t('fee.lessonCountTipShort') }}</span>
         </el-form-item>
-        <el-form-item label="本次应收金额">
+        <el-form-item :label="t('fee.currentReceivable')">
           <span style="color: #409EFF; font-weight: bold;">¥{{ paymentForm.receivable_amount.toFixed(2) }}</span>
         </el-form-item>
-        <el-form-item label="本次优惠金额" prop="discount_amount">
+        <el-form-item :label="t('fee.currentDiscount')" prop="discount_amount">
           <el-input-number v-model="paymentForm.discount_amount" :min="0" :precision="2" style="width: 100%" @change="calculateActualAmount" :value-on-clear="0" />
         </el-form-item>
-        <el-form-item label="本次实收金额">
+        <el-form-item :label="t('fee.currentActual')">
           <span style="color: #67C23A; font-weight: bold;">¥{{ paymentForm.actual_amount.toFixed(2) }}</span>
         </el-form-item>
-        <el-form-item label="收费日期" prop="payment_date">
+        <el-form-item :label="t('fee.chargeDate')" prop="payment_date">
           <el-date-picker
             v-model="paymentForm.payment_date"
             type="date"
-            placeholder="请选择收费日期"
+            :placeholder="t('fee.selectChargeDate')"
             value-format="YYYY-MM-DD"
             style="width: 100%"
           />
         </el-form-item>
-        <el-form-item label="缴费途径" prop="payment_method">
-          <el-select v-model="paymentForm.payment_method" placeholder="请选择缴费途径" style="width: 100%">
-            <el-option label="微信" value="微信" />
-            <el-option label="支付宝" value="支付宝" />
-            <el-option label="现金" value="现金" />
-            <el-option label="银行卡" value="银行卡" />
+        <el-form-item :label="t('fee.paymentMethodLabel')" prop="payment_method">
+          <el-select v-model="paymentForm.payment_method" :placeholder="t('fee.selectPaymentMethod')" style="width: 100%">
+            <el-option :label="t('fee.wechat')" value="微信" />
+            <el-option :label="t('fee.alipay')" value="支付宝" />
+            <el-option :label="t('fee.cash')" value="现金" />
+            <el-option :label="t('fee.bankCard')" value="银行卡" />
           </el-select>
         </el-form-item>
-        <el-form-item label="备注">
+        <el-form-item :label="t('fee.remark')">
           <el-input v-model="paymentForm.description" type="textarea" :rows="3" />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="paymentDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handlePayment">确定</el-button>
+        <el-button @click="paymentDialogVisible = false">{{ t('fee.cancel') }}</el-button>
+        <el-button type="primary" @click="handlePayment">{{ t('fee.confirm') }}</el-button>
       </template>
     </el-dialog>
     <!-- 退费对话框 -->
-    <el-dialog v-model="refundDialogVisible" title="退费" width="500px" draggable>
+    <el-dialog v-model="refundDialogVisible" :title="t('fee.refundTitle')" width="500px" draggable>
       <el-form :model="refundForm" :rules="refundRules" ref="refundFormRef" label-width="120px">
-        <el-form-item label="学生">
+        <el-form-item :label="t('fee.student')">
           <span>{{ currentFee.student_name }}</span>
         </el-form-item>
-        <el-form-item label="科目">
+        <el-form-item :label="t('fee.course')">
           <span>{{ currentFee.course_name }}</span>
         </el-form-item>
-        <el-form-item label="剩余费用">
+        <el-form-item :label="t('fee.remainingAmountLabel')">
           <el-input :value="'¥' + currentFee.remaining_amount.toFixed(2)" disabled />
         </el-form-item>
-        <el-form-item label="退费金额" prop="amount">
+        <el-form-item :label="t('fee.refundAmount')" prop="amount">
           <el-input-number v-model="refundForm.amount" :min="0" :max="currentFee.remaining_amount" :precision="2" style="width: 100%" />
         </el-form-item>
-        <el-form-item label="退费日期" prop="refund_date">
+        <el-form-item :label="t('fee.refundDate')" prop="refund_date">
           <el-date-picker
             v-model="refundForm.refund_date"
             type="date"
-            placeholder="请选择退费日期"
+            :placeholder="t('fee.selectRefundDate')"
             value-format="YYYY-MM-DD"
             style="width: 100%"
           />
         </el-form-item>
-        <el-form-item label="退费途径" prop="refund_method">
-          <el-select v-model="refundForm.refund_method" placeholder="请选择退费途径" style="width: 100%">
-            <el-option label="微信" value="微信" />
-            <el-option label="支付宝" value="支付宝" />
-            <el-option label="现金" value="现金" />
-            <el-option label="银行卡" value="银行卡" />
+        <el-form-item :label="t('fee.refundMethod')" prop="refund_method">
+          <el-select v-model="refundForm.refund_method" :placeholder="t('fee.selectRefundMethod')" style="width: 100%">
+            <el-option :label="t('fee.wechat')" value="微信" />
+            <el-option :label="t('fee.alipay')" value="支付宝" />
+            <el-option :label="t('fee.cash')" value="现金" />
+            <el-option :label="t('fee.bankCard')" value="银行卡" />
           </el-select>
         </el-form-item>
-        <el-form-item label="退费说明" prop="refund_reason">
-          <el-input v-model="refundForm.refund_reason" type="textarea" :rows="3" placeholder="请输入退费说明" />
+        <el-form-item :label="t('fee.refundReason')" prop="refund_reason">
+          <el-input v-model="refundForm.refund_reason" type="textarea" :rows="3" :placeholder="t('fee.refundReasonRequired')" />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="refundDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleRefund">确定</el-button>
+        <el-button @click="refundDialogVisible = false">{{ t('fee.cancel') }}</el-button>
+        <el-button type="primary" @click="handleRefund">{{ t('fee.confirm') }}</el-button>
       </template>
     </el-dialog>
     <!-- 课时费记录对话框 -->
     <el-dialog v-model="feeLogsDialogVisible" width="90%" draggable>
       <template #header>
         <div style="display: flex; justify-content: space-between; align-items: center;">
-          <span>课时费记录</span>
+          <span>{{ t('fee.feeLogsTitle') }}</span>
           <el-button type="success" @click="exportStudentFeeLogs" :loading="exportLoading">
             <el-icon><Download /></el-icon>
-            导出课时费记录
+            {{ t('fee.exportStudentFeeLogs') }}
           </el-button>
         </div>
       </template>
       <el-table :data="feeLogs" stripe v-loading="feeLogsLoading" style="margin-top: 20px" @sort-change="handleFeeLogsSortChange">
-        <el-table-column prop="created_at" label="产生日期" width="150" sortable>
+        <el-table-column prop="created_at" :label="t('fee.logDate')" width="150" sortable>
           <template #default="{ row }">
             {{ formatDate(row.created_at) }}
           </template>
         </el-table-column>
-        <el-table-column prop="student_name" label="学员" width="120" />
-        <el-table-column prop="course_name" label="科目" width="120" />
-        <el-table-column prop="log_type" label="类型" width="100" sortable>
+        <el-table-column prop="student_name" :label="t('fee.student')" width="120" />
+        <el-table-column prop="course_name" :label="t('fee.course')" width="120" />
+        <el-table-column prop="log_type" :label="t('fee.logType')" width="100" sortable>
           <template #default="{ row }">
             <el-tag :type="getLogTypeColor(row.log_type)">
               {{ getLogTypeText(row.log_type) }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="amount" label="金额变化" width="120" sortable>
+        <el-table-column prop="amount" :label="t('fee.logAmount')" width="120" sortable>
           <template #default="{ row }">
             <span :style="{ color: row.amount > 0 ? 'green' : 'red' }">
               {{ row.amount > 0 ? '+' : '' }}¥{{ row.amount.toFixed(2) }}
             </span>
           </template>
         </el-table-column>
-        <el-table-column prop="hours" label="消耗课时" width="120" sortable>
+        <el-table-column prop="hours" :label="t('fee.logHours')" width="120" sortable>
           <template #default="{ row }">
             <el-tooltip placement="top" effect="light" v-if="row.log_type === 'consume' && (row.schedule_date || row.teacher_name || row.class_name || row.room_name || row.content_feedback)">
               <template #content>
                 <div v-if="row.schedule_date">
-                  <div><strong>完训日期：</strong>{{ row.schedule_date }}</div>
+                  <div><strong>{{ t('fee.scheduleDate') }}：</strong>{{ row.schedule_date }}</div>
                 </div>
                 <div v-if="row.schedule_time">
-                  <div><strong>时间：</strong>{{ row.schedule_time }}</div>
+                  <div><strong>{{ t('fee.time') }}：</strong>{{ row.schedule_time }}</div>
                 </div>
                 <div v-if="row.teacher_name">
-                  <div><strong>培训导师：</strong>{{ row.teacher_name }}</div>
+                  <div><strong>{{ t('fee.teacherLabel') }}：</strong>{{ row.teacher_name }}</div>
                 </div>
                 <div v-if="row.class_name">
-                  <div><strong>班级：</strong>{{ row.class_name }}</div>
+                  <div><strong>{{ t('fee.classLabel') }}：</strong>{{ row.class_name }}</div>
                 </div>
                 <div>
-                  <div><strong>学员：</strong>{{ row.student_name }}</div>
+                  <div><strong>{{ t('fee.student') }}：</strong>{{ row.student_name }}</div>
                 </div>
                 <div v-if="row.room_name">
-                  <div><strong>教室：</strong>{{ row.room_name }}</div>
+                  <div><strong>{{ t('fee.room') }}：</strong>{{ row.room_name }}</div>
                 </div>
                 <div v-if="row.content_feedback">
                   <el-tooltip placement="top" effect="light">
                     <template #content>
                       <div v-for="(item, index) in parseContentFeedbackForTooltip(row.content_feedback)" :key="index">
-                        <div v-if="item.label === '内容'">
-                          <div><strong>课程内容：</strong>{{ item.content }}</div>
+                        <div v-if="item.label === t('fee.contentLabel')">
+                          <div><strong>{{ t('fee.courseContent') }}：</strong>{{ item.content }}</div>
                         </div>
-                        <div v-else-if="item.label === '作业'">
-                          <div><strong>课后作业：</strong>{{ item.content }}</div>
+                        <div v-else-if="item.label === t('fee.homeworkLabel')">
+                          <div><strong>{{ t('fee.homework') }}：</strong>{{ item.content }}</div>
                         </div>
-                        <div v-else-if="item.label === '注意'">
-                          <div><strong>注意事项：</strong>{{ item.content || '无' }}</div>
+                        <div v-else-if="item.label === t('fee.noteLabel')">
+                          <div><strong>{{ t('fee.note') }}：</strong>{{ item.content || t('fee.none') }}</div>
                         </div>
                       </div>
                     </template>
-                    <span style="cursor: help; color: #409EFF;">查看课程反馈</span>
+                    <span style="cursor: help; color: #409EFF;">{{ t('fee.viewCourseFeedback') }}</span>
                   </el-tooltip>
                 </div>
               </template>
               <span style="cursor: help; color: #409EFF;">
-                {{ row.hours > 0 ? row.hours.toFixed(2) + ' 小时' : '-' }}
+                {{ row.hours > 0 ? row.hours.toFixed(2) + ' ' + t('fee.hours') : '-' }}
               </span>
             </el-tooltip>
-            <span v-else>{{ row.hours > 0 ? row.hours.toFixed(2) + ' 小时' : '-' }}</span>
+            <span v-else>{{ row.hours > 0 ? row.hours.toFixed(2) + ' ' + t('fee.hours') : '-' }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="remaining_amount" label="学员账户余额" width="120">
+        <el-table-column prop="remaining_amount" :label="t('fee.remainingAmountLabel')" width="120">
           <template #default="{ row }">
             <span :style="{ color: row.remaining_amount < 0 ? 'red' : 'green' }">
               ¥{{ row.remaining_amount.toFixed(2) }}
             </span>
           </template>
         </el-table-column>
-        <el-table-column prop="remaining_hours" label="剩余课时" width="120">
+        <el-table-column prop="remaining_hours" :label="t('fee.remainingHoursLabel')" width="120">
           <template #default="{ row }">
-            {{ row.remaining_hours.toFixed(2) }} 小时
+            {{ row.remaining_hours.toFixed(2) }} {{ t('fee.hours') }}
           </template>
         </el-table-column>
-        <el-table-column prop="description" label="描述" width="300" show-overflow-tooltip />
+        <el-table-column prop="description" :label="t('fee.logDescription')" width="300" show-overflow-tooltip />
       </el-table>
       <el-pagination
         v-model:current-page="feeLogsPagination.currentPage"
@@ -553,74 +553,74 @@
         style="margin-top: 20px; justify-content: center; display: flex;"
       />
     </el-dialog>
-    <!-- 收费提醒对话框 -->
-    <el-dialog v-model="alertsDialogVisible" title="收费提醒" width="80%" draggable>
+    <!-- 课费提醒对话框 -->
+    <el-dialog v-model="alertsDialogVisible" :title="t('fee.feeReminder')" width="80%" draggable>
       <el-table :data="alerts" stripe>
-        <el-table-column prop="student_name" label="学员" width="120" />
-        <el-table-column prop="course_name" label="科目" width="120" />
-        <el-table-column prop="remaining_hours" label="总剩余课时" width="120">
+        <el-table-column prop="student_name" :label="t('fee.student')" width="120" />
+        <el-table-column prop="course_name" :label="t('fee.course')" width="120" />
+        <el-table-column prop="remaining_hours" :label="t('fee.totalRemainingHours')" width="120">
           <template #default="{ row }">
             <span style="color: red;">
-              {{ row.remaining_hours.toFixed(2) }} 小时
+              {{ row.remaining_hours.toFixed(2) }} {{ t('fee.hours') }}
             </span>
           </template>
         </el-table-column>
-        <el-table-column prop="remaining_amount" label="总剩余金额" width="120">
+        <el-table-column prop="remaining_amount" :label="t('fee.totalRemainingAmount')" width="120">
           <template #default="{ row }">
             <span style="color: red;">
               ¥{{ row.remaining_amount.toFixed(2) }}
             </span>
           </template>
         </el-table-column>
-        <el-table-column prop="alert_threshold" label="预警阈值（小时）" width="120">
+        <el-table-column prop="alert_threshold" :label="t('fee.alertThresholdHours')" width="120">
           <template #default="{ row }">
-            {{ row.alert_threshold.toFixed(2) }} 小时
+            {{ row.alert_threshold.toFixed(2) }} {{ t('fee.hours') }}
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="150">
+        <el-table-column :label="t('fee.action')" width="150">
           <template #default="{ row }">
-            <el-button size="small" @click="showPaymentDialog(row)">收费</el-button>
-            <el-button size="small" @click="showEditThresholdDialog(row)">修改阈值</el-button>
+            <el-button size="small" @click="showPaymentDialog(row)">{{ t('fee.charge') }}</el-button>
+            <el-button size="small" @click="showEditThresholdDialog(row)">{{ t('fee.modifyThreshold') }}</el-button>
           </template>
         </el-table-column>
       </el-table>
     </el-dialog>
 
     <!-- 修改预警阈值对话框 -->
-    <el-dialog v-model="thresholdDialogVisible" title="修改预警阈值" width="400px">
+    <el-dialog v-model="thresholdDialogVisible" :title="t('fee.modifyThresholdTitle')" width="400px">
       <el-form :model="thresholdForm" :rules="thresholdRules" ref="thresholdFormRef" label-width="120px">
-        <el-form-item label="学员">
+        <el-form-item :label="t('fee.student')">
           <el-input v-model="currentAlert.student_name" disabled />
         </el-form-item>
-        <el-form-item label="科目">
+        <el-form-item :label="t('fee.course')">
           <el-input v-model="currentAlert.course_name" disabled />
         </el-form-item>
-        <el-form-item label="预警阈值" prop="alert_threshold">
+        <el-form-item :label="t('fee.alertThresholdLabel')" prop="alert_threshold">
           <el-input-number v-model="thresholdForm.alert_threshold" :min="0" :precision="2" style="width: 100%" />
           <span style="margin-left: 10px; color: #999; font-size: 12px;">
-            小时
+            {{ t('fee.hours') }}
           </span>
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="thresholdDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleUpdateThreshold">确定</el-button>
+        <el-button @click="thresholdDialogVisible = false">{{ t('fee.cancel') }}</el-button>
+        <el-button type="primary" @click="handleUpdateThreshold">{{ t('fee.confirm') }}</el-button>
       </template>
     </el-dialog>
 
     <!-- 自动消耗调试结果对话框 -->
     <el-dialog 
       v-model="debugDialogVisible" 
-      title="自动消耗调试结果" 
+      :title="t('fee.debugTitle')" 
       width="80%" 
       :close-on-click-modal="false"
       draggable
     >
       <div class="debug-info">
         <el-descriptions :column="3" border>
-          <el-descriptions-item label="学员ID">{{ debugData.student_id }}</el-descriptions-item>
-          <el-descriptions-item label="科目ID">{{ debugData.course_id }}</el-descriptions-item>
-          <el-descriptions-item label="完训课程安排数">{{ debugData.totalSchedules }}</el-descriptions-item>
+          <el-descriptions-item :label="t('fee.studentId')">{{ debugData.student_id }}</el-descriptions-item>
+          <el-descriptions-item :label="t('fee.courseId')">{{ debugData.course_id }}</el-descriptions-item>
+          <el-descriptions-item :label="t('fee.completedSchedules')">{{ debugData.totalSchedules }}</el-descriptions-item>
         </el-descriptions>
       </div>
       
@@ -632,39 +632,39 @@
           max-height="500"
           style="width: 100%"
         >
-          <el-table-column prop="schedule_id" label="课程安排ID" width="120" fixed />
-          <el-table-column prop="start_date" label="课程日期" width="120" />
-          <el-table-column prop="fee_start_date" label="起算日期" width="180" />
-          <el-table-column label="日期检查" width="180">
+          <el-table-column prop="schedule_id" :label="t('fee.scheduleId')" width="120" fixed />
+          <el-table-column prop="start_date" :label="t('fee.scheduleDate')" width="120" />
+          <el-table-column prop="fee_start_date" :label="t('fee.startDate')" width="180" />
+          <el-table-column :label="t('fee.dateCheck')" width="180">
             <template #default="{ row }">
               <el-tag :type="row.date_check && row.date_check.includes('通过') ? 'success' : 'info'" size="small">
                 {{ row.date_check || '-' }}
               </el-tag>
             </template>
           </el-table-column>
-          <el-table-column label="学员参与" width="100">
+          <el-table-column :label="t('fee.studentParticipation')" width="100">
             <template #default="{ row }">
               <el-tag :type="row.student_in_schedule?.in_list ? 'success' : 'danger'" size="small">
-                {{ row.student_in_schedule?.in_list ? '是' : '否' }}
+                {{ row.student_in_schedule?.in_list ? t('fee.yes') : t('fee.no') }}
               </el-tag>
             </template>
           </el-table-column>
-          <el-table-column label="参与学员列表" min-width="150" show-overflow-tooltip>
+          <el-table-column :label="t('fee.participantList')" min-width="150" show-overflow-tooltip>
             <template #default="{ row }">
               {{ row.student_in_schedule?.scheduled_students?.join(', ') || '-' }}
             </template>
           </el-table-column>
-          <el-table-column label="已有消耗日志" width="120">
+          <el-table-column :label="t('fee.existingConsumeLog')" width="120">
             <template #default="{ row }">
               <el-tag :type="row.existing_log?.exists ? 'warning' : 'info'" size="small">
-                {{ row.existing_log?.exists ? `是 (ID:${row.existing_log.log_id})` : '否' }}
+                {{ row.existing_log?.exists ? `${t('fee.yes')} (ID:${row.existing_log.log_id})` : t('fee.no') }}
               </el-tag>
             </template>
           </el-table-column>
-          <el-table-column label="应该追加消耗?" width="120" fixed="right">
+          <el-table-column :label="t('fee.shouldConsume')" width="120" fixed="right">
             <template #default="{ row }">
               <el-tag :type="row.should_consume ? 'success' : 'info'" size="small" effect="dark">
-                {{ row.should_consume ? '✓ 是' : '✗ 否' }}
+                {{ row.should_consume ? '✓ ' + t('fee.yes') : '✗ ' + t('fee.no') }}
               </el-tag>
             </template>
           </el-table-column>
@@ -683,8 +683,8 @@
       </div>
       
       <template #footer>
-        <el-button @click="debugDialogVisible = false">关闭</el-button>
-        <el-button type="primary" @click="triggerAutoConsumeFromDebug">触发消耗</el-button>
+        <el-button @click="debugDialogVisible = false">{{ t('fee.close') }}</el-button>
+        <el-button type="primary" @click="triggerAutoConsumeFromDebug">{{ t('fee.triggerConsume') }}</el-button>
       </template>
     </el-dialog>
 
@@ -697,7 +697,10 @@ import { useRouter, useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { ArrowLeft, Search, Download, Bell } from '@element-plus/icons-vue'
 import api from '@/utils/api'
+import { useI18n } from 'vue-i18n'
 
+
+const { t } = useI18n()
 const mainTableRef = ref(null)
 const topScrollbarRef = ref(null)
 const scrollbarWidth = ref(0)
@@ -728,14 +731,14 @@ const addForm = ref({
 })
 
 const addFormRules = {
-  student_id: [{ required: true, message: '请选择学员', trigger: 'change' }],
-  course_id: [{ required: true, message: '请选择科目', trigger: 'change' }],
-  start_date: [{ required: true, message: '请选择起算日期', trigger: 'change' }],
-  hourly_fee: [{ required: true, message: '请输入课时费', trigger: 'blur' }],
-  lesson_count: [{ required: true, message: '请输入本次新增课节数', trigger: 'blur' }],
-  payment_method: [{ required: true, message: '请选择收费途径', trigger: 'change' }],
-  payment_date: [{ required: true, message: '请选择收费日期', trigger: 'change' }],
-  alert_threshold: [{ required: true, message: '请输入预警阈值', trigger: 'blur' }]
+  student_id: [{ required: true, message: t('fee.selectStudent'), trigger: 'change' }],
+  course_id: [{ required: true, message: t('fee.selectCourse'), trigger: 'change' }],
+  start_date: [{ required: true, message: t('fee.selectStartDate'), trigger: 'change' }],
+  hourly_fee: [{ required: true, message: t('fee.hourlyFeeRequired'), trigger: 'blur' }],
+  lesson_count: [{ required: true, message: t('fee.lessonCountRequired'), trigger: 'blur' }],
+  payment_method: [{ required: true, message: t('fee.paymentMethodRequired'), trigger: 'change' }],
+  payment_date: [{ required: true, message: t('fee.paymentDateRequired'), trigger: 'change' }],
+  alert_threshold: [{ required: true, message: t('fee.alertThresholdRequired'), trigger: 'blur' }]
 }
 
 const goBack = () => {
@@ -778,9 +781,9 @@ const editForm = ref({
 })
 
 const editFormRules = {
-  start_date: [{ required: true, message: '请选择起算日期', trigger: 'change' }],
-  hourly_fee: [{ required: true, message: '请输入课时费', trigger: 'blur' }],
-  alert_threshold: [{ required: true, message: '请输入预警阈值', trigger: 'blur' }]
+  start_date: [{ required: true, message: t('fee.selectStartDate'), trigger: 'change' }],
+  hourly_fee: [{ required: true, message: t('fee.hourlyFeeRequired'), trigger: 'blur' }],
+  alert_threshold: [{ required: true, message: t('fee.alertThresholdRequired'), trigger: 'blur' }]
 }
 
 const students = ref([])
@@ -801,9 +804,9 @@ const paymentForm = ref({
 })
  
 const paymentRules = {
-  lesson_count: [{ required: true, message: '请输入本次新增课数', trigger: 'blur' }],
-  payment_method: [{ required: true, message: '请选择缴费途径', trigger: 'change' }],
-  payment_date: [{ required: true, message: '请选择缴费日期', trigger: 'change' }]
+  lesson_count: [{ required: true, message: t('fee.lessonCountRequired'), trigger: 'blur' }],
+  payment_method: [{ required: true, message: t('fee.paymentMethodRequired'), trigger: 'change' }],
+  payment_date: [{ required: true, message: t('fee.paymentDateRequired'), trigger: 'change' }]
 }
 const refundDialogVisible = ref(false)
 const refundFormRef = ref(null)
@@ -817,10 +820,10 @@ const refundForm = ref({
 })
 
 const refundRules = {
-  amount: [{ required: true, message: '请输入退费金额', trigger: 'blur' }],
-  refund_date: [{ required: true, message: '请选择退费日期', trigger: 'change' }],
-  refund_method: [{ required: true, message: '请选择退费途径', trigger: 'change' }],
-  refund_reason: [{ required: true, message: '请输入退费说明', trigger: 'blur' }]
+  amount: [{ required: true, message: t('fee.refundAmountRequired'), trigger: 'blur' }],
+  refund_date: [{ required: true, message: t('fee.refundDateRequired'), trigger: 'change' }],
+  refund_method: [{ required: true, message: t('fee.refundMethodRequired'), trigger: 'change' }],
+  refund_reason: [{ required: true, message: t('fee.refundReasonRequired'), trigger: 'blur' }]
 }
 
 const currentFee = ref({})
@@ -903,7 +906,7 @@ const handleFeeLogsSizeChange = (size) => {
 
 const debugAutoConsume = async (row) => {
   try {
-    ElMessage.info('正在检查自动消耗逻辑...')
+    ElMessage.info(t('fee.checkingAutoConsume'))
     const response = await api.get(`/fees/debug-auto-consume/${row.student_id}/${row.course_id}`)
     
     window.logger.log('=== 自动消耗调试信息 ===', response.data)
@@ -927,7 +930,7 @@ const debugAutoConsume = async (row) => {
     debugDialogVisible.value = true
   } catch (error) {
     window.logger.error('调试失败:', error)
-    ElMessage.error('调试失败: ' + (error.response?.data?.detail || error.message))
+    ElMessage.error(t('fee.debugFailed') + ': ' + (error.response?.data?.detail || error.message))
   }
 }
 
@@ -935,13 +938,13 @@ const triggerAutoConsumeFromDebug = async () => {
   if (!currentDebugRow.value) return
   
   try {
-    await ElMessageBox.confirm('确定要触发自动消耗检查吗？这将补录所有符合条件的消耗记录。', '提示', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
+    await ElMessageBox.confirm(t('fee.confirmTriggerConsume'), t('fee.confirmTitle'), {
+      confirmButtonText: t('fee.confirm'),
+      cancelButtonText: t('fee.cancel'),
       type: 'warning'
     })
     
-    ElMessage.info('正在触发自动消耗...')
+    ElMessage.info(t('fee.triggeringAutoConsume'))
     const response = await api.post(`/fees/trigger-auto-consume/${currentDebugRow.value.id}`)
     
     ElMessage.success(response.data.message)
@@ -950,7 +953,7 @@ const triggerAutoConsumeFromDebug = async () => {
   } catch (error) {
     if (error !== 'cancel') {
       window.logger.error('触发消耗失败:', error)
-      ElMessage.error('触发消耗失败: ' + (error.response?.data?.detail || error.message))
+      ElMessage.error(t('fee.triggerConsumeFailed') + ': ' + (error.response?.data?.detail || error.message))
     }
   }
 }
@@ -958,13 +961,13 @@ const triggerAutoConsumeFromDebug = async () => {
 // 手动触发课时消耗检查并补录消耗记录
 const triggerAutoConsume = async (row) => {
   try {
-    await ElMessageBox.confirm('确定要触发自动消耗检查吗？这将补录所有符合条件的消耗记录。', '提示', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
+    await ElMessageBox.confirm(t('fee.confirmTriggerConsume'), t('fee.confirmTitle'), {
+      confirmButtonText: t('fee.confirm'),
+      cancelButtonText: t('fee.cancel'),
       type: 'warning'
     })
     
-    ElMessage.info('正在触发自动消耗...')
+    ElMessage.info(t('fee.triggeringAutoConsume'))
     const response = await api.post(`/fees/trigger-auto-consume/${row.id}`)
     
     ElMessage.success(response.data.message)
@@ -972,13 +975,13 @@ const triggerAutoConsume = async (row) => {
   } catch (error) {
     if (error !== 'cancel') {
       window.logger.error('触发消耗失败:', error)
-      ElMessage.error('触发消耗失败: ' + (error.response?.data?.detail || error.message))
+      ElMessage.error(t('fee.triggerConsumeFailed') + ': ' + (error.response?.data?.detail || error.message))
     }
   }
 }
 
 const thresholdRules = {
-  alert_threshold: [{ required: true, message: '请输入预警阈值', trigger: 'blur' }]
+  alert_threshold: [{ required: true, message: t('fee.alertThresholdRequired'), trigger: 'blur' }]
 }
 
 const currentAlert = ref({})
@@ -1006,7 +1009,7 @@ const feeLogsPagination = ref({
 // 导出单个学员课时费记录
 const exportStudentFeeLogs = async () => {
   if (!currentRow.value) {
-    ElMessage.warning('请先选择学员')
+    ElMessage.warning(t('fee.selectStudentFirst'))
     return
   }
   
@@ -1024,18 +1027,18 @@ const exportStudentFeeLogs = async () => {
     const url = window.URL.createObjectURL(new Blob([response.data]))
     const link = document.createElement('a')
     link.href = url
-    const studentName = currentRow.value.student_name || '学员'
-    const courseName = currentRow.value.course_name || '科目'
-    link.setAttribute('download', `${studentName}_${courseName}_课时费记录_${new Date().toLocaleDateString('zh-CN')}.xlsx`)
+    const studentName = currentRow.value.student_name || t('fee.defaultStudentName')
+    const courseName = currentRow.value.course_name || t('fee.defaultCourseName')
+    link.setAttribute('download', `${studentName}_${courseName}_${t('fee.feeRecordExport')}_${new Date().toLocaleDateString('zh-CN')}.xlsx`)
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
     window.URL.revokeObjectURL(url)
     
-    ElMessage.success('导出成功')
+    ElMessage.success(t('fee.exportSuccessMsg'))
   } catch (error) {
     window.logger.error('导出失败:', error)
-    ElMessage.error('导出失败')
+    ElMessage.error(t('fee.exportFailed'))
   } finally {
     exportLoading.value = false
   }
@@ -1059,7 +1062,7 @@ const fetchStudentFees = async () => {
     pagination.value.total = response.data.total
   } catch (error) {
     window.logger.error('获取课时费记录失败:', error)
-    ElMessage.error('获取课时费记录失败')
+    ElMessage.error(t('fee.fetchFeeRecordsFailed'))
   } finally {
     loading.value = false
   }
@@ -1123,7 +1126,7 @@ const handleAdd = async () => {
       try {
         // 防止重复提交
         if (isSubmitting.value) {
-          ElMessage.warning('正在提交中，请勿重复点击')
+          ElMessage.warning(t('fee.submitting'))
           return
         }
         isSubmitting.value = true
@@ -1170,12 +1173,12 @@ const handleAdd = async () => {
         window.logger.log('创建课费记录数据:', createData)
         await api.post('/fees/student-fees', createData)
         
-        ElMessage.success('创建成功')
+        ElMessage.success(t('fee.createSuccess'))
         addDialogVisible.value = false
         fetchStudentFees()
       } catch (error) {
         window.logger.error('创建失败:', error)
-        ElMessage.error('创建失败: ' + (error.response?.data?.detail || error.message))
+        ElMessage.error(t('fee.createFailed') + ': ' + (error.response?.data?.detail || error.message))
       } finally {
         isSubmitting.value = false
       }
@@ -1217,30 +1220,30 @@ const handleEdit = async () => {
           is_active: editForm.value.is_active
         }
         await api.put(`/fees/student-fees/${currentFee.value.id}`, updateData)
-        ElMessage.success('更新成功')
+        ElMessage.success(t('fee.updateSuccess'))
         editDialogVisible.value = false
         fetchStudentFees()
       } catch (error) {
         window.logger.error('更新失败:', error)
-        ElMessage.error('更新失败')
+        ElMessage.error(t('fee.updateFailed'))
       }
     }
   })
 }
 
 const handleDelete = (row) => {
-  ElMessageBox.confirm('确定要删除这条课时费记录吗？', '提示', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
+  ElMessageBox.confirm(t('fee.confirmDeleteFeeRecord'), t('fee.confirmTitle'), {
+    confirmButtonText: t('fee.confirm'),
+    cancelButtonText: t('fee.cancel'),
     type: 'warning'
   }).then(async () => {
     try {
       await api.delete(`/fees/student-fees/${row.id}`)
-      ElMessage.success('删除成功')
+      ElMessage.success(t('fee.deleteSuccess'))
       fetchStudentFees()
     } catch (error) {
       window.logger.error('删除失败:', error)
-      ElMessage.error('删除失败')
+      ElMessage.error(t('fee.deleteFailed'))
     }
   }).catch(() => {})
 }
@@ -1277,23 +1280,23 @@ const handlePayment = async () => {
           lesson_count: lessonCount,
           discount_amount: discountAmount,
           payment_date: paymentForm.value.payment_date || null,
-          description: paymentForm.value.description || `追缴（${lessonCount}节课，${lessonCount * 2}小时）${discountAmount > 0 ? `，优惠${discountAmount}元` : ''}，${paymentForm.value.payment_method}`
+          description: paymentForm.value.description || t('fee.paymentDescription', { lessonCount, hours: lessonCount * 2, discount: discountAmount > 0 ? t('fee.discountYuan', { amount: discountAmount }) : '', method: paymentForm.value.payment_method })
         }
         
         window.logger.log('追缴费用数据:', paymentData)
         await api.post('/fees/payments', paymentData)
-        ElMessage.success('缴费成功')
+        ElMessage.success(t('fee.paymentSuccessMsg'))
         paymentDialogVisible.value = false
         fetchStudentFees()
       } catch (error) {
         window.logger.error('缴费失败:', error)
         const errorMsg = error.response?.data?.detail
         if (Array.isArray(errorMsg)) {
-          ElMessage.error('缴费失败: ' + errorMsg.map(e => e.msg).join(', '))
+          ElMessage.error(t('fee.paymentFailed') + ': ' + errorMsg.map(e => e.msg).join(', '))
         } else if (typeof errorMsg === 'object') {
-          ElMessage.error('缴费失败: ' + JSON.stringify(errorMsg))
+          ElMessage.error(t('fee.paymentFailed') + ': ' + JSON.stringify(errorMsg))
         } else {
-          ElMessage.error('缴费失败: ' + (errorMsg || error.message))
+          ElMessage.error(t('fee.paymentFailed') + ': ' + (errorMsg || error.message))
         }
       }
     }
@@ -1324,14 +1327,14 @@ const handleRefund = async () => {
           course_id: refundForm.value.course_id,
           amount: refundForm.value.amount,
           refund_date: refundForm.value.refund_date,
-          refund_reason: `${refundForm.value.refund_reason || ''}（退费途径：${refundForm.value.refund_method}）`
+          refund_reason: t('fee.refundReasonWithMethod', { reason: refundForm.value.refund_reason || '', method: refundForm.value.refund_method })
         })
-        ElMessage.success('退费成功')
+        ElMessage.success(t('fee.refundSuccessMsg'))
         refundDialogVisible.value = false
         fetchStudentFees()
       } catch (error) {
         window.logger.error('退费失败:', error)
-        ElMessage.error('退费失败')
+        ElMessage.error(t('fee.refundFailed'))
       }
     }
   })
@@ -1357,7 +1360,7 @@ const showFeeLogsDialog = async (row) => {
     feeLogsPagination.value.total = response.data.total || response.data.length
   } catch (error) {
     window.logger.error('获取课时费记录失败:', error)
-    ElMessage.error('获取课时费记录失败')
+    ElMessage.error(t('fee.fetchFeeRecordsFailed'))
   } finally {
     feeLogsLoading.value = false
   }
@@ -1374,13 +1377,13 @@ const showAlerts = async () => {
     const response = await api.get('/fees/alerts')
     alerts.value = response.data
     if (alerts.value.length === 0) {
-      ElMessage.info('暂无需要收费提醒的学员')
+      ElMessage.info(t('fee.noReminderStudents'))
     } else {
       alertsDialogVisible.value = true
     }
   } catch (error) {
-    window.logger.error('获取收费提醒失败:', error)
-    ElMessage.error('获取收费提醒失败')
+    window.logger.error('获取课费提醒失败:', error)
+    ElMessage.error(t('fee.fetchReminderFailed'))
   }
 }
 
@@ -1399,12 +1402,12 @@ const handleUpdateThreshold = async () => {
     if (valid) {
       try {
         await api.put(`/fees/alert-threshold/${currentAlert.value.fee_id}`, thresholdForm.value)
-        ElMessage.success('预警阈值更新成功')
+        ElMessage.success(t('fee.thresholdUpdateSuccess'))
         thresholdDialogVisible.value = false
         showAlerts()
       } catch (error) {
         window.logger.error('更新预警阈值失败:', error)
-        ElMessage.error('更新预警阈值失败')
+        ElMessage.error(t('fee.thresholdUpdateFailed'))
       }
     }
   })
@@ -1424,16 +1427,16 @@ const exportPaymentRecords = async () => {
     const url = window.URL.createObjectURL(new Blob([response.data]))
     const link = document.createElement('a')
     link.href = url
-    link.setAttribute('download', `学员收费记录_${new Date().toLocaleDateString('zh-CN')}.xlsx`)
+    link.setAttribute('download', `${t('fee.studentFeeRecordExport')}_${new Date().toLocaleDateString('zh-CN')}.xlsx`)
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
     window.URL.revokeObjectURL(url)
     
-    ElMessage.success('导出成功')
+    ElMessage.success(t('fee.exportSuccessMsg'))
   } catch (error) {
     window.logger.error('导出失败:', error)
-    ElMessage.error('导出失败')
+    ElMessage.error(t('fee.exportFailed'))
   }
 }
 
@@ -1451,16 +1454,16 @@ const exportFeeLogs = async () => {
     const url = window.URL.createObjectURL(new Blob([response.data]))
     const link = document.createElement('a')
     link.href = url
-    link.setAttribute('download', `课时费记录_${new Date().toLocaleDateString('zh-CN')}.xlsx`)
+    link.setAttribute('download', `${t('fee.feeRecordExport')}_${new Date().toLocaleDateString('zh-CN')}.xlsx`)
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
     window.URL.revokeObjectURL(url)
     
-    ElMessage.success('导出成功')
+    ElMessage.success(t('fee.exportSuccessMsg'))
   } catch (error) {
     window.logger.error('导出失败:', error)
-    ElMessage.error('导出失败')
+    ElMessage.error(t('fee.exportFailed'))
   }
 }
 
@@ -1478,7 +1481,7 @@ const formatContentFeedback = (content) => {
   
   return lines.map(line => {
     // 将 "内容："、"作业："、"注意：" 等标签加粗
-    return line.replace(/^(内容|作业|注意)(：)/g, '<strong>$1$2</strong>')
+    return line.replace(new RegExp(`^(${t('fee.content')}|${t('fee.homework')}|${t('fee.attention')})(：)`, 'g'), '<strong>$1$2</strong>')
   }).join('<br/>')
 }
 
@@ -1494,7 +1497,7 @@ const parseContentFeedbackForTooltip = (feedback) => {
       }
     }
     return {
-      label: '反馈',
+      label: t('fee.feedback'),
       content: line.trim()
     }
   })
@@ -1511,9 +1514,9 @@ const getLogTypeColor = (type) => {
 
 const getLogTypeText = (type) => {
   const texts = {
-    'payment': '收费',
-    'refund': '退费',
-    'consume': '消耗'
+    'payment': t('fee.payment'),
+    'refund': t('fee.refundType'),
+    'consume': t('fee.consume')
   }
   return texts[type] || type
 }
@@ -1641,7 +1644,7 @@ onMounted(() => {
         try {
           const smartData = JSON.parse(sessionStorage.getItem('smartCommandData'))
           if (smartData.target_path && smartData.target_label) {
-            ElMessage.info(`已找到学员"${searchQuery}"的课费记录，正在跳转到${smartData.target_label}...`)
+            ElMessage.info(t('fee.foundStudentJumping', { name: searchQuery, label: smartData.target_label }))
             setTimeout(() => {
               window.location.href = `${smartData.target_path}?filter_by=student&filter_value=${encodeURIComponent(searchQuery)}`
             }, 1500)
@@ -1689,7 +1692,7 @@ onMounted(() => {
               description: ''
             }
             paymentDialogVisible.value = true
-            ElMessage.info('已为您打开收费页面，请确认信息后提交')
+            ElMessage.info(t('fee.paymentPageOpened'))
           } else if (action === 'refund') {
             // 打开退费对话框并预填充
             currentFee.value = matchingFee
@@ -1702,7 +1705,7 @@ onMounted(() => {
               description: ''
             }
             refundDialogVisible.value = true
-            ElMessage.info('已为您打开退费页面，请确认信息后提交')
+            ElMessage.info(t('fee.refundPageOpened'))
           }
         }
       } catch (error) {
@@ -1723,7 +1726,7 @@ onMounted(() => {
       
       // 立即打开对话框，API会根据ID查询数据
       showFeeLogsDialog(row)
-      ElMessage.success('正在加载课时费记录...')
+      ElMessage.success(t('fee.loadingFeeLogs'))
     }
   }
   

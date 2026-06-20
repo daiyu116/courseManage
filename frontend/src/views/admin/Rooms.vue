@@ -8,49 +8,49 @@
         <el-col :span="3">
           <el-button type="primary" @click="goToPage('/admin/dashboard')" style="width: 100%;height: 100%;">
             <el-icon><Reading /></el-icon>
-            面板
+            {{ t('nav.dashboard') }}
           </el-button>
         </el-col>
         <el-col :span="3">
           <el-button type="primary" @click="goToPage('/admin/courses')" style="width: 100%;height: 100%;">
             <el-icon><Reading /></el-icon>
-            科目管理
+            {{ t('nav.courses') }}
           </el-button>
         </el-col>
         <el-col :span="3">
           <el-button type="success" @click="goToPage('/admin/teachers')" style="width: 100%;height: 100%;">
             <el-icon><User /></el-icon>
-            导师管理
+            {{ t('nav.teachers') }}
           </el-button>
         </el-col>
         <el-col :span="3">
           <el-button type="success" @click="goToPage('/admin/classes')" style="width: 100%;height: 100%;">
             <el-icon><User /></el-icon>
-            班级管理
+            {{ t('nav.classes') }}
           </el-button>
         </el-col>
         <el-col :span="3">
           <el-button type="warning" @click="goToPage('/admin/students')" style="width: 100%;height: 100%;">
             <el-icon><UserFilled /></el-icon>
-            学员管理
+            {{ t('nav.students') }}
           </el-button>
         </el-col>
         <el-col :span="3">
           <el-button type="danger" @click="goToPage('/admin/leaves')" style="width: 100%;height: 100%;">
             <el-icon><Calendar /></el-icon>
-            假日管理
+            {{ t('nav.leaves') }}
           </el-button>
         </el-col>
         <el-col :span="3">
           <el-button type="primary" @click="goToPage('/admin/schedules')" style="width: 100%;height: 100%;">
             <el-icon><Clock /></el-icon>
-            排课管理
+            {{ t('nav.schedules') }}
           </el-button>
         </el-col>
         <el-col :span="3">
           <el-button type="primary" @click="goToPage('/admin/conditions')" style="width: 100%;height: 100%;">
             <el-icon><Setting /></el-icon>
-            条件管理
+            {{ t('nav.conditions') }}
           </el-button>
         </el-col>
       </el-row>
@@ -59,19 +59,19 @@
     <el-card>
       <template #header>
         <div class="card-header">
-          <span>教室管理</span>
+          <span>{{ t('rooms.title') }}</span>
           <div class="button-group">
             <el-button type="info" @click="goBack">
               <el-icon><ArrowLeft /></el-icon>
-              返回上一页
+              {{ t('common.back') }}
             </el-button>
             <el-button type="primary" @click="showAddDialog">
               <el-icon><Plus /></el-icon>
-              新增教室
+              {{ t('rooms.addRoom') }}
             </el-button>
             <el-button type="success" @click="showBatchAddDialog">
               <el-icon><Upload /></el-icon>
-              批量添加
+              {{ t('common.batchAdd') }}
             </el-button>
           </div>
         </div>
@@ -80,7 +80,7 @@
       <div class="search-bar">
         <el-input
           v-model="searchKeyword"
-          placeholder="搜索教室名称、代码或位置"
+          :placeholder="t('rooms.searchPlaceholder')"
           style="width: 300px"
           clearable
           @clear="fetchRooms"
@@ -92,28 +92,28 @@
             </el-button>
           </template>
         </el-input>
-        <el-select v-model="facilitiesFilter" placeholder="设施类型" clearable style="width: 150px" @change="fetchRooms">
-          <el-option label="多媒体" value="多媒体" />
-          <el-option label="普通" value="普通" />
+        <el-select v-model="facilitiesFilter" :placeholder="t('rooms.facilitiesType')" clearable style="width: 150px" @change="fetchRooms">
+          <el-option :label="t('rooms.multimedia')" value="多媒体" />
+          <el-option :label="t('rooms.normal')" value="普通" />
         </el-select>
-        <el-select v-model="isActiveFilter" placeholder="启用状态" clearable style="width: 120px" @change="fetchRooms">
-          <el-option label="启用" :value="true" />
-          <el-option label="禁用" :value="false" />
+        <el-select v-model="isActiveFilter" :placeholder="t('rooms.activeStatus')" clearable style="width: 120px" @change="fetchRooms">
+          <el-option :label="t('common.enabled')" :value="true" />
+          <el-option :label="t('common.disabled')" :value="false" />
         </el-select>
-        <el-button @click="resetFilters" style="width: 50px">重置</el-button>
+        <el-button @click="resetFilters" style="width: 50px">{{ t('common.reset') }}</el-button>
       </div>
 
       <el-table :data="rooms" stripe v-loading="loading" style="margin-top: 20px" @sort-change="handleSortChange">
         <el-table-column prop="id" label="ID" width="70" sortable />
-        <el-table-column prop="code" label="教室代码" width="120" sortable />
-        <el-table-column prop="name" label="教室名称" width="200" sortable />
-        <el-table-column prop="location" label="教室位置" width="200" sortable />
-        <el-table-column prop="capacity" label="容量(人数)" width="120" sortable />
-        <el-table-column label="设施" width="450" sortable >
+        <el-table-column prop="code" :label="t('rooms.roomCode')" width="120" sortable />
+        <el-table-column prop="name" :label="t('rooms.roomName')" width="200" sortable />
+        <el-table-column prop="location" :label="t('rooms.roomLocation')" width="200" sortable />
+        <el-table-column prop="capacity" :label="t('rooms.capacity')" width="120" sortable />
+        <el-table-column :label="t('rooms.facilities')" width="450" sortable >
           <template #default="{ row }">
             <div>
               <el-tag :type="row.facilities === '多媒体' ? 'primary' : 'info'" style="margin-right: 10px;">
-                {{ row.facilities }}
+                {{ row.facilities === '多媒体' ? t('rooms.multimedia') : t('rooms.normal') }}
               </el-tag>
             </div>
             <div v-if="row.facility_details" style="margin-top: 3px;">
@@ -128,17 +128,17 @@
               </div>
           </template>
         </el-table-column>
-        <el-table-column label="是否启用" width="100">
+        <el-table-column :label="t('rooms.isActive')" width="100">
             <template #default="{ row }">
                 <el-tag :type="row.is_active ? 'success' : 'info'">
-                {{ row.is_active ? '启用' : '禁用' }}
+                {{ row.is_active ? t('common.enabled') : t('common.disabled') }}
                 </el-tag>
             </template>
         </el-table-column>
-        <el-table-column label="操作" width="80" fixed="right">
+        <el-table-column :label="t('common.operation')" width="80" fixed="right">
           <template #default="{ row }">
-            <el-button size="small" @click="showEditDialog(row)">编辑</el-button>
-            <el-button v-if="currentUser && (currentUser.role === 'super_admin' || currentUser.role === 'course_admin')" size="small" type="danger" @click="handleDelete(row)">删除</el-button>
+            <el-button size="small" @click="showEditDialog(row)">{{ t('common.edit') }}</el-button>
+            <el-button v-if="currentUser && (currentUser.role === 'super_admin' || currentUser.role === 'course_admin')" size="small" type="danger" @click="handleDelete(row)">{{ t('common.delete') }}</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -156,25 +156,25 @@
 
     <el-dialog v-model="dialogVisible" :title="dialogTitle" width="600px" draggable>
       <el-form :model="form" :rules="rules" ref="formRef" label-width="120px">
-        <el-form-item label="教室代码" prop="code">
-          <el-input v-model="form.code" :placeholder="lastRoomCode ? `请输入教室代码(不能与现有重复，当前已到：${lastRoomCode})` : '请输入教室代码(不能与现有重复)'" :disabled="!!form.id" />
+        <el-form-item :label="t('rooms.roomCode')" prop="code">
+          <el-input v-model="form.code" :placeholder="lastRoomCode ? t('rooms.roomCodePlaceholderWithLast', { code: lastRoomCode }) : t('rooms.roomCodePlaceholder')" :disabled="!!form.id" />
         </el-form-item>
-        <el-form-item label="教室名称" prop="name">
-          <el-input v-model="form.name" placeholder="请输入教室名称" />
+        <el-form-item :label="t('rooms.roomName')" prop="name">
+          <el-input v-model="form.name" :placeholder="t('rooms.roomNamePlaceholder')" />
         </el-form-item>
-        <el-form-item label="教室位置" prop="location">
-          <el-input v-model="form.location" placeholder="请输入教室位置" />
+        <el-form-item :label="t('rooms.roomLocation')" prop="location">
+          <el-input v-model="form.location" :placeholder="t('rooms.roomLocationPlaceholder')" />
         </el-form-item>
-        <el-form-item label="容量(人数)" prop="capacity">
+        <el-form-item :label="t('rooms.capacity')" prop="capacity">
           <el-input-number v-model="form.capacity" :min="1" :max="200" />
         </el-form-item>
-        <el-form-item label="设施" prop="facilities">
-          <el-select v-model="form.facilities" placeholder="请选择设施类型">
-            <el-option label="多媒体" value="多媒体" />
-            <el-option label="普通" value="普通" />
+        <el-form-item :label="t('rooms.facilities')" prop="facilities">
+          <el-select v-model="form.facilities" :placeholder="t('rooms.selectFacilitiesPlaceholder')">
+            <el-option :label="t('rooms.multimedia')" value="多媒体" />
+            <el-option :label="t('rooms.normal')" value="普通" />
           </el-select>
         </el-form-item>
-        <el-form-item label="设施内容" prop="facility_details">
+        <el-form-item :label="t('rooms.facilityDetails')" prop="facility_details">
           <el-checkbox-group v-model="form.facility_details">
             <el-checkbox 
               v-for="item in facilityOptions[form.facilities] || []" 
@@ -185,69 +185,72 @@
             </el-checkbox>
           </el-checkbox-group>
         </el-form-item>
-        <el-form-item label="是否启用" prop="is_active">
+        <el-form-item :label="t('rooms.isActive')" prop="is_active">
             <el-switch v-model="form.is_active" />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleSubmit">确定</el-button>
+        <el-button @click="dialogVisible = false">{{ t('common.cancel') }}</el-button>
+        <el-button type="primary" @click="handleSubmit">{{ t('common.confirm') }}</el-button>
       </template>
     </el-dialog>
     <!-- 批量添加教室对话框 -->
-    <el-dialog v-model="batchAddDialogVisible" title="批量添加教室" width="800px" draggable>
+    <el-dialog v-model="batchAddDialogVisible" :title="t('rooms.batchAddTitle')" width="800px" draggable>
       <div style="margin-bottom: 20px;">
         <el-alert
-          title="批量添加说明"
+          :title="t('rooms.batchAddInfo')"
           type="info"
           :closable="false"
           show-icon
         >
           <template #default>
-            <div>请按照以下格式输入教室信息，每行一个教室：</div>
+            <div>{{ t('rooms.batchAddFormat') }}</div>
             <div style="margin-top: 10px; font-family: monospace; background: #f5f7fa; padding: 10px; border-radius: 4px;">
-              代码(*必填),名称(*必填),位置,容量(人数),设施
+              {{ t('rooms.batchAddFormatLine') }}
             </div>
-            <div style="margin-top: 10px;">例如：</div>
+            <div style="margin-top: 10px;">{{ t('rooms.batchAddExample') }}</div>
             <div style="margin-top: 5px; font-family: monospace; background: #f5f7fa; padding: 10px; border-radius: 4px;">
-              R001,101教室,一楼东侧,30,多媒体<br/>
-              R002,102教室,二楼西侧,40,普通
+              {{ t('rooms.batchAddExampleLine1') }}<br/>
+              {{ t('rooms.batchAddExampleLine2') }}
             </div>
-            <div style="margin-top: 10px;">注意：</div>
+            <div style="margin-top: 10px;">{{ t('rooms.batchAddNote') }}</div>
             <ul style="margin-top: 5px;">
-              <li>代码不能与现有教室重复否则无法创建，上一个教室代码：<span v-if="lastRoomCode">{{ lastRoomCode }}</span><span v-else>无</span>，请在这个代码+1的基础上开始</li>
-              <li>设施：多媒体/普通</li>
+              <li>{{ t('rooms.batchAddNoteCode') }}<span v-if="lastRoomCode">{{ lastRoomCode }}</span><span v-else>{{ t('rooms.batchAddNoteNone') }}</span>{{ t('rooms.batchAddNoteCodeContinue') }}</li>
+              <li>{{ t('rooms.batchAddNoteFacilities') }}</li>
             </ul>
           </template>
         </el-alert>
       </div>
       
       <el-form label-width="120px">
-        <el-form-item label="教室信息">
+        <el-form-item :label="t('rooms.roomInfo')">
           <el-input
             v-model="batchAddText"
             type="textarea"
             :rows="15"
-            placeholder="请输入教室信息，每行一个教室"
+            :placeholder="t('rooms.batchAddPlaceholder')"
           />
         </el-form-item>
       </el-form>
       
       <template #footer>
-        <el-button @click="batchAddDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleBatchAddSubmit" :loading="batchAddLoading">批量添加</el-button>
+        <el-button @click="batchAddDialogVisible = false">{{ t('common.cancel') }}</el-button>
+        <el-button type="primary" @click="handleBatchAddSubmit" :loading="batchAddLoading">{{ t('common.batchAdd') }}</el-button>
       </template>
     </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ArrowLeft, Plus, Search, Reading, User, UserFilled, OfficeBuilding, Calendar, Clock, Upload } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import api from '@/utils/api'
+import { useI18n } from 'vue-i18n'
 
+
+const { t } = useI18n()
 const currentUser = ref(null)
 const router = useRouter()
 const route = useRoute()
@@ -265,10 +268,10 @@ const batchAddDialogVisible = ref(false)
 const batchAddText = ref('')
 const batchAddLoading = ref(false)
 // 设施选项定义
-const facilityOptions = {
-  普通: ['手写白板', '电风扇', '空调'],
-  多媒体: ['投影仪', '投屏电视', '计算机', '手写白板', '电风扇', '空调']
-}
+const facilityOptions = computed(() => ({
+  '普通': [t('rooms.whiteboard'), t('rooms.fan'), t('rooms.airConditioner')],
+  '多媒体': [t('rooms.projector'), t('rooms.tv'), t('rooms.computer'), t('rooms.whiteboard'), t('rooms.fan'), t('rooms.airConditioner')]
+}))
 
 const goBack = () => {
   router.back()
@@ -323,8 +326,8 @@ const originalForm = ref({
 })
 
 const rules = {
-  code: [{ required: true, message: '请输入教室代码', trigger: 'blur' }],
-  name: [{ required: true, message: '请输入教室名称', trigger: 'blur' }]
+  code: [{ required: true, message: () => t('rooms.roomCodeRequired'), trigger: 'blur' }],
+  name: [{ required: true, message: () => t('rooms.roomNameRequired'), trigger: 'blur' }]
 }
 
 const fetchRooms = async () => {
@@ -386,7 +389,7 @@ const resetFilters = () => {
 }
 
 const showAddDialog = () => {
-  dialogTitle.value = '新增教室'
+  dialogTitle.value = t('rooms.addRoomTitle')
   
   // 检查是否有预填充数据
   const storageData = sessionStorage.getItem('smartCommandData')
@@ -419,7 +422,7 @@ const showBatchAddDialog = () => {
  
 const handleBatchAddSubmit = async () => {
   if (!batchAddText.value.trim()) {
-    ElMessage.warning('请输入教室信息')
+    ElMessage.warning(t('rooms.batchAddWarning'))
     return
   }
   
@@ -433,7 +436,7 @@ const handleBatchAddSubmit = async () => {
     
     const parts = line.split(',').map(p => p.trim())
     if (parts.length < 2) {
-      errors.push(`第${i + 1}行：格式错误，至少需要代码和名称`)
+      errors.push(t('rooms.lineError', { n: i + 1, msg: t('rooms.lineFormatError') }))
       continue
     }
     
@@ -450,14 +453,14 @@ const handleBatchAddSubmit = async () => {
   }
   
   if (errors.length > 0) {
-    ElMessage.error(`发现${errors.length}个错误：\n${errors.join('\n')}`)
+    ElMessage.error(t('rooms.batchAddErrorCount', { count: errors.length }) + '\n' + errors.join('\n'))
     if (roomsToAdd.length === 0) {
       return
     }
   }
   
   if (roomsToAdd.length === 0) {
-    ElMessage.warning('没有有效的教室信息')
+    ElMessage.warning(t('rooms.batchAddNoValid'))
     return
   }
   
@@ -473,28 +476,28 @@ const handleBatchAddSubmit = async () => {
         successCount++
       } catch (error) {
         failCount++
-        failMessages.push(`${room.code}(${room.name}): ${error.response?.data?.detail || error.message}`)
+        failMessages.push(t('rooms.batchAddFailDetail', { code: room.code, name: room.name, detail: error.response?.data?.detail || error.message }))
       }
     }
     
     if (failCount > 0) {
-      ElMessage.warning(`批量添加完成：成功${successCount}个，失败${failCount}个\n失败详情：\n${failMessages.join('\n')}`)
+      ElMessage.warning(t('rooms.batchAddPartial', { success: successCount, fail: failCount }) + '\n' + failMessages.join('\n'))
     } else {
-      ElMessage.success(`批量添加成功，共添加${successCount}个教室`)
+      ElMessage.success(t('rooms.batchAddSuccess', { n: successCount }))
     }
     
     batchAddDialogVisible.value = false
     await fetchRooms()
   } catch (error) {
     window.logger.error('批量添加教室失败:', error)
-    ElMessage.error('批量添加教室失败')
+    ElMessage.error(t('rooms.batchAddFailed'))
   } finally {
     batchAddLoading.value = false
   }
 }
 
 const showEditDialog = (row) => {
-  dialogTitle.value = '编辑教室'
+  dialogTitle.value = t('rooms.editRoomTitle')
   const formData = {
     id: row.id,
     code: row.code,
@@ -552,35 +555,35 @@ const handleSubmit = async () => {
             form.value.is_active !== originalForm.value.is_active
           
           if (!isChanged) {
-            ElMessage.warning('内容未发生改变，无需保存')
+            ElMessage.warning(t('common.noChange'))
             return
           }
           
           await api.put(`/rooms/${form.value.id}`, submitData)
-          ElMessage.success('更新成功')
+          ElMessage.success(t('common.updateSuccess'))
         } else {
           await api.post('/rooms', submitData)
-          ElMessage.success('创建成功')
+          ElMessage.success(t('common.createSuccess'))
         }
         dialogVisible.value = false
         fetchRooms()
       } catch (error) {
         window.logger.error('操作失败:', error)
-        ElMessage.error('操作失败')
+        ElMessage.error(t('rooms.operationFailed'))
       }
     }
   })
 }
 
 const handleDelete = (row) => {
-  ElMessageBox.confirm('确定要删除该教室吗？', '提示', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
+  ElMessageBox.confirm(t('rooms.confirmDeleteRoom'), t('common.tip'), {
+    confirmButtonText: t('common.confirm'),
+    cancelButtonText: t('common.cancel'),
     type: 'warning'
   }).then(async () => {
     try {
       await api.delete(`/rooms/${row.id}`)
-      ElMessage.success('删除成功')
+      ElMessage.success(t('common.deleteSuccess'))
       fetchRooms()
     } catch (error) {
       window.logger.error('删除失败:', error)
@@ -640,7 +643,7 @@ onMounted(async () => {
     try {
       const smartData = JSON.parse(sessionStorage.getItem('smartCommandData'))
       if (smartData.target_path && smartData.target_label) {
-        ElMessage.info(`已找到相关教室，正在跳转到${smartData.target_label}...`)
+        ElMessage.info(t('rooms.foundRelatedRoom', { label: smartData.target_label }))
         setTimeout(() => {
           window.location.href = `${smartData.target_path}?filter_by=room&filter_value=${encodeURIComponent(searchQuery || '')}`
         }, 1500)
@@ -681,7 +684,7 @@ onMounted(async () => {
         }
       } catch (error) {
         window.logger.error('获取教室信息失败:', error)
-        ElMessage.error('无法加载教室信息')
+        ElMessage.error(t('rooms.fetchRoomFailed'))
       }
     }
   }

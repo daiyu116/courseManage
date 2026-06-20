@@ -8,49 +8,49 @@
         <el-col :span="3">
           <el-button type="primary" @click="goToPage('/admin/dashboard')" style="width: 100%;height: 100%;">
             <el-icon><Reading /></el-icon>
-            面板
+            {{ t('nav.dashboard') }}
           </el-button>
         </el-col>
         <el-col :span="3">
           <el-button type="primary" @click="goToPage('/admin/courses')" style="width: 100%;height: 100%;">
             <el-icon><Reading /></el-icon>
-            科目管理
+            {{ t('nav.courses') }}
           </el-button>
         </el-col>
         <el-col :span="3">
           <el-button type="success" @click="goToPage('/admin/teachers')" style="width: 100%;height: 100%;">
             <el-icon><User /></el-icon>
-            导师管理
+            {{ t('nav.teachers') }}
           </el-button>
         </el-col>
         <el-col :span="3">
           <el-button type="success" @click="goToPage('/admin/classes')" style="width: 100%;height: 100%;">
             <el-icon><User /></el-icon>
-            班级管理
+            {{ t('nav.classes') }}
           </el-button>
         </el-col>
         <el-col :span="3">
           <el-button type="warning" @click="goToPage('/admin/students')" style="width: 100%;height: 100%;">
             <el-icon><UserFilled /></el-icon>
-            学员管理
+            {{ t('nav.students') }}
           </el-button>
         </el-col>
         <el-col :span="3">
           <el-button type="info" @click="goToPage('/admin/rooms')" style="width: 100%;height: 100%;">
             <el-icon><OfficeBuilding /></el-icon>
-            教室管理
+            {{ t('nav.rooms') }}
           </el-button>
         </el-col>
         <el-col :span="3">
           <el-button type="primary" @click="goToPage('/admin/schedules')" style="width: 100%;height: 100%;">
             <el-icon><Clock /></el-icon>
-            排课管理
+            {{ t('nav.schedules') }}
           </el-button>
         </el-col>
         <el-col :span="3">
           <el-button type="primary" @click="goToPage('/admin/conditions')" style="width: 100%;height: 100%;">
             <el-icon><Setting /></el-icon>
-            条件管理
+            {{ t('nav.conditions') }}
           </el-button>
         </el-col>
       </el-row>
@@ -59,19 +59,19 @@
     <el-card>
       <template #header>
         <div class="card-header">
-          <span>假期管理</span>
+          <span>{{ t('holidays.title') }}</span>
           <div class="button-group">
             <el-button type="info" @click="goBack">
               <el-icon><ArrowLeft /></el-icon>
-              返回上一页
+              {{ t('common.back') }}
             </el-button>
             <el-button type="primary" @click="showAddDialog">
               <el-icon><Plus /></el-icon>
-              新增假期
+              {{ t('holidays.addHoliday') }}
             </el-button>
             <el-button type="success" @click="showBatchAddDialog">
               <el-icon><Upload /></el-icon>
-              批量添加
+              {{ t('common.batchAdd') }}
             </el-button>
           </div>
         </div>
@@ -79,17 +79,17 @@
 
       <el-table :data="holidays" stripe v-loading="loading" style="margin-top: 20px">
         <el-table-column prop="id" label="ID" width="80" />
-        <el-table-column prop="date" label="日期" width="150">
+        <el-table-column prop="date" :label="t('holidays.holidayDate')" width="150">
           <template #default="{ row }">
             {{ formatDate(row.date) }}
           </template>
         </el-table-column>
-        <el-table-column prop="name" label="假期名称" width="200" />
-        <el-table-column prop="description" label="描述" min-width="200" show-overflow-tooltip />
-        <el-table-column label="操作" width="90" fixed="right">
+        <el-table-column prop="name" :label="t('holidays.holidayName')" width="200" />
+        <el-table-column prop="description" :label="t('holidays.holidayDescription')" min-width="200" show-overflow-tooltip />
+        <el-table-column :label="t('common.operation')" width="90" fixed="right">
           <template #default="{ row }">
-            <el-button size="small" @click="showEditDialog(row)">编辑</el-button>
-            <el-button size="small" type="danger" @click="handleDelete(row)">删除</el-button>
+            <el-button size="small" @click="showEditDialog(row)">{{ t('common.edit') }}</el-button>
+            <el-button size="small" type="danger" @click="handleDelete(row)">{{ t('common.delete') }}</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -107,70 +107,70 @@
 
     <el-dialog v-model="dialogVisible" :title="dialogTitle" width="600px" draggable>
       <el-form :model="form" :rules="rules" ref="formRef" label-width="120px">
-        <el-form-item label="日期" prop="date">
+        <el-form-item :label="t('holidays.holidayDate')" prop="date">
           <el-date-picker
             v-model="form.date"
             type="date"
-            placeholder="选择日期"
+            :placeholder="t('holidays.datePlaceholder')"
             value-format="YYYY-MM-DD"
             style="width: 100%"
           />
         </el-form-item>
-        <el-form-item label="假期名称" prop="name">
-          <el-input v-model="form.name" placeholder="请输入假期名称" />
+        <el-form-item :label="t('holidays.holidayName')" prop="name">
+          <el-input v-model="form.name" :placeholder="t('holidays.holidayNamePlaceholder')" />
         </el-form-item>
-        <el-form-item label="描述" prop="description">
-          <el-input v-model="form.description" type="textarea" :rows="3" placeholder="请输入描述" />
+        <el-form-item :label="t('holidays.holidayDescription')" prop="description">
+          <el-input v-model="form.description" type="textarea" :rows="3" :placeholder="t('holidays.descriptionPlaceholder')" />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleSubmit">确定</el-button>
+        <el-button @click="dialogVisible = false">{{ t('common.cancel') }}</el-button>
+        <el-button type="primary" @click="handleSubmit">{{ t('common.confirm') }}</el-button>
       </template>
     </el-dialog>
     <!-- 批量添加假期对话框 -->
-    <el-dialog v-model="batchAddDialogVisible" title="批量添加假期" width="800px" draggable>
+    <el-dialog v-model="batchAddDialogVisible" :title="t('holidays.batchAddTitle')" width="800px" draggable>
       <div style="margin-bottom: 20px;">
         <el-alert
-          title="批量添加说明"
+          :title="t('holidays.batchAddInfo')"
           type="info"
           :closable="false"
           show-icon
         >
           <template #default>
-            <div>请按照以下格式输入假期信息，每行一个假期：</div>
+            <div>{{ t('holidays.batchAddFormat') }}</div>
             <div style="margin-top: 10px; font-family: monospace; background: #f5f7fa; padding: 10px; border-radius: 4px;">
-              日期,假期名称,描述
+              {{ t('holidays.batchAddFormatLine') }}
             </div>
-            <div style="margin-top: 10px;">例如：</div>
+            <div style="margin-top: 10px;">{{ t('holidays.batchAddExample') }}</div>
             <div style="margin-top: 5px; font-family: monospace; background: #f5f7fa; padding: 10px; border-radius: 4px;">
-              2024-05-01,劳动节,五一劳动节假期<br/>
-              2024-05-02,劳动节,五一劳动节假期<br/>
-              2024-05-03,劳动节,五一劳动节假期
+              {{ t('holidays.batchAddExampleLine1') }}<br/>
+              {{ t('holidays.batchAddExampleLine2') }}<br/>
+              {{ t('holidays.batchAddExampleLine3') }}
             </div>
-            <div style="margin-top: 10px;">注意：</div>
+            <div style="margin-top: 10px;">{{ t('holidays.batchAddNote') }}</div>
             <ul style="margin-top: 5px;">
-              <li>日期格式：YYYY-MM-DD（如：2024-05-01）</li>
-              <li>日期不能与现有假期重复</li>
+              <li>{{ t('holidays.batchAddNoteDateFormat') }}</li>
+              <li>{{ t('holidays.batchAddNoteNoDuplicate') }}</li>
             </ul>
           </template>
         </el-alert>
       </div>
       
       <el-form label-width="120px">
-        <el-form-item label="假期信息">
+        <el-form-item :label="t('holidays.holidayInfo')">
           <el-input
             v-model="batchAddText"
             type="textarea"
             :rows="15"
-            placeholder="请输入假期信息，每行一个假期"
+            :placeholder="t('holidays.batchAddPlaceholder')"
           />
         </el-form-item>
       </el-form>
       
       <template #footer>
-        <el-button @click="batchAddDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleBatchAddSubmit" :loading="batchAddLoading">批量添加</el-button>
+        <el-button @click="batchAddDialogVisible = false">{{ t('common.cancel') }}</el-button>
+        <el-button type="primary" @click="handleBatchAddSubmit" :loading="batchAddLoading">{{ t('common.batchAdd') }}</el-button>
       </template>
     </el-dialog>
   </div>
@@ -183,7 +183,10 @@ import { ArrowLeft, Plus, Search, Reading, User, UserFilled, OfficeBuilding, Cal
 import { ElMessage, ElMessageBox } from 'element-plus'
 import api from '@/utils/api'
 import dayjs from 'dayjs'
+import { useI18n } from 'vue-i18n'
 
+
+const { t } = useI18n()
 const router = useRouter()
 const route = useRoute()
 
@@ -232,8 +235,8 @@ const originalForm = ref({
 })
 
 const rules = {
-  date: [{ required: true, message: '请选择日期', trigger: 'change' }],
-  name: [{ required: true, message: '请输入假期名称', trigger: 'blur' }]
+  date: [{ required: true, message: () => t('holidays.dateRequired'), trigger: 'change' }],
+  name: [{ required: true, message: () => t('holidays.holidayNameRequired'), trigger: 'blur' }]
 }
 
 const fetchHolidays = async () => {
@@ -248,14 +251,14 @@ const fetchHolidays = async () => {
     pagination.value.total = response.data.total
   } catch (error) {
     window.logger.error('获取节假日列表失败:', error)
-    ElMessage.error('获取节假日列表失败')
+    ElMessage.error(t('holidays.fetchHolidaysFailed'))
   } finally {
     loading.value = false
   }
 }
 
 const showAddDialog = () => {
-  dialogTitle.value = '新增假期'
+  dialogTitle.value = t('holidays.addHolidayTitle')
   
   // 检查是否有预填充数据
   const storageData = sessionStorage.getItem('smartCommandData')
@@ -284,7 +287,7 @@ const showBatchAddDialog = () => {
 }
 const handleBatchAddSubmit = async () => {
   if (!batchAddText.value.trim()) {
-    ElMessage.warning('请输入假期信息')
+    ElMessage.warning(t('holidays.batchAddWarning'))
     return
   }
   
@@ -298,14 +301,14 @@ const handleBatchAddSubmit = async () => {
     
     const parts = line.split(',').map(p => p.trim())
     if (parts.length < 2) {
-      errors.push(`第${i + 1}行：格式错误，至少需要日期和假期名称`)
+      errors.push(t('holidays.lineError', { n: i + 1, msg: t('holidays.lineFormatError') }))
       continue
     }
     
     // 验证日期格式
     const dateRegex = /^\d{4}-\d{2}-\d{2}$/
     if (!dateRegex.test(parts[0])) {
-      errors.push(`第${i + 1}行：日期格式错误，应为YYYY-MM-DD格式`)
+      errors.push(t('holidays.lineError', { n: i + 1, msg: t('holidays.lineDateFormatError') }))
       continue
     }
     
@@ -319,14 +322,14 @@ const handleBatchAddSubmit = async () => {
   }
   
   if (errors.length > 0) {
-    ElMessage.error(`发现${errors.length}个错误：\n${errors.join('\n')}`)
+    ElMessage.error(t('holidays.batchAddErrorCount', { count: errors.length }) + '\n' + errors.join('\n'))
     if (holidaysToAdd.length === 0) {
       return
     }
   }
   
   if (holidaysToAdd.length === 0) {
-    ElMessage.warning('没有有效的假期信息')
+    ElMessage.warning(t('holidays.batchAddNoValid'))
     return
   }
   
@@ -342,28 +345,28 @@ const handleBatchAddSubmit = async () => {
         successCount++
       } catch (error) {
         failCount++
-        failMessages.push(`${holiday.date}(${holiday.name}): ${error.response?.data?.detail || error.message}`)
+        failMessages.push(t('holidays.batchAddFailDetail', { date: holiday.date, name: holiday.name, detail: error.response?.data?.detail || error.message }))
       }
     }
     
     if (failCount > 0) {
-      ElMessage.warning(`批量添加完成：成功${successCount}个，失败${failCount}个\n失败详情：\n${failMessages.join('\n')}`)
+      ElMessage.warning(t('holidays.batchAddPartial', { success: successCount, fail: failCount }) + '\n' + failMessages.join('\n'))
     } else {
-      ElMessage.success(`批量添加成功，共添加${successCount}个假期`)
+      ElMessage.success(t('holidays.batchAddSuccess', { n: successCount }))
     }
     
     batchAddDialogVisible.value = false
     await fetchHolidays()
   } catch (error) {
     window.logger.error('批量添加假期失败:', error)
-    ElMessage.error('批量添加假期失败')
+    ElMessage.error(t('holidays.batchAddFailed'))
   } finally {
     batchAddLoading.value = false
   }
 }
 
 const showEditDialog = (row) => {
-  dialogTitle.value = '编辑假期'
+  dialogTitle.value = t('holidays.editHolidayTitle')
   const formData = {
     id: row.id,
     date: row.date,
@@ -389,7 +392,7 @@ const handleSubmit = async () => {
             form.value.description !== originalForm.value.description
           
           if (!isChanged) {
-            ElMessage.warning('内容未发生改变，无需保存')
+            ElMessage.warning(t('common.noChange'))
             return
           }
           
@@ -397,7 +400,7 @@ const handleSubmit = async () => {
             name: form.value.name,
             description: form.value.description
           })
-          ElMessage.success('更新成功')
+          ElMessage.success(t('common.updateSuccess'))
         } else {
           // 确保日期格式正确
           const submitData = {
@@ -407,31 +410,31 @@ const handleSubmit = async () => {
           }
           window.logger.log('提交数据:', submitData)
           await api.post('/holidays/holidays', submitData)
-          ElMessage.success('创建成功')
+          ElMessage.success(t('common.createSuccess'))
         }
         dialogVisible.value = false
         fetchHolidays()
       } catch (error) {
         window.logger.error('操作失败:', error)
-        ElMessage.error(error.response?.data?.detail || '操作失败')
+        ElMessage.error(error.response?.data?.detail || t('common.operationFailed'))
       }
     }
   })
 }
 
 const handleDelete = (row) => {
-  ElMessageBox.confirm('确定要删除该节假日吗？', '提示', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
+  ElMessageBox.confirm(t('holidays.confirmDeleteHoliday'), t('common.tip'), {
+    confirmButtonText: t('common.confirm'),
+    cancelButtonText: t('common.cancel'),
     type: 'warning'
   }).then(async () => {
     try {
       await api.delete(`/holidays/holidays/${row.id}`)
-      ElMessage.success('删除成功')
+      ElMessage.success(t('common.deleteSuccess'))
       fetchHolidays()
     } catch (error) {
       window.logger.error('删除失败:', error)
-      ElMessage.error('删除失败')
+      ElMessage.error(t('holidays.deleteFailed'))
     }
   }).catch(() => {})
 }
@@ -585,4 +588,5 @@ onMounted(() => {
     font-size: 12px;
   }
 }
+
 </style>

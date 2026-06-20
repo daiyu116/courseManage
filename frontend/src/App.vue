@@ -1,46 +1,58 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 // Copyright (C) 2024-2026 courseManage Contributors
 <template>
+  <el-config-provider :locale="elementLocale">
   <el-container class="app-container">
     <el-header class="app-header">
       <div class="header-content">
         <div class="site-title">
-          <img v-if="siteLogo" :src="getFullLogoUrl(siteLogo)" class="site-logo" alt="机构LOGO" />
+          <img v-if="siteLogo" :src="getFullLogoUrl(siteLogo)" class="site-logo" :alt="t('app.orgLogo')" />
           <span class="site-name">{{ siteName || '' }}</span>
-          <span class="system-name">课程信息系统</span>
+          <span class="system-name">{{ t('app.systemName') }}</span>
         </div>
         <div class="header-buttons">
           <el-button type="success" @click="goBack">
             <el-icon><Monitor /></el-icon>
-            <span class="btn-text">管理面板</span>
+            <span class="btn-text">{{ t('app.adminPanel') }}</span>
           </el-button>
           <el-button type="primary" @click="goToScheduleView" class="nav-btn">
             <el-icon><Reading /></el-icon>
-            <span class="btn-text">课程视图</span>
+            <span class="btn-text">{{ t('app.courseView') }}</span>
           </el-button>
           <el-button v-if="canAccessDashboard" type="warning" @click="goToDashboardView" class="nav-btn">
             <el-icon><DataAnalysis /></el-icon>
-            <span class="btn-text">运营大屏</span>
+            <span class="btn-text">{{ t('app.dashboardView') }}</span>
           </el-button>
-          <el-tooltip v-else content="运营大屏为授权功能，请在系统授权管理中激活" placement="bottom">
+          <el-tooltip v-else :content="t('app.dashboardViewTip')" placement="bottom">
             <el-button type="warning" class="nav-btn" disabled>
               <el-icon><Lock /></el-icon>
-              <span class="btn-text">运营大屏</span>
+              <span class="btn-text">{{ t('app.dashboardView') }}</span>
             </el-button>
           </el-tooltip>
         </div>
         <div class="header-actions">
           <el-button type="primary" @click="goToAdmin" v-if="!isAdmin" class="action-btn">
             <el-icon><Lock /></el-icon>
-            <span class="btn-text">登陆·进入后台</span>
+            <span class="btn-text">{{ t('app.loginBackend') }}</span>
           </el-button>
           <div v-else class="user-info">
-            <span class="user-text" :title="'ID: ' + (currentUser?.id || '') + ' 用户名: ' + (currentUser?.username || '')">
-              {{ currentUser?.username || '用户' }}
+            <span class="user-text" :title="'ID: ' + (currentUser?.id || '') + ' ' + t('login.username') + ': ' + (currentUser?.username || '')">
+              {{ currentUser?.username || t('app.user') }}
             </span>
+            <el-dropdown trigger="click" @command="handleLanguageChange" style="margin-right: 8px;">
+              <el-button size="small" circle>
+                <el-icon><svg viewBox="0 0 24 24" fill="currentColor" width="1em" height="1em"><path d="M12.87 15.07l-2.54-2.51.03-.03A17.52 17.52 0 0014.07 6H17V4h-7V2H8v2H1v1.99h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z"/></svg></el-icon>
+              </el-button>
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item command="zh-CN" :disabled="currentLocale === 'zh-CN'">中文</el-dropdown-item>
+                  <el-dropdown-item command="en" :disabled="currentLocale === 'en'">English</el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
             <el-button type="danger" @click="logout" class="action-btn">
               <el-icon><Unlock /></el-icon>
-              <span class="btn-text">退出·返回前台</span>
+              <span class="btn-text">{{ t('app.logoutFrontend') }}</span>
             </el-button>
           </div>
         </div>
@@ -55,52 +67,64 @@
           ©{{ currentYear }} {{ siteName || '' }}
         </div>
         <div class="footer-right" v-if="organizationWebsite || wechatQrcode || workWechatQrcode">
-          <a v-if="organizationWebsite" :href="organizationWebsite" target="_blank" class="footer-link" title="访问机构官网">
-            <el-icon><Link /></el-icon> 机构官网
+          <a v-if="organizationWebsite" :href="organizationWebsite" target="_blank" class="footer-link" :title="t('app.orgWebsite')">
+            <el-icon><Link /></el-icon> {{ t('app.orgWebsite') }}
           </a>
           <el-popover v-if="wechatQrcode" placement="top" trigger="click" width="220">
             <template #reference>
-              <span class="footer-link clickable" title="关注公众号">
-                <el-icon><ChatDotRound /></el-icon> 公众号
+              <span class="footer-link clickable" :title="t('app.wechat')">
+                <el-icon><ChatDotRound /></el-icon> {{ t('app.wechat') }}
               </span>
             </template>
             <div style="text-align: center;">
-              <img :src="getFullLogoUrl(wechatQrcode)" alt="公众号二维码" style="max-width: 200px; max-height: 200px;" />
-              <p style="margin-top: 10px; color: #666;">扫码关注微信公众号</p>
+              <img :src="getFullLogoUrl(wechatQrcode)" :alt="t('app.wechat')" style="max-width: 200px; max-height: 200px;" />
+              <p style="margin-top: 10px; color: #666;">{{ t('app.wechatTip') }}</p>
             </div>
           </el-popover>
           <el-popover v-if="workWechatQrcode" placement="top" trigger="click" width="220">
             <template #reference>
-              <span class="footer-link clickable" title="添加企业微信">
-                <el-icon><UserFilled /></el-icon> 企业微信
+              <span class="footer-link clickable" :title="t('app.workWechat')">
+                <el-icon><UserFilled /></el-icon> {{ t('app.workWechat') }}
               </span>
             </template>
             <div style="text-align: center;">
-              <img :src="getFullLogoUrl(workWechatQrcode)" alt="企业微信二维码" style="max-width: 200px; max-height: 200px;" />
-              <p style="margin-top: 10px; color: #666;">扫码添加企业微信</p>
+              <img :src="getFullLogoUrl(workWechatQrcode)" :alt="t('app.workWechat')" style="max-width: 200px; max-height: 200px;" />
+              <p style="margin-top: 10px; color: #666;">{{ t('app.workWechatTip') }}</p>
             </div>
           </el-popover>
         </div>
       </div>
     </el-footer>
-    <!-- 浮动球形常用功能组件 -->
-    <!-- <FloatingSphere v-if="isAdmin && currentUser" /> -->
     <FloatingSphere v-if="currentUser" :licensed="hasFeature(licenseFeatures.FLOATING_SPHERE)" />
     <SmartCommand v-if="isLoggedIn" :licensed="hasFeature(licenseFeatures.SMART_COMMAND)" />
   </el-container>
+  </el-config-provider>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { Lock, Unlock, Reading, ArrowLeft, Monitor, DataAnalysis, Link, ChatDotRound, UserFilled } from '@element-plus/icons-vue'
+import { useI18n } from 'vue-i18n'
+import zhCn from 'element-plus/dist/locale/zh-cn.mjs'
+import en from 'element-plus/dist/locale/en.mjs'
 import api from '@/utils/api'
 import FloatingSphere from '@/components/FloatingSphere.vue'
 import SmartCommand from '@/components/SmartCommand.vue'
 import { licenseState, hasFeature, loadLicenseStatus, FEATURES as licenseFeatures } from '@/utils/license'
 
+const { t, locale } = useI18n()
 const router = useRouter()
 const route = useRoute()
+
+const elementLocale = computed(() => locale.value === 'en' ? en : zhCn)
+const currentLocale = computed(() => locale.value)
+
+const handleLanguageChange = (lang) => {
+  locale.value = lang
+  localStorage.setItem('locale', lang)
+  document.documentElement.lang = lang === 'zh-CN' ? 'zh-CN' : 'en'
+}
 
 const currentUser = ref(null)
 const isAdmin = computed(() => route.path.startsWith('/admin'))
@@ -112,22 +136,18 @@ const workWechatQrcode = ref('')
 const currentYear = ref(new Date().getFullYear())
 const operationManagers = ref([])
 
-// 检查用户是否登录
 const isLoggedIn = computed(() => {
   return !!localStorage.getItem('token')
 })
 
-// 检查是否可以访问运营大屏
 const canAccessDashboard = computed(() => {
   if (!currentUser.value) return false
   if (!hasFeature(licenseFeatures.DASHBOARD_VIEW)) return false
   
-  // 超级管理员和系统管理员可以访问
   if (['super_admin', 'system_admin'].includes(currentUser.value.role)) {
     return true
   }
   
-  // 课程管理员需要是运营管理导师
   if (currentUser.value.role === 'course_admin' && currentUser.value.teacher_id) {
     return operationManagers.value.includes(currentUser.value.teacher_id)
   }
@@ -135,7 +155,6 @@ const canAccessDashboard = computed(() => {
   return false
 })
 
-// 定义用户登录事件处理函数（需要在顶层定义，以便onUnmounted可以访问）
 const handleUserLogin = (event) => {
   currentUser.value = event.detail
 }
@@ -143,22 +162,17 @@ const handleUserLogin = (event) => {
 onMounted(async () => {
   siteName.value = localStorage.getItem('site_name') || ''
   siteLogo.value = localStorage.getItem('site_logo') || ''
-  // 加载宣传信息
   await loadPromotionInfo()
-  // 加载 License 状态
   await loadLicenseStatus()
   
-  // 监听用户登录事件
   window.addEventListener('user-logged-in', handleUserLogin)
   
-  // 检查用户是否已登录
   const token = localStorage.getItem('token')
   if (token) {
     try {
       const response = await api.get('/auth/me')
       currentUser.value = response.data
       
-      // 获取运营管理导师列表
       await fetchOperationManagers()
     } catch (error) {
       if (error?.response?.status === 401) {
@@ -173,7 +187,6 @@ onMounted(async () => {
   }
 })
 
-// 加载宣传信息
 const loadPromotionInfo = async () => {
   try {
     const response = await api.get('/settings')
@@ -184,26 +197,14 @@ const loadPromotionInfo = async () => {
       wechatQrcode.value = response.data.wechat_qrcode || ''
       workWechatQrcode.value = response.data.work_wechat_qrcode || ''
       
-      // 保存到localStorage以便快速访问
-      if (siteName.value) {
-        localStorage.setItem('site_name', siteName.value)
-      }
-      if (siteLogo.value) {
-        localStorage.setItem('site_logo', siteLogo.value)
-      }
-      if (organizationWebsite.value) {
-        localStorage.setItem('organization_website', organizationWebsite.value)
-      }
-      if (wechatQrcode.value) {
-        localStorage.setItem('wechat_qrcode', wechatQrcode.value)
-      }
-      if (workWechatQrcode.value) {
-        localStorage.setItem('work_wechat_qrcode', workWechatQrcode.value)
-      }
+      if (siteName.value) localStorage.setItem('site_name', siteName.value)
+      if (siteLogo.value) localStorage.setItem('site_logo', siteLogo.value)
+      if (organizationWebsite.value) localStorage.setItem('organization_website', organizationWebsite.value)
+      if (wechatQrcode.value) localStorage.setItem('wechat_qrcode', wechatQrcode.value)
+      if (workWechatQrcode.value) localStorage.setItem('work_wechat_qrcode', workWechatQrcode.value)
     }
   } catch (error) {
-    window.logger.error('加载宣传信息失败:', error)
-    // 从localStorage读取缓存
+    window.logger.error('Failed to load promotion info:', error)
     siteName.value = localStorage.getItem('site_name') || ''
     siteLogo.value = localStorage.getItem('site_logo') || ''
     organizationWebsite.value = localStorage.getItem('organization_website') || ''
@@ -212,12 +213,10 @@ const loadPromotionInfo = async () => {
   }
 }
 
-// ✅ 正确：onUnmounted 应该在顶层独立调用
 onUnmounted(() => {
   window.removeEventListener('user-logged-in', handleUserLogin)
 })
 
-// 获取运营管理导师列表
 const fetchOperationManagers = async () => {
   try {
     const response = await api.get('/settings')
@@ -226,22 +225,18 @@ const fetchOperationManagers = async () => {
       localStorage.setItem('operation_managers', JSON.stringify(operationManagers.value))
     }
   } catch (error) {
-    window.logger.error('获取运营管理导师列表失败:', error)
+    window.logger.error('Failed to fetch operation managers:', error)
   }
 }
 
 const getFullLogoUrl = (logoPath) => {
   if (!logoPath) return ''
-  if (logoPath.startsWith('http')) {
-    return logoPath
-  }
-  // 直接使用相对路径，让浏览器自动处理域名和端口
+  if (logoPath.startsWith('http')) return logoPath
   return logoPath
 }
 
 const goBack = () => {
-  //router.back()    //返回上一页面
-  router.push('/admin/dashboard')   //跳转到后台首页-面板
+  router.push('/admin/dashboard')
 }
 
 const goToAdmin = () => {
@@ -251,7 +246,6 @@ const goToAdmin = () => {
 const logout = () => {
   localStorage.removeItem('token')
   localStorage.removeItem('user')
-  // 触发自定义登出事件
   window.dispatchEvent(new CustomEvent('user-logged-out'))
   router.push('/')
 }

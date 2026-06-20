@@ -8,49 +8,49 @@
         <el-col :span="3">
           <el-button type="primary" @click="goToPage('/admin/dashboard')" style="width: 100%;height: 100%;">
             <el-icon><Reading /></el-icon>
-            面板
+            {{ t('schedules.dashboard') }}
           </el-button>
         </el-col>
         <el-col :span="3">
           <el-button type="primary" @click="goToPage('/admin/courses')" style="width: 100%;height: 100%;">
             <el-icon><Reading /></el-icon>
-            科目管理
+            {{ t('schedules.courseManagement') }}
           </el-button>
         </el-col>
         <el-col :span="3">
           <el-button type="success" @click="goToPage('/admin/teachers')" style="width: 100%;height: 100%;">
             <el-icon><User /></el-icon>
-            导师管理
+            {{ t('schedules.teacherManagement') }}
           </el-button>
         </el-col>
         <el-col :span="3">
             <el-button type="warning" @click="goToPage('/admin/classes')" style="width: 100%;height: 100%;">
             <el-icon><OfficeBuilding /></el-icon>
-            班级管理
+            {{ t('schedules.classManagement') }}
             </el-button>
         </el-col>
         <el-col :span="3">
           <el-button type="warning" @click="goToPage('/admin/students')" style="width: 100%;height: 100%;">
             <el-icon><UserFilled /></el-icon>
-            学员管理
+            {{ t('schedules.studentManagement') }}
           </el-button>
         </el-col>
         <el-col :span="3">
           <el-button type="info" @click="goToPage('/admin/rooms')" style="width: 100%;height: 100%;">
             <el-icon><OfficeBuilding /></el-icon>
-            教室管理
+            {{ t('schedules.roomManagement') }}
           </el-button>
         </el-col>
         <el-col :span="3">
           <el-button type="danger" @click="goToPage('/admin/leaves')" style="width: 100%;height: 100%;">
             <el-icon><Calendar /></el-icon>
-            假日管理
+            {{ t('schedules.holidayManagement') }}
           </el-button>
         </el-col>
         <el-col :span="3">
           <el-button type="primary" @click="goToPage('/admin/conditions')" style="width: 100%;height: 100%;">
             <el-icon><Setting /></el-icon>
-            条件管理
+            {{ t('schedules.conditionManagement') }}
           </el-button>
         </el-col>
       </el-row>
@@ -59,49 +59,49 @@
     <el-card>
       <template #header>
         <div class="card-header">
-          <span>排课管理</span>
+          <span>{{ t('schedules.scheduleManagement') }}</span>
           <div class="header-actions">
             <el-button type="info" @click="goBack">
               <el-icon><ArrowLeft /></el-icon>
-              返回上一页
+              {{ t('schedules.goBack') }}
             </el-button>
             <el-button v-if="hasFeature(licenseFeatures.SMART_SCHEDULING)" type="success" @click="showAutoScheduleDialog">
               <el-icon><MagicStick /></el-icon>
-              智能算法排课
+              {{ t('schedules.smartScheduling') }}
             </el-button>
-            <el-tooltip v-else content="智能算法排课为授权功能，请在系统授权管理中激活" placement="bottom">
+            <el-tooltip v-else :content="t('schedules.smartSchedulingLicense')" placement="bottom">
               <el-button type="success" disabled>
                 <el-icon><Lock /></el-icon>
-                智能算法排课
+                {{ t('schedules.smartScheduling') }}
               </el-button>
             </el-tooltip>
             <el-button type="primary" @click="showAddDialog">
               <el-icon><Plus /></el-icon>
-              手动排课
+              {{ t('schedules.manualSchedule') }}
             </el-button>
             <el-button v-if="currentUser && (currentUser.role === 'super_admin' || (currentUser.role === 'course_admin' && currentUser.is_subject_teacher))" type="danger" @click="batchDeleteSchedules" :disabled="selectedSchedules.length === 0">
               <el-icon><Delete /></el-icon>
-              批量删除 ({{ selectedSchedules.length }})
+              {{ t('schedules.batchDelete') }} ({{ selectedSchedules.length }})
             </el-button>
             <el-button v-if="currentUser && currentUser.role === 'super_admin'" type="danger" @click="clearAllSchedules">
               <el-icon><Delete /></el-icon>
-              清空所有
+              {{ t('schedules.clearAll') }}
             </el-button>
             <el-button type="info" @click="downloadImportTemplate">
               <el-icon><Download /></el-icon>
-              下载导入模板
+              {{ t('schedules.downloadTemplate') }}
             </el-button>
             <el-button type="primary" @click="showImportDialog">
               <el-icon><Upload /></el-icon>
-              导入
+              {{ t('schedules.import') }}
             </el-button>
             <el-dropdown @command="handleExport" split-button type="success">
               <el-icon><Download /></el-icon>
-              导出
+              {{ t('schedules.export') }}
               <template #dropdown>
-                <el-dropdown-item command="excel">导出 Excel</el-dropdown-item>
-                <el-dropdown-item command="csv">导出 CSV</el-dropdown-item>
-                <el-dropdown-item command="pdf">导出 PDF</el-dropdown-item>
+                <el-dropdown-item command="excel">{{ t('schedules.exportExcel') }}</el-dropdown-item>
+                <el-dropdown-item command="csv">{{ t('schedules.exportCSV') }}</el-dropdown-item>
+                <el-dropdown-item command="pdf">{{ t('schedules.exportPDF') }}</el-dropdown-item>
               </template>
             </el-dropdown>
           </div>
@@ -109,28 +109,28 @@
       </template>
 
       <el-tabs v-model="activeTab" @tab-change="handleTabChange">
-        <el-tab-pane label="所有课程" name="all">
+        <el-tab-pane :label="t('schedules.allCourses')" name="all">
           <div class="filter-bar">
             <el-date-picker
               v-model="filterStartDate"
               type="date"
-              placeholder="开始日期"
+              :placeholder="t('schedules.startDate')"
               value-format="YYYY-MM-DD"
                 @change="fetchSchedules"
             />
             <el-date-picker
               v-model="filterEndDate"
               type="date"
-              placeholder="结束日期"
+              :placeholder="t('schedules.endDate')"
               value-format="YYYY-MM-DD"
                 @change="fetchSchedules"
             />
             <el-col :span="2">
               <el-form-item label-width="0">
-                <el-button @click="resetFilters" style="width: 100%">重置</el-button>
+                <el-button @click="resetFilters" style="width: 100%">{{ t('common.reset') }}</el-button>
               </el-form-item>
             </el-col>
-            <el-select v-model="filterCourseIds" filterable placeholder="科目" multiple collapse-tags clearable @change="fetchSchedules">
+            <el-select v-model="filterCourseIds" filterable :placeholder="t('schedules.course')" multiple collapse-tags clearable @change="fetchSchedules">
               <el-option
                 v-for="course in courses"
                 :key="course.id"
@@ -140,22 +140,22 @@
                 <el-tooltip placement="right" :show-after="200">
                   <template #content>
                     <div v-if="getCourseTeachers(course.id).length > 0">
-                      <div style="font-weight: bold; margin-bottom: 8px;">导师:</div>
+                      <div style="font-weight: bold; margin-bottom: 8px;">{{ t('schedules.teacherLabel') }}</div>
                       <div v-for="teacher in getCourseTeachers(course.id)" :key="teacher.id" style="margin-bottom: 4px;">
                         {{ teacher.name }}
                       </div>
                     </div>
-                    <div v-else>暂无导师</div>
+                    <div v-else>{{ t('schedules.noTeacher') }}</div>
                   </template>
                   <span>{{ course.name }}</span>
                 </el-tooltip>
               </el-option>
             </el-select>
-            <el-select v-model="filterScheduleType" placeholder="课程类型" clearable @change="fetchSchedules">
-              <el-option label="正式课" value="formal" />
-              <el-option label="试听课" value="trial" />
+            <el-select v-model="filterScheduleType" :placeholder="t('schedules.courseType')" clearable @change="fetchSchedules">
+              <el-option :label="t('schedules.formalClass')" value="formal" />
+              <el-option :label="t('schedules.trialClass')" value="trial" />
             </el-select>
-            <el-select v-model="filterTeacherIds" filterable placeholder="导师" multiple collapse-tags clearable @change="fetchSchedules">
+            <el-select v-model="filterTeacherIds" filterable :placeholder="t('schedules.teacher')" multiple collapse-tags clearable @change="fetchSchedules">
               <el-option
                 v-for="teacher in teachers"
                 :key="teacher.id"
@@ -165,20 +165,20 @@
                 <el-tooltip placement="right" :show-after="200">
                   <template #content>
                     <div v-if="teacher.contact_phone">
-                      <div style="font-weight: bold;">联系方式:</div>
+                      <div style="font-weight: bold;">{{ t('schedules.contactInfo') }}</div>
                       <div>{{ teacher.contact_phone }}</div>
                     </div>
                     <div v-if="teacher.is_active !== undefined">
-                      <div style="font-weight: bold; margin-top: 8px;">在职状态:</div>
-                      <div>{{ teacher.is_active ? '在职' : '非在职' }}</div>
+                      <div style="font-weight: bold; margin-top: 8px;">{{ t('schedules.employmentStatus') }}</div>
+                      <div>{{ teacher.is_active ? t('schedules.employed') : t('schedules.notEmployed') }}</div>
                     </div>
-                    <div v-if="!teacher.contact_phone && teacher.is_active === undefined">暂无详细信息</div>
+                    <div v-if="!teacher.contact_phone && teacher.is_active === undefined">{{ t('schedules.noDetailInfo') }}</div>
                   </template>
                   <span>{{ teacher.name }}</span>
                 </el-tooltip>
               </el-option>
             </el-select>
-            <el-select v-model="filterClassIds" filterable placeholder="班级" multiple collapse-tags clearable @change="fetchSchedules">
+            <el-select v-model="filterClassIds" filterable :placeholder="t('schedules.class')" multiple collapse-tags clearable @change="fetchSchedules">
               <el-option
                 v-for="class_ in classes"
                 :key="class_.id"
@@ -188,26 +188,26 @@
                 <el-tooltip placement="right" :show-after="200">
                   <template #content>
                     <div v-if="getActiveClassStudents(class_.id).length > 0">
-                      <div style="font-weight: bold; margin-bottom: 8px; color: #67c23a;">在读学员:</div>
+                      <div style="font-weight: bold; margin-bottom: 8px; color: #67c23a;">{{ t('schedules.activeStudents') }}</div>
                       <div v-for="student in getActiveClassStudents(class_.id)" :key="student.id" style="margin-bottom: 4px;">
                         {{ student.name }}
                       </div>
                     </div>
                     <div v-if="getInactiveClassStudents(class_.id).length > 0">
-                      <div style="font-weight: bold; margin-bottom: 8px; margin-top: 12px; color: #909399;">非在读学员:</div>
+                      <div style="font-weight: bold; margin-bottom: 8px; margin-top: 12px; color: #909399;">{{ t('schedules.inactiveStudents') }}</div>
                       <div v-for="student in getInactiveClassStudents(class_.id)" :key="student.id" style="margin-bottom: 4px;">
                         {{ student.name }}
                       </div>
                     </div>
                     <div v-if="getActiveClassStudents(class_.id).length === 0 && getInactiveClassStudents(class_.id).length === 0">
-                      暂无学员
+                      {{ t('schedules.noStudent') }}
                     </div>
                   </template>
                   <span>{{ class_.name }}</span>
                 </el-tooltip>
               </el-option>
             </el-select>
-            <el-select v-model="filterStudentIds" filterable placeholder="学员" multiple collapse-tags clearable @change="fetchSchedules">
+            <el-select v-model="filterStudentIds" filterable :placeholder="t('schedules.student')" multiple collapse-tags clearable @change="fetchSchedules">
               <el-option
                 v-for="student in students"
                 :key="student.id"
@@ -217,34 +217,34 @@
                 <el-tooltip placement="right" :show-after="200">
                   <template #content>
                     <div v-if="student.school">
-                      <div style="font-weight: bold;">就读学校:</div>
+                      <div style="font-weight: bold;">{{ t('schedules.school') }}</div>
                       <div>{{ student.school }}</div>
                     </div>
                     <div v-if="student.grade">
-                      <div style="font-weight: bold; margin-top: 8px;">年级:</div>
+                      <div style="font-weight: bold; margin-top: 8px;">{{ t('schedules.grade') }}</div>
                       <div>{{ student.grade }}</div>
                     </div>
                     <div v-if="student.contact_person">
-                      <div style="font-weight: bold; margin-top: 8px;">联系人:</div>
+                      <div style="font-weight: bold; margin-top: 8px;">{{ t('schedules.contact') }}</div>
                       <div>{{ student.contact_person }}</div>
                     </div>
                     <div v-if="student.contact_phone">
-                      <div style="font-weight: bold; margin-top: 8px;">联系方式:</div>
+                      <div style="font-weight: bold; margin-top: 8px;">{{ t('schedules.contactInfo') }}</div>
                       <div>{{ student.contact_phone }}</div>
                     </div>
                     <div v-if="student.is_active !== undefined">
-                      <div style="font-weight: bold; margin-top: 8px;">本机构在读状态:</div>
-                      <div>{{ student.is_active ? '在读' : '非在读' }}</div>
+                      <div style="font-weight: bold; margin-top: 8px;">{{ t('schedules.activeStatus') }}</div>
+                      <div>{{ student.is_active ? t('schedules.active') : t('schedules.inactive') }}</div>
                     </div>
                     <div v-if="!student.school && !student.grade && !student.contact_person && !student.contact_phone && student.is_active === undefined">
-                      暂无详细信息
+                      {{ t('schedules.noDetailInfo') }}
                     </div>
                   </template>
                   <span>{{ student.name }}</span>
                 </el-tooltip>
               </el-option>
             </el-select>
-            <el-select v-model="filterRoomIds" filterable placeholder="教室" multiple collapse-tags clearable @change="fetchSchedules">
+            <el-select v-model="filterRoomIds" filterable :placeholder="t('schedules.room')" multiple collapse-tags clearable @change="fetchSchedules">
               <el-option
                 v-for="room in rooms"
                 :key="room.id"
@@ -254,43 +254,43 @@
                 <el-tooltip placement="right" :show-after="200">
                   <template #content>
                     <div v-if="room.location">
-                      <div style="font-weight: bold;">位置:</div>
+                      <div style="font-weight: bold;">{{ t('schedules.location') }}</div>
                       <div>{{ room.location }}</div>
                     </div>
                     <div v-if="room.capacity">
-                      <div style="font-weight: bold; margin-top: 8px;">容量:</div>
-                      <div>{{ room.capacity }}人</div>
+                      <div style="font-weight: bold; margin-top: 8px;">{{ t('schedules.capacity') }}</div>
+                      <div>{{ room.capacity }}{{ t('schedules.peopleUnit') }}</div>
                     </div>
                     <div v-if="room.facilities">
-                      <div style="font-weight: bold; margin-top: 8px;">设施:</div>
+                      <div style="font-weight: bold; margin-top: 8px;">{{ t('schedules.facilities') }}</div>
                       <div>{{ room.facilities }}</div>
                     </div>
                     <div v-if="!room.location && !room.capacity && !room.facilities">
-                      暂无详细信息
+                      {{ t('schedules.noDetailInfo') }}
                     </div>
                   </template>
                   <span>{{ room.name }}</span>
                 </el-tooltip>
               </el-option>
             </el-select>
-            <el-select v-model="filterDaysOfWeek" filterable placeholder="星期" multiple collapse-tags clearable @change="fetchSchedules">
-              <el-option label="星期一" :value="1" />
-              <el-option label="星期二" :value="2" />
-              <el-option label="星期三" :value="3" />
-              <el-option label="星期四" :value="4" />
-              <el-option label="星期五" :value="5" />
-              <el-option label="星期六" :value="6" />
-              <el-option label="星期日" :value="7" />
+            <el-select v-model="filterDaysOfWeek" filterable :placeholder="t('schedules.dayOfWeek')" multiple collapse-tags clearable @change="fetchSchedules">
+              <el-option :label="t('schedules.monday')" :value="1" />
+              <el-option :label="t('schedules.tuesday')" :value="2" />
+              <el-option :label="t('schedules.wednesday')" :value="3" />
+              <el-option :label="t('schedules.thursday')" :value="4" />
+              <el-option :label="t('schedules.friday')" :value="5" />
+              <el-option :label="t('schedules.saturday')" :value="6" />
+              <el-option :label="t('schedules.sunday')" :value="7" />
             </el-select>
-            <el-select v-model="filterHasConflict" placeholder="冲突状态" clearable @change="fetchSchedules">
-              <el-option label="有冲突" :value="true" />
-              <el-option label="无冲突" :value="false" />
+            <el-select v-model="filterHasConflict" :placeholder="t('schedules.conflictStatus')" clearable @change="fetchSchedules">
+              <el-option :label="t('schedules.hasConflict')" :value="true" />
+              <el-option :label="t('schedules.noConflict')" :value="false" />
             </el-select>
-            <el-select v-model="filterExecutionStatus" placeholder="执行状态" clearable @change="fetchSchedules">
-              <el-option label="待执行" value="pending" />
-              <el-option label="完训" value="completed" />
-              <el-option label="延期" value="postponed" />
-              <el-option label="取消" value="cancelled" />
+            <el-select v-model="filterExecutionStatus" :placeholder="t('schedules.executionStatus')" clearable @change="fetchSchedules">
+              <el-option :label="t('schedules.pending')" value="pending" />
+              <el-option :label="t('schedules.completed')" value="completed" />
+              <el-option :label="t('schedules.postponed')" value="postponed" />
+              <el-option :label="t('schedules.cancelled')" value="cancelled" />
             </el-select>
           </div>
 
@@ -300,19 +300,19 @@
           <el-table :data="schedules" stripe v-loading="loading" style="margin-top: 0" @selection-change="handleSelectionChange" :default-sort="{ prop: 'id', order: 'descending' }" @sort-change="handleSortChange" ref="mainTableRef">
                 <el-table-column type="selection" width="55" />
                 <el-table-column prop="id" label="ID" width="70" sortable />
-                <el-table-column label="科目" width="135" sortable prop="course">
+                <el-table-column :label="t('schedules.course')" width="135" sortable prop="course">
                   <template #default="{ row }">
                     {{ getCourseName(row.course_id) }}
                   </template>
                 </el-table-column>
-                <el-table-column label="课程类型" width="100">
+                <el-table-column :label="t('schedules.courseType')" width="100">
                   <template #default="{ row }">
                     <el-tag :type="row.schedule_type === 'trial' ? 'warning' : 'success'" size="small">
-                      {{ row.schedule_type === 'trial' ? '试听课' : '正式课' }}
+                      {{ row.schedule_type === 'trial' ? t('schedules.trialClass') : t('schedules.formalClass') }}
                     </el-tag>
                   </template>
                 </el-table-column>
-                <el-table-column label="导师" width="100" sortable prop="teacher">
+                <el-table-column :label="t('schedules.teacher')" width="100" sortable prop="teacher">
                   <template #default="{ row }">
                     <el-popover placement="top" :width="300" trigger="hover">
                       <template #reference>
@@ -320,19 +320,19 @@
                       </template>
                       <div>
                         <div v-if="getTeacherContact(row.teacher_id)">
-                          <div style="font-weight: bold; margin-bottom: 8px;">联系电话:</div>
+                          <div style="font-weight: bold; margin-bottom: 8px;">{{ t('schedules.contactPhone') }}</div>
                           <div>{{ getTeacherContact(row.teacher_id) }}</div>
                         </div>
                         <div v-if="getTeacherEmail(row.teacher_id)">
-                          <div style="font-weight: bold; margin-bottom: 8px;">电子邮件:</div>
+                          <div style="font-weight: bold; margin-bottom: 8px;">{{ t('schedules.email') }}</div>
                           <div>{{ getTeacherEmail(row.teacher_id) }}</div>
                         </div>
-                        <div v-if="!getTeacherContact(row.teacher_id) && !getTeacherEmail(row.teacher_id)">暂无联系方式</div>
+                        <div v-if="!getTeacherContact(row.teacher_id) && !getTeacherEmail(row.teacher_id)">{{ t('schedules.noContactInfo') }}</div>
                       </div>
                     </el-popover>
                   </template>
                 </el-table-column>
-                <el-table-column label="班级" width="250" sortable prop="class">
+                <el-table-column :label="t('schedules.class')" width="250" sortable prop="class">
                     <template #default="{ row }">
                         <el-popover placement="top" :width="300" trigger="hover">
                             <template #reference>
@@ -340,41 +340,41 @@
                             </template>
                             <div>
                                 <div v-if="getActiveClassStudents(row.class_id).length > 0">
-                                    <div style="font-weight: bold; margin-bottom: 8px; color: #67c23a;">在读学员:</div>
+                                    <div style="font-weight: bold; margin-bottom: 8px; color: #67c23a;">{{ t('schedules.activeStudents') }}</div>
                                     <div v-for="student in getActiveClassStudents(row.class_id)" :key="student.id" style="margin-bottom: 4px;">
                                         {{ student.name }}
                                     </div>
                                 </div>
                                 <div v-if="getInactiveClassStudents(row.class_id).length > 0">
-                                    <div style="font-weight: bold; margin-bottom: 8px; margin-top: 12px; color: #909399;">非在读学员:</div>
+                                    <div style="font-weight: bold; margin-bottom: 8px; margin-top: 12px; color: #909399;">{{ t('schedules.inactiveStudents') }}</div>
                                     <div v-for="student in getInactiveClassStudents(row.class_id)" :key="student.id" style="margin-bottom: 4px;">
                                         {{ student.name }}
                                     </div>
                                 </div>
                                 <div v-if="getActiveClassStudents(row.class_id).length === 0 && getInactiveClassStudents(row.class_id).length === 0">
-                                    暂无学员
+                                    {{ t('schedules.noStudent') }}
                                 </div>
                             </div>
                         </el-popover>
                     </template>
                 </el-table-column>
-                <el-table-column label="学员出席情况" width="255">
+                <el-table-column :label="t('schedules.studentAttendance')" width="255">
                   <template #default="{ row }">
                     <div v-if="row.scheduled_students && row.scheduled_students.length > 0">
                       <div v-for="student in row.scheduled_students" :key="student.id" style="margin-bottom: 5px; display: flex; align-items: center; gap: 8px;">
                         <el-tooltip placement="top" effect="light" popper-class="student-info-tooltip">
                           <template #content>
                             <div class="student-detail-info">
-                              <div class="info-item"><strong>学员代码：</strong>{{ getStudentCode(student.id) }}</div>
-                              <div class="info-item"><strong>学员姓名：</strong>{{ student.name }}</div>
-                              <div class="info-item"><strong>学校：</strong>{{ getStudentSchool(student.id) }}</div>
-                              <div class="info-item"><strong>年级：</strong>{{ getStudentGrade(student.id) }}</div>
-                              <div class="info-item"><strong>进入机构日期：</strong>{{ getStudentEnrollmentDate(student.id) }}</div>
-                              <div class="info-item"><strong>联系人：</strong>{{ getStudentContactPerson(student.id) }}</div>
-                              <div class="info-item"><strong>联系电话：</strong>{{ getStudentContactPhone(student.id) }}</div>
-                              <div class="info-item"><strong>邮箱：</strong>{{ getStudentEmail(student.id) }}</div>
-                              <div class="info-item"><strong>所属班级：</strong>{{ getStudentClasses(student.id) }}</div>
-                              <div class="info-item"><strong>是否在读：</strong>{{ getStudentIsActive(student.id) ? '是' : '否' }}</div>
+                              <div class="info-item"><strong>{{ t('schedules.studentCodeLabel') }}</strong>{{ getStudentCode(student.id) }}</div>
+                              <div class="info-item"><strong>{{ t('schedules.studentNameLabel') }}</strong>{{ student.name }}</div>
+                              <div class="info-item"><strong>{{ t('schedules.schoolLabel') }}</strong>{{ getStudentSchool(student.id) }}</div>
+                              <div class="info-item"><strong>{{ t('schedules.gradeLabel') }}</strong>{{ getStudentGrade(student.id) }}</div>
+                              <div class="info-item"><strong>{{ t('schedules.enrollmentDateLabel') }}</strong>{{ getStudentEnrollmentDate(student.id) }}</div>
+                              <div class="info-item"><strong>{{ t('schedules.contactLabel') }}</strong>{{ getStudentContactPerson(student.id) }}</div>
+                              <div class="info-item"><strong>{{ t('schedules.contactPhoneLabel') }}</strong>{{ getStudentContactPhone(student.id) }}</div>
+                              <div class="info-item"><strong>{{ t('schedules.emailLabel') }}</strong>{{ getStudentEmail(student.id) }}</div>
+                              <div class="info-item"><strong>{{ t('schedules.belongClassLabel') }}</strong>{{ getStudentClasses(student.id) }}</div>
+                              <div class="info-item"><strong>{{ t('schedules.isActiveLabel') }}</strong>{{ getStudentIsActive(student.id) ? t('schedules.yes') : t('schedules.no') }}</div>
                             </div>
                           </template>
                           <span style="cursor: pointer; color: #409eff; flex: 1;">{{ student.name }}</span>
@@ -383,62 +383,62 @@
                           :type="student.attendance_status === 'present' ? 'success' : student.attendance_status === 'leave' ? 'warning' : 'danger'"
                           size="small"
                         >
-                          {{ student.attendance_status === 'present' ? '出席' : student.attendance_status === 'leave' ? '请假' : '缺席' }}
+                          {{ student.attendance_status === 'present' ? t('schedules.present') : student.attendance_status === 'leave' ? t('schedules.onLeave') : t('schedules.absent') }}
                         </el-tag>
                       </div>
                     </div>
                     <div v-else-if="row.class_id" style="color: #909399;">
                       <div v-if="getActiveClassStudents(row.class_id).length > 0 || getInactiveClassStudents(row.class_id).length > 0">
-                        <div style="margin-bottom: 5px; font-size: 12px;">未记录出勤状态</div>
+                        <div style="margin-bottom: 5px; font-size: 12px;">{{ t('schedules.noAttendanceRecord') }}</div>
                         <div v-if="getActiveClassStudents(row.class_id).length > 0" style="margin-bottom: 3px;">
-                          <span style="color: #67c23a;">在读学员：</span>
+                          <span style="color: #67c23a;">{{ t('schedules.activeStudentsLabel') }}</span>
                           {{ getActiveClassStudents(row.class_id).map(s => s.name).join('、') }}
                         </div>
                         <div v-if="getInactiveClassStudents(row.class_id).length > 0">
-                          <span style="color: #909399;">非在读学员：</span>
+                          <span style="color: #909399;">{{ t('schedules.inactiveStudentsLabel') }}</span>
                           {{ getInactiveClassStudents(row.class_id).map(s => s.name).join('、') }}
                         </div>
                       </div>
                       <div v-else>
-                        该班级暂无学员
+                        {{ t('schedules.noStudentInClass') }}
                       </div>
                     </div>
                     <div v-else style="color: #909399;">
-                      无班级信息
+                      {{ t('schedules.noClassInfo') }}
                     </div>
                   </template>
                 </el-table-column>
                 
-                <el-table-column label="日期" width="120" sortable prop="start_date">
+                <el-table-column :label="t('schedules.date')" width="120" sortable prop="start_date">
                   <template #default="{ row }">
                     {{ formatDate(row.start_date) }}
                   </template>
                 </el-table-column>
                 <!--
-                <el-table-column label="结束日期" width="120" sortable prop="end_date">
+                <el-table-column :label="t('schedules.endDate')" width="120" sortable prop="end_date">
                   <template #default="{ row }">
                     {{ formatDate(row.end_date) }}
                   </template>
                 </el-table-column>
                 -->
-                <el-table-column label="星期" width="80" sortable>
+                <el-table-column :label="t('schedules.dayOfWeek')" width="80" sortable>
                     <template #default="{ row }">
                         {{ getDayOfWeekFromDate(row.start_date) }}
                     </template>
                 </el-table-column>
-                <el-table-column label="时间" width="150">
+                <el-table-column :label="t('schedules.time')" width="150">
                   <template #default="{ row }">
                     {{ row.start_time }} - {{ row.end_time }}
                   </template>
                 </el-table-column>
-                <el-table-column label="执行状态" width="150" sortable prop="execution_status">
+                <el-table-column :label="t('schedules.executionStatus')" width="150" sortable prop="execution_status">
                   <template #default="{ row }">
                     <el-popover placement="top" :width="400" trigger="hover">
                       <template #reference>
-                        <el-tag v-if="row.execution_status === 'completed'" type="success" style="cursor: pointer;" @click="showEditFeedbackDialog(row, 'complete')">完训</el-tag>
-                        <el-tag v-else-if="row.execution_status === 'postponed'" type="warning" style="cursor: pointer;" @click="showEditFeedbackDialog(row, 'postpone')">延期</el-tag>
-                        <el-tag v-else-if="row.execution_status === 'cancelled'" type="info" style="cursor: pointer;" @click="showEditFeedbackDialog(row, 'cancel')">取消排课</el-tag>
-                        <el-tag v-else style="cursor: pointer;">待执行</el-tag>
+                        <el-tag v-if="row.execution_status === 'completed'" type="success" style="cursor: pointer;" @click="showEditFeedbackDialog(row, 'complete')">{{ t('schedules.completed') }}</el-tag>
+                        <el-tag v-else-if="row.execution_status === 'postponed'" type="warning" style="cursor: pointer;" @click="showEditFeedbackDialog(row, 'postpone')">{{ t('schedules.postponed') }}</el-tag>
+                        <el-tag v-else-if="row.execution_status === 'cancelled'" type="info" style="cursor: pointer;" @click="showEditFeedbackDialog(row, 'cancel')">{{ t('schedules.cancelSchedule') }}</el-tag>
+                        <el-tag v-else style="cursor: pointer;">{{ t('schedules.pending') }}</el-tag>
                       </template>
                       <div v-if="row.execution_status === 'completed'">
                         <div v-if="row.content_feedback">
@@ -446,53 +446,53 @@
                             <strong>{{ line.label }}:</strong> {{ line.content }}
                           </div>
                         </div>
-                        <div v-else>暂无反馈</div>
+                        <div v-else>{{ t('schedules.noFeedback') }}</div>
                         
                         <el-divider v-if="row.scheduled_students && row.scheduled_students.length > 0" />
                         
                         <div v-if="row.scheduled_students && row.scheduled_students.length > 0">
-                          <div style="font-weight: bold; margin-bottom: 8px;">学员出勤情况：</div>
+                          <div style="font-weight: bold; margin-bottom: 8px;">{{ t('schedules.studentAttendance') }}</div>
                           <div v-for="student in row.scheduled_students" :key="student.id" style="margin-bottom: 4px; display: flex; align-items: center;">
                             <span style="flex: 1;">{{ student.name }}</span>
                             <el-tag 
                               :type="student.attendance_status === 'present' ? 'success' : student.attendance_status === 'leave' ? 'warning' : 'danger'"
                               size="small"
                             >
-                              {{ student.attendance_status === 'present' ? '出席' : student.attendance_status === 'leave' ? '请假' : '缺席' }}
+                              {{ student.attendance_status === 'present' ? t('schedules.present') : student.attendance_status === 'leave' ? t('schedules.onLeave') : t('schedules.absent') }}
                             </el-tag>
-                            <el-tag v-if="student.makeup_status === 'completed'" type="success" size="small" style="margin-left: 4px;">已补课</el-tag>
-                            <el-tag v-else-if="student.makeup_status === 'declined'" type="info" size="small" style="margin-left: 4px;">不补课</el-tag>
+                            <el-tag v-if="student.makeup_status === 'completed'" type="success" size="small" style="margin-left: 4px;">{{ t('schedules.makeupCompleted') }}</el-tag>
+                            <el-tag v-else-if="student.makeup_status === 'declined'" type="info" size="small" style="margin-left: 4px;">{{ t('schedules.makeupDeclined') }}</el-tag>
                           </div>
                         </div>
                         <el-divider v-if="hasMakeupInfo(row)" />
                         <div v-if="hasMakeupInfo(row)">
-                          <div style="font-weight: bold; margin-bottom: 8px;">补课信息：</div>
+                          <div style="font-weight: bold; margin-bottom: 8px;">{{ t('schedules.makeupInfo') }}</div>
                           <div v-for="student in row.scheduled_students.filter(s => s.makeup_status === 'completed' || s.makeup_status === 'declined')" :key="student.id" style="margin-bottom: 4px;">
                             <strong>{{ student.name }}:</strong>
-                            <span v-if="student.makeup_status === 'completed'">已补课 (补课课程ID: {{ student.makeup_schedule_id }})</span>
-                            <span v-else-if="student.makeup_status === 'declined'">不补课 (原因: {{ student.declined_reason }})</span>
+                            <span v-if="student.makeup_status === 'completed'">{{ t('schedules.makeupCompleted') }} (ID: {{ student.makeup_schedule_id }})</span>
+                            <span v-else-if="student.makeup_status === 'declined'">{{ t('schedules.makeupDeclined') }} ({{ t('schedules.reason') }}: {{ student.declined_reason }})</span>
                           </div>
                         </div>
                       </div>
                       <div v-else-if="row.execution_status === 'postponed'">
                         <div v-if="row.postpone_reason">
-                          <strong>延期原因:</strong> {{ row.postpone_reason }}
+                          <strong>{{ t('schedules.postponeReason') }}</strong> {{ row.postpone_reason }}
                         </div>
-                        <div v-else>暂无延期原因</div>
+                        <div v-else>{{ t('schedules.noPostponeReason') }}</div>
                       </div>
                       <div v-else-if="row.execution_status === 'cancelled'">
                         <div v-if="row.cancel_reason">
-                          <strong>取消原因:</strong> {{ row.cancel_reason }}
+                          <strong>{{ t('schedules.cancelReason') }}</strong> {{ row.cancel_reason }}
                         </div>
-                        <div v-else>暂无取消原因</div>
+                        <div v-else>{{ t('schedules.noCancelReason') }}</div>
                       </div>
                       <div v-else>
-                        <strong>状态:</strong> 待执行
+                        <strong>{{ t('schedules.statusLabel') }}</strong> {{ t('schedules.pending') }}
                       </div>
                     </el-popover>
                   </template>
                 </el-table-column>
-                <el-table-column label="教室" width="180" sortable prop="room">
+                <el-table-column :label="t('schedules.room')" width="180" sortable prop="room">
                   <template #default="{ row }">
                     <div v-if="row.room_type === 'offline_physical'">
                       <el-popover placement="top" :width="300" trigger="hover">
@@ -501,19 +501,19 @@
                         </template>
                         <div>
                           <div v-if="getRoomLocation(row.room_id)">
-                            <div style="font-weight: bold;">位置:</div>
+                            <div style="font-weight: bold;">{{ t('schedules.location') }}</div>
                             <div>{{ getRoomLocation(row.room_id) }}</div>
                           </div>
                           <div v-if="getRoomCapacity(row.room_id)">
-                            <div style="font-weight: bold; margin-top: 8px;">容量:</div>
-                            <div>{{ getRoomCapacity(row.room_id) }}人</div>
+                            <div style="font-weight: bold; margin-top: 8px;">{{ t('schedules.capacity') }}</div>
+                            <div>{{ getRoomCapacity(row.room_id) }}{{ t('schedules.peopleUnit') }}</div>
                           </div>
                           <div v-if="getRoomFacilities(row.room_id)">
-                            <div style="font-weight: bold; margin-top: 8px;">设施:</div>
+                            <div style="font-weight: bold; margin-top: 8px;">{{ t('schedules.facilities') }}</div>
                             <div>{{ getRoomFacilities(row.room_id) }}</div>
                           </div>
                           <div v-if="!getRoomLocation(row.room_id) && !getRoomCapacity(row.room_id) && !getRoomFacilities(row.room_id)">
-                            暂无详细信息
+                            {{ t('schedules.noDetailInfo') }}
                           </div>
                         </div>
                       </el-popover>
@@ -522,78 +522,68 @@
                       <el-tooltip v-if="row.meeting_link" placement="top" :content="row.meeting_link">
                         <el-link type="primary" :href="row.meeting_link" target="_blank">
                           <el-icon><Link /></el-icon>
-                          点击加入
+                          {{ t('schedules.clickToJoin') }}
                         </el-link>
                       </el-tooltip>
-                      <span v-else style="color: #f56c6c;">待补充</span>
+                      <span v-else style="color: #f56c6c;">{{ t('schedules.toBeAdded') }}</span>
                     </div>
                   </template>
                 </el-table-column>
-                <el-table-column label="冲突状态" width="120" sortable prop="has_conflict">
+                <el-table-column :label="t('schedules.conflictStatus')" width="120" sortable prop="has_conflict">
                     <template #default="{ row }">
                         <el-popover v-if="row.has_conflict" placement="top" :width="800" trigger="hover" @show="loadConflictSchedules(row)">
                             <template #reference>
-                                <el-tag type="danger" style="cursor: pointer;">冲突</el-tag>
+                                <el-tag type="danger" style="cursor: pointer;">{{ t('schedules.conflict') }}</el-tag>
                             </template>
                             <div v-loading="conflictLoading">
                                 <div v-if="conflictSchedules.length > 0">
                                     <el-table :data="conflictSchedules" stripe style="width: 100%">
                                         <el-table-column prop="id" label="ID" width="80" />
-                                        <el-table-column label="科目" width="120">
+                                        <el-table-column :label="t('schedules.course')" width="120">
                                             <template #default="{ row: conflictRow }">
                                                 {{ getCourseName(conflictRow.course_id) }}
                                             </template>
                                         </el-table-column>
-                                        <el-table-column label="导师" width="120">
+                                        <el-table-column :label="t('schedules.teacher')" width="120">
                                             <template #default="{ row: conflictRow }">
                                                 {{ getTeacherName(conflictRow.teacher_id) }}
                                             </template>
                                         </el-table-column>
-                                        <el-table-column label="班级" width="120">
+                                        <el-table-column :label="t('schedules.class')" width="120">
                                             <template #default="{ row: conflictRow }">
                                                 {{ getClassName(conflictRow.class_id) }}
                                             </template>
                                         </el-table-column>
-                                        <el-table-column label="教室" width="120">
+                                        <el-table-column :label="t('schedules.room')" width="120">
                                             <template #default="{ row: conflictRow }">
                                                 {{ getRoomName(conflictRow.room_id) }}
                                             </template>
                                         </el-table-column>
-                                        <el-table-column label="时间" width="160">
+                                        <el-table-column :label="t('schedules.time')" width="160">
                                             <template #default="{ row: conflictRow }">
                                                 {{ formatDate(conflictRow.start_date) }} {{ conflictRow.start_time }}-{{ conflictRow.end_time }}
                                             </template>
                                         </el-table-column>
                                     </el-table>
                                 </div>
-                                <div v-else>暂无冲突课程</div>
+                                <div v-else>{{ t('schedules.noConflictCourse') }}</div>
                             </div>
                         </el-popover>
-                        <el-tag v-else type="success">无冲突</el-tag>
+                        <el-tag v-else type="success">{{ t('schedules.noConflict') }}</el-tag>
                     </template>
                 </el-table-column>
                 
-                <el-table-column label="操作" width="115" fixed="right">
+                <el-table-column :label="t('common.operation')" width="115" fixed="right">
                   <template #default="{ row }">
                     <div style="display: flex; gap: 3px; flex-wrap: wrap;">
-                      <el-button v-if="canEditSchedule(row)" size="small" @click="showEditDialog(row)">修改</el-button>
-                      <el-button size="small" type="primary" @click="showCopyDialog(row)">复制</el-button>
-                      <el-button size="small" type="success" @click="showCompleteDialog(row)" :disabled="row.has_conflict || row.execution_status !== 'pending'">
-                        完训
-                      </el-button>
-                      <el-button size="small" type="warning" @click="showPostponeDialog(row)" :disabled="row.has_conflict || row.execution_status !== 'pending'">
-                        延期
-                      </el-button>
-                      <el-button size="small" type="success" @click="showHomeworkDialog(row)" :disabled="row.execution_status !== 'completed'">
-                        作业通知
-                      </el-button>
-                      <el-button size="small" type="primary" @click="showMakeupDialog(row)" :disabled="row.execution_status !== 'completed' || !hasStudentsNeedingMakeup(row)">
-                        学员补课
-                      </el-button>
-                      <el-button size="small" type="info" @click="showCancelDialog(row)" :disabled="row.has_conflict || row.execution_status !== 'pending'">
-                        取消排课
-                      </el-button>
-                      <el-button v-if="canDeleteSchedule(row)" size="small" type="danger" @click="handleDelete(row)">删除</el-button>
+                      <el-button v-if="canEditSchedule(row)" size="small" @click="showEditDialog(row)">{{ t('schedules.edit') }}</el-button>
+                      <el-button size="small" type="primary" @click="showCopyDialog(row)">{{ t('schedules.copy') }}</el-button>
+                      <el-button size="small" type="success" @click="showCompleteDialog(row)" :disabled="row.has_conflict || row.execution_status !== 'pending'">{{ t('schedules.completed') }}</el-button>
+                      <el-button size="small" type="warning" @click="showPostponeDialog(row)" :disabled="row.has_conflict || row.execution_status !== 'pending'">{{ t('schedules.postponed') }}</el-button>
+                      <el-button size="small" type="success" @click="showHomeworkDialog(row)" :disabled="row.execution_status !== 'completed'">{{ t('schedules.homeworkNotify') }}</el-button>
+                      <el-button size="small" type="primary" @click="showMakeupDialog(row)" :disabled="row.execution_status !== 'completed' || !hasStudentsNeedingMakeup(row)">{{ t('schedules.studentMakeup') }}</el-button>
+                      <el-button size="small" type="info" @click="showCancelDialog(row)" :disabled="row.has_conflict || row.execution_status !== 'pending'">{{ t('schedules.cancelSchedule') }}</el-button>
+                      <el-button v-if="canDeleteSchedule(row)" size="small" type="danger" @click="handleDelete(row)">{{ t('common.delete') }}</el-button>
                     </div>
                   </template>
                 </el-table-column>
@@ -610,49 +600,49 @@
           />
         </el-tab-pane>
 
-        <el-tab-pane label="冲突课程" name="conflicts">
+        <el-tab-pane :label="t('schedules.conflictCourses')" name="conflicts">
           <el-table :data="conflictSchedules" stripe v-loading="loading">
             <el-table-column prop="id" label="ID" width="80" />
-            <el-table-column label="科目" width="120">
+            <el-table-column :label="t('schedules.course')" width="120">
               <template #default="{ row }">
                 {{ getCourseName(row.course_id) }}
               </template>
             </el-table-column>
-            <el-table-column label="导师" width="120">
+            <el-table-column :label="t('schedules.teacher')" width="120">
               <template #default="{ row }">
                 {{ getTeacherName(row.teacher_id) }}
               </template>
             </el-table-column>
-            <el-table-column label="班级" width="120">
+            <el-table-column :label="t('schedules.class')" width="120">
                 <template #default="{ row }">
                     {{ getClassName(row.class_id) }}
                 </template>
             </el-table-column>
 
-            <el-table-column label="教室" width="120">
+            <el-table-column :label="t('schedules.room')" width="120">
               <template #default="{ row }">
                 {{ getRoomName(row.room_id) }}
               </template>
             </el-table-column>
-            <el-table-column label="星期" width="80">
+            <el-table-column :label="t('schedules.dayOfWeek')" width="80">
                 <template #default="{ row }">
                     {{ getDayOfWeekFromDate(row.start_date) }}
                 </template>
             </el-table-column>
-            <el-table-column label="时间" width="160">
+            <el-table-column :label="t('schedules.time')" width="160">
               <template #default="{ row }">
                 {{ row.start_time }} - {{ row.end_time }}
               </template>
             </el-table-column>
-            <el-table-column label="冲突原因" min-width="300">
+            <el-table-column :label="t('schedules.conflictReason')" min-width="300">
               <template #default="{ row }">
                 <span style="color: #f56c6c;">{{ row.conflict_reason }}</span>
               </template>
             </el-table-column>
-            <el-table-column label="操作" width="135" fixed="right">
+            <el-table-column :label="t('common.operation')" width="135" fixed="right">
               <template #default="{ row }">
-                <el-button v-if="canEditSchedule(row)" size="small" @click="showEditDialog(row)">修改</el-button>
-                <el-button v-if="canDeleteSchedule(row)" size="small" type="danger" @click="handleDelete(row)">删除</el-button>
+                <el-button v-if="canEditSchedule(row)" size="small" @click="showEditDialog(row)">{{ t('schedules.edit') }}</el-button>
+                <el-button v-if="canDeleteSchedule(row)" size="small" type="danger" @click="handleDelete(row)">{{ t('common.delete') }}</el-button>
               </template>
             </el-table-column>
           </el-table>
@@ -663,8 +653,8 @@
     <!-- 手动排课对话框 -->
     <el-dialog v-model="dialogVisible" :title="dialogTitle" width="600px" draggable destroy-on-close>
       <el-form :model="form" :rules="rules" ref="formRef" label-width="120px">
-        <el-form-item label="科目" prop="course_id">
-          <el-select v-model="form.course_id" filterable placeholder="请选择科目" style="width: 100%">
+        <el-form-item :label="t('schedules.course')" prop="course_id">
+          <el-select v-model="form.course_id" filterable :placeholder="t('schedules.selectCourse')" style="width: 100%">
             <el-option
               v-for="course in courses"
               :key="course.id"
@@ -674,10 +664,10 @@
               <el-tooltip placement="right" :show-after="200">
                 <template #content>
                   <div style="min-width: 200px;">
-                    <div><strong>科目：</strong>{{ course.name }}</div>
-                    <div v-if="course.code"><strong>代码：</strong>{{ course.code }}</div>
+                    <div><strong>{{ t('schedules.course') }}：</strong>{{ course.name }}</div>
+                    <div v-if="course.code"><strong>{{ t('schedules.code') }}：</strong>{{ course.code }}</div>
                     <div v-if="getCourseTeachers(course.id).length > 0">
-                      <div style="font-weight: bold; margin-top: 8px; margin-bottom: 4px;">授课导师：</div>
+                      <div style="font-weight: bold; margin-top: 8px; margin-bottom: 4px;">{{ t('schedules.teachingTeacher') }}：</div>
                       <div v-for="teacher in getCourseTeachers(course.id)" :key="teacher.id" style="margin-left: 10px; margin-bottom: 4px;">
                         {{ teacher.name }}
                         <div v-if="teacher.contact_phone" style="font-size: 12px; color: #909399;">
@@ -688,7 +678,7 @@
                         </div>
                       </div>
                     </div>
-                    <div v-else style="margin-top: 8px; color: #909399;">暂无授课导师</div>
+                    <div v-else style="margin-top: 8px; color: #909399;">{{ t('schedules.noTeacher') }}</div>
                   </div>
                 </template>
                 <span>{{ course.name }}</span>
@@ -696,14 +686,14 @@
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="课程类型" prop="schedule_type">
+        <el-form-item :label="t('schedules.courseType')" prop="schedule_type">
           <el-radio-group v-model="form.schedule_type">
-            <el-radio value="formal">正式课</el-radio>
-            <el-radio value="trial">试听课</el-radio>
+            <el-radio value="formal">{{ t('schedules.formalClass') }}</el-radio>
+            <el-radio value="trial">{{ t('schedules.trialClass') }}</el-radio>
           </el-radio-group>
         </el-form-item>
-        <el-form-item label="导师" prop="teacher_id">
-          <el-select v-model="form.teacher_id" filterable placeholder="请选择导师" style="width: 100%">
+        <el-form-item :label="t('schedules.teacher')" prop="teacher_id">
+          <el-select v-model="form.teacher_id" filterable :placeholder="t('schedules.selectTeacher')" style="width: 100%">
             <el-option
                 v-for="teacher in availableTeachers"
                 :key="teacher.id"
@@ -713,19 +703,19 @@
               <el-tooltip placement="right" :show-after="200">
                 <template #content>
                   <div style="min-width: 200px;">
-                    <div><strong>导师：</strong>{{ teacher.name }}</div>
-                    <div v-if="teacher.code"><strong>代码：</strong>{{ teacher.code }}</div>
-                    <div v-if="teacher.department"><strong>部门：</strong>{{ teacher.department }}</div>
+                    <div><strong>{{ t('schedules.teacherLabel') }}：</strong>{{ teacher.name }}</div>
+                    <div v-if="teacher.code"><strong>{{ t('schedules.code') }}：</strong>{{ teacher.code }}</div>
+                    <div v-if="teacher.department"><strong>{{ t('schedules.department') }}：</strong>{{ teacher.department }}</div>
                     <div v-if="teacher.contact_phone">
-                      <div style="margin-top: 8px;"><strong>联系电话：</strong></div>
+                      <div style="margin-top: 8px;"><strong>{{ t('schedules.contactPhone') }}：</strong></div>
                       <div>{{ teacher.contact_phone }}</div>
                     </div>
                     <div v-if="teacher.email">
-                      <div style="margin-top: 8px;"><strong>电子邮箱：</strong></div>
+                      <div style="margin-top: 8px;"><strong>{{ t('schedules.email') }}：</strong></div>
                       <div>{{ teacher.email }}</div>
                     </div>
                     <div v-if="!teacher.contact_phone && !teacher.email" style="margin-top: 8px; color: #909399;">
-                      暂无联系方式
+                      {{ t('schedules.noContactInfo') }}
                     </div>
                   </div>
                 </template>
@@ -734,8 +724,8 @@
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="班级" prop="class_id">
-            <el-select v-model="form.class_id" filterable placeholder="请选择班级" style="width: 100%">
+        <el-form-item :label="t('schedules.class')" prop="class_id">
+            <el-select v-model="form.class_id" filterable :placeholder="t('schedules.selectClass')" style="width: 100%">
                 <el-option
                 v-for="class_ in classes"
                 :key="class_.id"
@@ -745,19 +735,19 @@
                 <el-tooltip placement="right" :show-after="200">
                     <template #content>
                         <div v-if="getActiveClassStudents(class_.id).length > 0">
-                            <div style="font-weight: bold; margin-bottom: 8px; color: #67c23a;">在读学员:</div>
+                            <div style="font-weight: bold; margin-bottom: 8px; color: #67c23a;">{{ t('schedules.activeStudentsLabel') }}</div>
                             <div v-for="student in getActiveClassStudents(class_.id)" :key="student.id" style="margin-bottom: 4px;">
                                 {{ student.name }}
                             </div>
                         </div>
                         <div v-if="getInactiveClassStudents(class_.id).length > 0">
-                            <div style="font-weight: bold; margin-bottom: 8px; margin-top: 12px; color: #909399;">非在读学员:</div>
+                            <div style="font-weight: bold; margin-bottom: 8px; margin-top: 12px; color: #909399;">{{ t('schedules.inactiveStudentsLabel') }}</div>
                             <div v-for="student in getInactiveClassStudents(class_.id)" :key="student.id" style="margin-bottom: 4px;">
                                 {{ student.name }}
                             </div>
                         </div>
                         <div v-if="getActiveClassStudents(class_.id).length === 0 && getInactiveClassStudents(class_.id).length === 0">
-                            暂无学员
+                            {{ t('schedules.noStudent') }}
                         </div>
                     </template>
                     <span>{{ class_.name }}</span>
@@ -765,14 +755,14 @@
                 </el-option>
             </el-select>
         </el-form-item>
-        <el-form-item label="教室类型" prop="room_type">
-          <el-select v-model="form.room_type" placeholder="请选择教室类型" style="width: 100%" @change="handleRoomTypeChange">
-            <el-option label="线下物理" value="offline_physical" />
-            <el-option label="线上虚拟" value="online_virtual" />
+        <el-form-item :label="t('schedules.roomType')" prop="room_type">
+          <el-select v-model="form.room_type" :placeholder="t('schedules.selectRoomType')" style="width: 100%" @change="handleRoomTypeChange">
+            <el-option :label="t('schedules.offlinePhysical')" value="offline_physical" />
+            <el-option :label="t('schedules.onlineVirtual')" value="online_virtual" />
           </el-select>
         </el-form-item>
-        <el-form-item v-if="form.room_type === 'offline_physical'" label="教室" prop="room_id">
-          <el-select v-model="form.room_id" filterable placeholder="请选择教室" style="width: 100%">
+        <el-form-item v-if="form.room_type === 'offline_physical'" :label="t('schedules.room')" prop="room_id">
+          <el-select v-model="form.room_id" filterable :placeholder="t('schedules.selectRoom')" style="width: 100%">
             <el-option
                 v-for="room in rooms"
                 :key="room.id"
@@ -782,19 +772,19 @@
               <el-tooltip placement="right" :show-after="200">
                 <template #content>
                   <div v-if="room.location">
-                    <div style="font-weight: bold;">位置:</div>
+                    <div style="font-weight: bold;">{{ t('schedules.location') }}:</div>
                     <div>{{ room.location }}</div>
                   </div>
                   <div v-if="room.capacity">
-                    <div style="font-weight: bold; margin-top: 8px;">容量:</div>
-                    <div>{{ room.capacity }}人</div>
+                    <div style="font-weight: bold; margin-top: 8px;">{{ t('schedules.capacity') }}:</div>
+                    <div>{{ room.capacity }}{{ t('schedules.peopleUnit') }}</div>
                   </div>
                   <div v-if="room.facilities">
-                    <div style="font-weight: bold; margin-top: 8px;">设施:</div>
+                    <div style="font-weight: bold; margin-top: 8px;">{{ t('schedules.facilities') }}:</div>
                     <div>{{ room.facilities }}</div>
                   </div>
                   <div v-if="!room.location && !room.capacity && !room.facilities">
-                    暂无详细信息
+                    {{ t('schedules.noDetailInfo') }}
                   </div>
                 </template>
                 <span>{{ room.name }}</span>
@@ -802,67 +792,67 @@
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item v-else label="会议室链接" prop="meeting_link">
-          <el-input v-model="form.meeting_link" placeholder="请输入会议室链接（如腾讯会议、钉钉等）" />
+        <el-form-item v-else :label="t('schedules.meetingLink')" prop="meeting_link">
+          <el-input v-model="form.meeting_link" :placeholder="t('schedules.meetingLinkPlaceholder')" />
         </el-form-item>
-        <el-form-item label="开始时间" prop="start_time">
+        <el-form-item :label="t('schedules.startTime')" prop="start_time">
           <el-time-picker
             v-model="startTime"
             format="HH:mm"
             value-format="HH:mm"
-            placeholder="选择开始时间"
+            :placeholder="t('schedules.selectStartTime')"
             style="width: 100%"
           />
         </el-form-item>
-        <el-form-item label="结束时间" prop="end_time">
+        <el-form-item :label="t('schedules.endTime')" prop="end_time">
           <el-time-picker
             v-model="endTime"
             format="HH:mm"
             value-format="HH:mm"
-            placeholder="选择结束时间"
+            :placeholder="t('schedules.selectEndTime')"
             style="width: 100%"
           />
         </el-form-item>
-        <el-form-item label="开始日期" prop="start_date">
+        <el-form-item :label="t('schedules.startDate')" prop="start_date">
             <el-date-picker
                 v-model="form.start_date"
                 type="date"
-                placeholder="选择开始日期"
+                :placeholder="t('schedules.selectStartDate')"
                 value-format="YYYY-MM-DD"
                     style="width: 100%"
             />
         </el-form-item>
-        <el-form-item label="结束日期" prop="end_date">
+        <el-form-item :label="t('schedules.endDate')" prop="end_date">
             <el-date-picker
                 v-model="form.end_date"
                 type="date"
-                placeholder="选择结束日期"
+                :placeholder="t('schedules.selectEndDate')"
                 value-format="YYYY-MM-DD"
                     style="width: 100%"
             />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button @click="handleSubmit(false)">保存并定时通知</el-button>
-        <el-button type="primary" @click="handleSubmit(true)">保存并立刻通知</el-button>
+        <el-button @click="dialogVisible = false">{{ t('common.cancel') }}</el-button>
+        <el-button @click="handleSubmit(false)">{{ t('schedules.saveAndScheduleNotify') }}</el-button>
+        <el-button type="primary" @click="handleSubmit(true)">{{ t('schedules.saveAndNotifyNow') }}</el-button>
       </template>
     </el-dialog>
 
     <!-- 智能算法排课对话框 -->
-    <el-dialog v-model="autoScheduleDialogVisible" title="智能算法排课" width="500px" draggable>
+    <el-dialog v-model="autoScheduleDialogVisible" :title="t('schedules.smartScheduling')" width="500px" draggable>
       <el-form :model="autoScheduleForm" :rules="autoScheduleRules" ref="autoScheduleFormRef" label-width="120px">
-        <el-form-item label="排课算法" prop="algorithm">
-          <el-select v-model="autoScheduleForm.algorithm" placeholder="请选择排课算法" style="width: 100%">
-            <el-option label="混合算法（推荐）" value="hybrid" />
-            <el-option label="遗传算法" value="genetic" />
-            <el-option label="回溯算法" value="backtracking" />
+        <el-form-item :label="t('schedules.scheduleAlgorithm')" prop="algorithm">
+          <el-select v-model="autoScheduleForm.algorithm" :placeholder="t('schedules.selectAlgorithm')" style="width: 100%">
+            <el-option :label="t('schedules.hybridAlgorithm')" value="hybrid" />
+            <el-option :label="t('schedules.geneticAlgorithm')" value="genetic" />
+            <el-option :label="t('schedules.backtrackingAlgorithm')" value="backtracking" />
           </el-select>
         </el-form-item>
-        <el-form-item label="指定班级" prop="classIds">
+        <el-form-item :label="t('schedules.specifyClass')" prop="classIds">
           <el-select 
             v-model="autoScheduleForm.classIds" 
-            placeholder="选择班级（留空则为所有班级排课）" 
+            :placeholder="t('schedules.selectClassPlaceholder')" 
             clearable 
             multiple 
             collapse-tags 
@@ -878,7 +868,7 @@
               <el-tooltip placement="right" :show-after="200">
                 <template #content>
                   <div v-if="getActiveClassStudents(class_.id).length > 0">
-                    <div style="font-weight: bold; margin-bottom: 8px; color: #67c23a;">📚 在读学员：</div>
+                    <div style="font-weight: bold; margin-bottom: 8px; color: #67c23a;">📚 {{ t('schedules.activeStudentsLabel') }}</div>
                     <div v-for="(student, index) in getActiveClassStudents(class_.id)" :key="student.id" style="margin-bottom: 4px;">
                       {{ index + 1 }}. {{ student.name }} ({{ student.code }})
                       <div v-if="student.contact_phone" style="font-size: 12px; color: #909399; margin-top: 2px;">
@@ -887,13 +877,13 @@
                     </div>
                   </div>
                   <div v-if="getInactiveClassStudents(class_.id).length > 0" style="margin-top: 8px;">
-                    <div style="font-weight: bold; margin-bottom: 8px; color: #909399;">非在读学员：</div>
+                    <div style="font-weight: bold; margin-bottom: 8px; color: #909399;">{{ t('schedules.inactiveStudentsLabel') }}</div>
                     <div v-for="(student, index) in getInactiveClassStudents(class_.id)" :key="student.id" style="margin-bottom: 4px;">
                       {{ index + 1 }}. {{ student.name }} ({{ student.code }})
                     </div>
                   </div>
                   <div v-if="getActiveClassStudents(class_.id).length === 0 && getInactiveClassStudents(class_.id).length === 0">
-                    暂无学员
+                    {{ t('schedules.noStudent') }}
                   </div>
                 </template>
                 <span>{{ class_.name }}</span>
@@ -901,56 +891,56 @@
             </el-option>
           </el-select>
           <div style="margin-top: 5px; font-size: 12px; color: #909399;">
-            <el-icon><InfoFilled /></el-icon> 提示：选择特定班级后，系统只会为这些班级进行排课
+            <el-icon><InfoFilled /></el-icon> {{ t('schedules.selectClassTip') }}
           </div>
         </el-form-item>
-        <el-form-item label="教室类型" prop="room_type">
-          <el-select v-model="autoScheduleForm.room_type" placeholder="请选择教室类型" style="width: 100%">
-            <el-option label="线下物理" value="offline_physical" />
-            <el-option label="线上虚拟" value="online_virtual" />
+        <el-form-item :label="t('schedules.roomType')" prop="room_type">
+          <el-select v-model="autoScheduleForm.room_type" :placeholder="t('schedules.selectRoomType')" style="width: 100%">
+            <el-option :label="t('schedules.offlinePhysical')" value="offline_physical" />
+            <el-option :label="t('schedules.onlineVirtual')" value="online_virtual" />
           </el-select>
         </el-form-item>
-        <el-form-item label="开始日期" prop="start_date">
+        <el-form-item :label="t('schedules.startDate')" prop="start_date">
             <el-date-picker
                 v-model="autoScheduleForm.start_date"
                 type="date"
-                placeholder="选择开始日期"
+                :placeholder="t('schedules.selectStartDate')"
                 value-format="YYYY-MM-DD"
                 style="width: 100%"
             />
             </el-form-item>
-            <el-form-item label="结束日期" prop="end_date">
+            <el-form-item :label="t('schedules.endDate')" prop="end_date">
             <el-date-picker
                 v-model="autoScheduleForm.end_date"
                 type="date"
-                placeholder="选择结束日期"
+                :placeholder="t('schedules.selectEndDate')"
                 value-format="YYYY-MM-DD"
                 style="width: 100%"
             />
         </el-form-item>
       </el-form>
       <el-alert
-        title="智能算法排课将根据现有资源和约束条件自动生成课程安排，可能会产生冲突，请后续手动调整。"
+        :title="t('schedules.autoScheduleWarning')"
         type="warning"
         :closable="false"
         style="margin-bottom: 20px"
       />
       <el-alert
-        title="算法说明：混合算法结合遗传算法和回溯算法的优点，推荐使用；遗传算法适合大规模排课；回溯算法能找到最优解但耗时较长。"
+        :title="t('schedules.algorithmDescription')"
         type="info"
         :closable="false"
         style="margin-bottom: 20px"
       />
       <template #footer>
-        <el-button @click="autoScheduleDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleAutoSchedule" :loading="autoScheduleLoading">开始排课</el-button>
+        <el-button @click="autoScheduleDialogVisible = false">{{ t('common.cancel') }}</el-button>
+        <el-button type="primary" @click="handleAutoSchedule" :loading="autoScheduleLoading">{{ t('schedules.startScheduling') }}</el-button>
       </template>
     </el-dialog>
 
     <!-- 智能算法排课预览对话框 -->
-    <el-dialog v-model="previewDialogVisible" title="智能算法排课预览" width="90%" top="5vh" draggable>
+    <el-dialog v-model="previewDialogVisible" :title="t('schedules.smartSchedulingPreview')" width="90%" top="5vh" draggable>
       <el-alert
-        title="请选择要保存的排课，系统只会保存选中的排课到数据库中"
+        :title="t('schedules.previewSelectTip')"
         type="warning"
         :closable="false"
         style="margin-bottom: 20px"
@@ -959,20 +949,20 @@
       <!-- 视图切换 -->
       <el-card class="view-switch-card" style="margin-bottom: 20px;">
         <el-radio-group v-model="previewViewType" @change="handlePreviewViewTypeChange">
-          <el-radio-button value="table">表格视图</el-radio-button>
-          <el-radio-button value="calendar">日历视图</el-radio-button>
+          <el-radio-button value="table">{{ t('schedules.tableView') }}</el-radio-button>
+          <el-radio-button value="calendar">{{ t('schedules.calendarView') }}</el-radio-button>
         </el-radio-group>
         <span style="margin-left: 20px; color: #606266;">
-          已选择: {{ selectedPreviewSchedules.length }} / {{ previewSchedules.length }}
+          {{ t('schedules.selected') }}: {{ selectedPreviewSchedules.length }} / {{ previewSchedules.length }}
         </span>
       </el-card>
       
       <!-- 表格视图 -->
       <div v-if="previewViewType === 'table'">
         <div style="margin-bottom: 20px; display: flex; gap: 10px; align-items: center;">
-          <el-checkbox v-model="selectAll" @change="handleSelectAll">全选</el-checkbox>
-          <el-button type="danger" @click="handleSelectConflicts">只选择有冲突的</el-button>
-          <el-button type="success" @click="handleSelectNoConflicts">只选择无冲突的</el-button>
+          <el-checkbox v-model="selectAll" @change="handleSelectAll">{{ t('schedules.selectAll') }}</el-checkbox>
+          <el-button type="danger" @click="handleSelectConflicts">{{ t('schedules.selectConflictsOnly') }}</el-button>
+          <el-button type="success" @click="handleSelectNoConflicts">{{ t('schedules.selectNoConflictsOnly') }}</el-button>
         </div>
         <el-table
           :data="previewSchedules"
@@ -983,28 +973,28 @@
           max-height="500px"
         >
           <el-table-column type="selection" width="55" />
-          <el-table-column prop="course_name" label="科目" width="240" />
-          <el-table-column prop="teacher_name" label="导师" width="100">
+          <el-table-column prop="course_name" :label="t('schedules.course')" width="240" />
+          <el-table-column prop="teacher_name" :label="t('schedules.teacher')" width="100">
             <template #default="{ row }">
               <el-tooltip placement="top" effect="light" v-if="row.teacher_phone || row.teacher_email">
                 <template #content>
-                  <div v-if="row.teacher_phone"><strong>联系电话：</strong>{{ row.teacher_phone }}</div>
-                  <div v-if="row.teacher_email"><strong>邮箱：</strong>{{ row.teacher_email }}</div>
+                  <div v-if="row.teacher_phone"><strong>{{ t('schedules.contactPhone') }}：</strong>{{ row.teacher_phone }}</div>
+                  <div v-if="row.teacher_email"><strong>{{ t('schedules.email') }}：</strong>{{ row.teacher_email }}</div>
                 </template>
                 <span style="cursor: help; color: #409EFF;">{{ row.teacher_name }}</span>
               </el-tooltip>
               <span v-else>{{ row.teacher_name }}</span>
             </template>
           </el-table-column>
-          <el-table-column prop="class_name" label="班级" width="240">
+          <el-table-column prop="class_name" :label="t('schedules.class')" width="240">
             <template #default="{ row }">
               <el-tooltip placement="top" effect="light" v-if="row.class_students && row.class_students.length > 0">
                 <template #content>
-                  <div><strong>学员列表：</strong></div>
+                  <div><strong>{{ t('schedules.studentList') }}：</strong></div>
                   <div v-for="(student, index) in row.class_students" :key="index" style="margin-top: 5px;">
                     <div>{{ index + 1 }}. {{ student.name }} ({{ student.code }})</div>
-                    <div v-if="student.phone">联系电话：{{ student.phone }}</div>
-                    <div v-if="student.parent_phone">家长电话：{{ student.parent_phone }}</div>
+                    <div v-if="student.phone">{{ t('schedules.contactPhone') }}：{{ student.phone }}</div>
+                    <div v-if="student.parent_phone">{{ t('schedules.parentPhone') }}：{{ student.parent_phone }}</div>
                   </div>
                 </template>
                 <span style="cursor: help; color: #409EFF;">{{ row.class_name }}</span>
@@ -1012,14 +1002,14 @@
               <span v-else>{{ row.class_name }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="教室/会议链接" width="200">
+          <el-table-column :label="t('schedules.roomOrMeetingLink')" width="200">
             <template #default="{ row }">
               <div v-if="row.room_type === 'offline_physical'">
                 <el-tooltip placement="top" effect="light" v-if="row.room_location || row.room_capacity || row.room_facilities">
                   <template #content>
-                    <div v-if="row.room_location"><strong>位置：</strong>{{ row.room_location }}</div>
-                    <div v-if="row.room_capacity"><strong>容量：</strong>{{ row.room_capacity }}人</div>
-                    <div v-if="row.room_facilities"><strong>设施：</strong>{{ row.room_facilities }}</div>
+                    <div v-if="row.room_location"><strong>{{ t('schedules.location') }}：</strong>{{ row.room_location }}</div>
+                    <div v-if="row.room_capacity"><strong>{{ t('schedules.capacity') }}：</strong>{{ row.room_capacity }}{{ t('schedules.peopleUnit') }}</div>
+                    <div v-if="row.room_facilities"><strong>{{ t('schedules.facilities') }}：</strong>{{ row.room_facilities }}</div>
                   </template>
                   <span style="cursor: help; color: #409EFF;">{{ row.room_name }}</span>
                 </el-tooltip>
@@ -1032,37 +1022,37 @@
                     {{ row.meeting_link.substring(0, 20) }}...
                   </el-link>
                 </el-tooltip>
-                <span v-else style="color: #f56c6c;">待补充</span>
+                <span v-else style="color: #f56c6c;">{{ t('schedules.toBeAdded') }}</span>
               </div>
             </template>
           </el-table-column>
-          <el-table-column label="日期" width="120">
+          <el-table-column :label="t('schedules.date')" width="120">
             <template #default="{ row }">
               {{ formatDate(row.start_date) }}
             </template>
           </el-table-column>
-          <el-table-column label="时间" width="100">
+          <el-table-column :label="t('schedules.time')" width="100">
             <template #default="{ row }">
               {{ row.start_time }}-{{ row.end_time }}
             </template>
           </el-table-column>
-          <el-table-column label="星期" width="80">
+          <el-table-column :label="t('schedules.dayOfWeek')" width="80">
             <template #default="{ row }">
-              星期{{ row.day_of_week }}
+              {{ getDayOfWeekName(row.day_of_week) }}
             </template>
           </el-table-column>
-          <el-table-column label="冲突状态" width="100">
+          <el-table-column :label="t('schedules.conflictStatus')" width="100">
             <template #default="{ row }">
               <el-tag :type="row.has_conflict ? 'danger' : 'success'">
-                {{ row.has_conflict ? '有冲突' : '无冲突' }}
+                {{ row.has_conflict ? t('schedules.hasConflict') : t('schedules.noConflict') }}
               </el-tag>
             </template>
           </el-table-column>
-          <el-table-column prop="conflict_reason" label="冲突原因" min-width="200" show-overflow-tooltip />
-          <el-table-column label="操作" width="80" fixed="right">
+          <el-table-column prop="conflict_reason" :label="t('schedules.conflictReason')" min-width="200" show-overflow-tooltip />
+          <el-table-column :label="t('common.operation')" width="80" fixed="right">
             <template #default="{ row }">
               <el-button type="primary" size="small" plain @click="handleEditPreviewSchedule(row)">
-                编辑
+                {{ t('schedules.edit') }}
               </el-button>
             </template>
           </el-table-column>
@@ -1072,15 +1062,15 @@
       <!-- 日历视图 -->
       <div v-else-if="previewViewType === 'calendar'" v-loading="previewLoading">
         <div style="margin-bottom: 20px; display: flex; gap: 10px; align-items: center;">
-          <el-checkbox v-model="selectAllCalendar" @change="handleSelectAllCalendar">全选</el-checkbox>
-          <el-button type="danger" @click="handleSelectConflictsCalendar">只选择有冲突的</el-button>
-          <el-button type="success" @click="handleSelectNoConflictsCalendar">只选择无冲突的</el-button>
-          <el-button @click="handleClearSelectionCalendar">清除选择</el-button>
+          <el-checkbox v-model="selectAllCalendar" @change="handleSelectAllCalendar">{{ t('schedules.selectAll') }}</el-checkbox>
+          <el-button type="danger" @click="handleSelectConflictsCalendar">{{ t('schedules.selectConflictsOnly') }}</el-button>
+          <el-button type="success" @click="handleSelectNoConflictsCalendar">{{ t('schedules.selectNoConflictsOnly') }}</el-button>
+          <el-button @click="handleClearSelectionCalendar">{{ t('schedules.clearSelection') }}</el-button>
         </div>
         
         <div class="preview-calendar-container">
           <div class="time-column">
-            <div class="time-header">时间</div>
+            <div class="time-header">{{ t('schedules.time') }}</div>
             <div v-for="time in previewTimeSlots" :key="time" class="time-cell">
               {{ time }}
             </div>
@@ -1105,14 +1095,14 @@
                 >
                   <template #content>
                     <div v-if="schedule.class_students && schedule.class_students.length > 0">
-                      <div style="font-weight: bold; margin-bottom: 8px;">📚 班级学员列表：</div>
+                      <div style="font-weight: bold; margin-bottom: 8px;">📚 {{ t('schedules.classStudentList') }}：</div>
                       <div v-for="(student, index) in schedule.class_students" :key="index" style="margin-bottom: 6px; padding-bottom: 6px; border-bottom: 1px solid #eee;">
                         <div style="font-weight: 500;">{{ index + 1 }}. {{ student.name }} ({{ student.code }})</div>
                         <div v-if="student.phone" style="font-size: 12px; color: #606266; margin-top: 2px;">
                           📱 {{ student.phone }}
                         </div>
                         <div v-if="student.parent_phone" style="font-size: 12px; color: #606266; margin-top: 2px;">
-                          👨‍👩‍👧 家长电话：{{ student.parent_phone }}
+                          👨‍👩‍👧 {{ t('schedules.parentPhone') }}：{{ student.parent_phone }}
                         </div>
                       </div>
                     </div>
@@ -1133,15 +1123,15 @@
                       />
                     </div>
                     <div class="schedule-title">{{ schedule.course_name }}</div>
-                    <div class="schedule-info">导师:{{ schedule.teacher_name }}@地点:{{ schedule.room_name }}</div>
-                    <div class="schedule-info">班级:{{ schedule.class_name }}  </div>
+                    <div class="schedule-info">{{ t('schedules.teacher') }}:{{ schedule.teacher_name }}@{{ t('schedules.location') }}:{{ schedule.room_name }}</div>
+                    <div class="schedule-info">{{ t('schedules.class') }}:{{ schedule.class_name }}  </div>
                     <div class="schedule-info"></div>
                     <div class="schedule-time">{{ schedule.start_time }}-{{ schedule.end_time }}</div>
                     <div v-if="schedule.has_conflict" class="conflict-badge">
                       <el-icon><Warning /></el-icon>
                     </div>
                     <div class="schedule-edit-btn" @click.stop="handleEditPreviewSchedule(schedule)">
-                      <el-button type="primary" size="small" plain>编辑</el-button>
+                      <el-button type="primary" size="small" plain>{{ t('common.edit') }}</el-button>
                     </div>
                   </div>
                 </el-tooltip>
@@ -1152,18 +1142,18 @@
       </div>
       
       <template #footer>
-        <el-button @click="previewDialogVisible = false">取消</el-button>
+        <el-button @click="previewDialogVisible = false">{{ t('common.cancel') }}</el-button>
         <el-button type="primary" @click="handleSaveSelectedSchedules" :loading="saveLoading" :disabled="selectedPreviewSchedules.length === 0">
-          保存选中的排课 ({{ selectedPreviewSchedules.length }})
+          {{ t('schedules.saveSelectedSchedules') }} ({{ selectedPreviewSchedules.length }})
         </el-button>
       </template>
     </el-dialog>
     
     <!-- 预览排课编辑对话框 -->
-    <el-dialog v-model="previewEditDialogVisible" title="编辑预览排课" width="600px" draggable destroy-on-close>
+    <el-dialog v-model="previewEditDialogVisible" :title="t('schedules.editPreviewSchedule')" width="600px" draggable destroy-on-close>
       <el-form :model="previewEditForm" :rules="previewEditRules" ref="previewEditFormRef" label-width="120px">
-        <el-form-item label="科目" prop="course_id">
-          <el-select v-model="previewEditForm.course_id" filterable placeholder="请选择科目" style="width: 100%">
+        <el-form-item :label="t('schedules.course')" prop="course_id">
+          <el-select v-model="previewEditForm.course_id" filterable :placeholder="t('schedules.selectCourse')" style="width: 100%">
             <el-option
               v-for="course in courses"
               :key="course.id"
@@ -1172,8 +1162,8 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="导师" prop="teacher_id">
-          <el-select v-model="previewEditForm.teacher_id" filterable placeholder="请选择导师" style="width: 100%">
+        <el-form-item :label="t('schedules.teacher')" prop="teacher_id">
+          <el-select v-model="previewEditForm.teacher_id" filterable :placeholder="t('schedules.selectTeacher')" style="width: 100%">
             <el-option
               v-for="teacher in previewEditAvailableTeachers"
               :key="teacher.id"
@@ -1182,8 +1172,8 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="班级" prop="class_id">
-          <el-select v-model="previewEditForm.class_id" filterable placeholder="请选择班级" style="width: 100%">
+        <el-form-item :label="t('schedules.class')" prop="class_id">
+          <el-select v-model="previewEditForm.class_id" filterable :placeholder="t('schedules.selectClass')" style="width: 100%">
             <el-option
               v-for="class_ in classes"
               :key="class_.id"
@@ -1192,14 +1182,14 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="教室类型" prop="room_type">
-          <el-select v-model="previewEditForm.room_type" placeholder="请选择教室类型" style="width: 100%" @change="handlePreviewEditRoomTypeChange">
-            <el-option label="线下物理" value="offline_physical" />
-            <el-option label="线上虚拟" value="online_virtual" />
+        <el-form-item :label="t('schedules.roomType')" prop="room_type">
+          <el-select v-model="previewEditForm.room_type" :placeholder="t('schedules.selectRoomType')" style="width: 100%" @change="handlePreviewEditRoomTypeChange">
+            <el-option :label="t('schedules.offlinePhysical')" value="offline_physical" />
+            <el-option :label="t('schedules.onlineVirtual')" value="online_virtual" />
           </el-select>
         </el-form-item>
-        <el-form-item v-if="previewEditForm.room_type === 'offline_physical'" label="教室" prop="room_id">
-          <el-select v-model="previewEditForm.room_id" filterable placeholder="请选择教室" style="width: 100%">
+        <el-form-item v-if="previewEditForm.room_type === 'offline_physical'" :label="t('schedules.room')" prop="room_id">
+          <el-select v-model="previewEditForm.room_id" filterable :placeholder="t('schedules.selectRoom')" style="width: 100%">
             <el-option
               v-for="room in rooms"
               :key="room.id"
@@ -1208,65 +1198,65 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item v-else label="会议室链接" prop="meeting_link">
-          <el-input v-model="previewEditForm.meeting_link" placeholder="请输入会议室链接" />
+        <el-form-item v-else :label="t('schedules.meetingLink')" prop="meeting_link">
+          <el-input v-model="previewEditForm.meeting_link" :placeholder="t('schedules.meetingLinkPlaceholder')" />
         </el-form-item>
-        <el-form-item label="开始时间" prop="start_time">
+        <el-form-item :label="t('schedules.startTime')" prop="start_time">
           <el-time-picker
             v-model="previewEditStartTime"
             format="HH:mm"
             value-format="HH:mm"
-            placeholder="选择开始时间"
+            :placeholder="t('schedules.selectStartTime')"
             style="width: 100%"
           />
         </el-form-item>
-        <el-form-item label="结束时间" prop="end_time">
+        <el-form-item :label="t('schedules.endTime')" prop="end_time">
           <el-time-picker
             v-model="previewEditEndTime"
             format="HH:mm"
             value-format="HH:mm"
-            placeholder="选择结束时间"
+            :placeholder="t('schedules.selectEndTime')"
             style="width: 100%"
           />
         </el-form-item>
-        <el-form-item label="开始日期" prop="start_date">
-          <el-date-picker
-            v-model="previewEditForm.start_date"
-            type="date"
-            placeholder="选择开始日期"
+        <el-form-item :label="t('schedules.startDate')" prop="start_date">
+            <el-date-picker
+                v-model="previewEditForm.start_date"
+                type="date"
+                :placeholder="t('schedules.selectStartDate')"
             value-format="YYYY-MM-DD"
             style="width: 100%"
           />
         </el-form-item>
-        <el-form-item label="结束日期" prop="end_date">
-          <el-date-picker
-            v-model="previewEditForm.end_date"
-            type="date"
-            placeholder="选择结束日期"
+        <el-form-item :label="t('schedules.endDate')" prop="end_date">
+            <el-date-picker
+                v-model="previewEditForm.end_date"
+                type="date"
+                :placeholder="t('schedules.selectEndDate')"
             value-format="YYYY-MM-DD"
             style="width: 100%"
           />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="previewEditDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handlePreviewEditConfirm" :loading="previewEditLoading">确认修改</el-button>
+        <el-button @click="previewEditDialogVisible = false">{{ t('common.cancel') }}</el-button>
+        <el-button type="primary" @click="handlePreviewEditConfirm" :loading="previewEditLoading">{{ t('schedules.confirmEdit') }}</el-button>
       </template>
     </el-dialog>
 
-    <el-dialog v-model="importDialogVisible" title="导入课程安排" width="500px" draggable>
+    <el-dialog v-model="importDialogVisible" :title="t('schedules.importSchedule')" width="500px" draggable>
       <el-alert
-        title="导入说明"
+        :title="t('schedules.importInstructions')"
         type="info"
         :closable="false"
         style="margin-bottom: 20px"
       >
-        <p>1. 请先下载导入模板</p>
-        <p>2. 按照模板格式填写课程安排信息</p>
-        <p>3. 时间格式为：开始时间-结束时间，如：09:00-10:30</p>
-        <p>4. 日期格式为：YYYY-MM-DD，如：2024-01-01</p>
-        <p>5. 系统会自动计算周几和冲突状态</p>
-        <p>6. 请勿更改模板顺序</p>
+        <p>{{ t('schedules.importStep1') }}</p>
+        <p>{{ t('schedules.importStep2') }}</p>
+        <p>{{ t('schedules.importStep3') }}</p>
+        <p>{{ t('schedules.importStep4') }}</p>
+        <p>{{ t('schedules.importStep5') }}</p>
+        <p>{{ t('schedules.importStep6') }}</p>
       </el-alert>
       
       <el-upload
@@ -1276,67 +1266,67 @@
         :limit="1"
         accept=".xlsx,.xls"
       >
-        <el-button type="primary">选择文件</el-button>
+        <el-button type="primary">{{ t('schedules.selectFile') }}</el-button>
         <template #tip>
-          <div class="el-upload__tip">只能上传 Excel 文件</div>
+          <div class="el-upload__tip">{{ t('schedules.excelOnly') }}</div>
         </template>
       </el-upload>
       
       <template #footer>
-        <el-button @click="importDialogVisible = false">取消</el-button>
+        <el-button @click="importDialogVisible = false">{{ t('common.cancel') }}</el-button>
         <el-button type="primary" @click="handleImport" :loading="importUploading">
-          导入
+          {{ t('schedules.importButton') }}
         </el-button>
       </template>
     </el-dialog>
 
     <!-- 完训对话框 -->
-    <el-dialog v-model="completeDialogVisible" title="填写课程反馈" width="800px" draggable>
+    <el-dialog v-model="completeDialogVisible" :title="t('schedules.completeFeedback')" width="800px" draggable>
       <el-alert
         v-if="currentCompleteSchedule && currentCompleteSchedule.schedule_type === 'trial'"
-        title="试听课完训不需要强制反馈，课程反馈为选填项"
+        :title="t('schedules.trialNoFeedback')"
         type="info"
         :closable="false"
         style="margin-bottom: 20px"
       />
       <el-alert
         v-else-if="currentCompleteSchedule && teachers.find(t => t.id === currentCompleteSchedule.teacher_id)?.no_feedback_required"
-        title="该导师已开启'无需反馈'功能，课程反馈为选填项"
+        :title="t('schedules.noFeedbackRequired')"
         type="info"
         :closable="false"
         style="margin-bottom: 20px"
       />
       <el-form :model="completeForm" :rules="completeRules" ref="completeFormRef" label-width="80px">
-        <el-form-item label="内容" prop="content">
-          <el-input v-model="completeForm.content" type="textarea" :rows="3" placeholder="请输入课程内容" />
+        <el-form-item :label="t('schedules.content')" prop="content">
+          <el-input v-model="completeForm.content" type="textarea" :rows="3" :placeholder="t('schedules.inputCourseContent')" />
         </el-form-item>
-        <el-form-item label="作业" prop="homework">
-          <el-input v-model="completeForm.homework" type="textarea" :rows="3" placeholder="请输入作业内容" />
+        <el-form-item :label="t('schedules.homework')" prop="homework">
+          <el-input v-model="completeForm.homework" type="textarea" :rows="3" :placeholder="t('schedules.inputHomeworkContent')" />
         </el-form-item>
-        <el-form-item label="注意" prop="note">
-          <el-input v-model="completeForm.note" type="textarea" :rows="3" placeholder="请输入注意事项" />
+        <el-form-item :label="t('schedules.note')" prop="note">
+          <el-input v-model="completeForm.note" type="textarea" :rows="3" :placeholder="t('schedules.inputNoteContent')" />
         </el-form-item>
         
-        <el-divider>学员出勤状态</el-divider>
+        <el-divider>{{ t('schedules.studentAttendanceStatus') }}</el-divider>
         <el-table :data="completeForm.studentAttendance" border max-height="300">
-          <el-table-column prop="name" label="学员姓名" width="150" />
-          <el-table-column label="出勤状态" width="200">
+          <el-table-column prop="name" :label="t('schedules.studentName')" width="150" />
+          <el-table-column :label="t('schedules.attendanceStatus')" width="200">
             <template #default="{ row }">
               <el-radio-group v-model="row.status" :disabled="row.isLocked">
-                <el-radio value="present">出席</el-radio>
-                <el-radio value="absent">缺席</el-radio>
-                <el-radio value="leave">请假</el-radio>
+                <el-radio value="present">{{ t('schedules.present') }}</el-radio>
+                <el-radio value="absent">{{ t('schedules.absent') }}</el-radio>
+                <el-radio value="leave">{{ t('schedules.leave') }}</el-radio>
               </el-radio-group>
-              <el-tag v-if="row.isLocked" type="info" size="small" style="margin-left: 8px;">已锁定</el-tag>
+              <el-tag v-if="row.isLocked" type="info" size="small" style="margin-left: 8px;">{{ t('schedules.locked') }}</el-tag>
             </template>
           </el-table-column>
-          <el-table-column label="缺勤原因">
+          <el-table-column :label="t('schedules.absenceReason')">
             <template #default="{ row }">
               <el-input 
                 v-if="row.status !== 'present'" 
                 v-model="row.absenceReason" 
                 :disabled="row.isLocked"
-                placeholder="请输入缺勤原因（可选）"
+                :placeholder="t('schedules.inputAbsenceReason')"
                 size="small"
               />
             </template>
@@ -1344,9 +1334,9 @@
         </el-table>
       </el-form>
       <template #footer>
-        <el-button @click="completeDialogVisible = false">取消</el-button>
-        <el-button @click="handleComplete(false)">保存并定时通知</el-button>
-        <el-button type="primary" @click="handleComplete(true)">保存并立刻通知</el-button>
+        <el-button @click="completeDialogVisible = false">{{ t('common.cancel') }}</el-button>
+        <el-button @click="handleComplete(false)">{{ t('schedules.saveAndScheduleNotify') }}</el-button>
+        <el-button type="primary" @click="handleComplete(true)">{{ t('schedules.saveAndNotifyNow') }}</el-button>
       </template>
     </el-dialog>
     
@@ -1354,152 +1344,149 @@
     <el-dialog v-model="editFeedbackDialogVisible" :title="editFeedbackDialogTitle" width="600px" draggable>
       <el-alert
         v-if="currentEditFeedbackSchedule && teachers.find(t => t.id === currentEditFeedbackSchedule.teacher_id)?.no_feedback_required && editFeedbackType === 'complete'"
-        title="该导师已开启'无需反馈'功能，课程反馈为选填项"
+        :title="t('schedules.noFeedbackRequired')"
         type="info"
         :closable="false"
         style="margin-bottom: 20px"
       />
       <el-form :model="editFeedbackForm" :rules="editFeedbackRules" ref="editFeedbackFormRef" label-width="100px">
-        <!-- 完训反馈 -->
         <template v-if="editFeedbackType === 'complete'">
-          <el-form-item label="内容" prop="content">
-            <el-input v-model="editFeedbackForm.content" type="textarea" :rows="3" placeholder="请输入课程内容" />
+          <el-form-item :label="t('schedules.content')" prop="content">
+            <el-input v-model="editFeedbackForm.content" type="textarea" :rows="3" :placeholder="t('schedules.inputCourseContent')" />
           </el-form-item>
-          <el-form-item label="作业" prop="homework">
-            <el-input v-model="editFeedbackForm.homework" type="textarea" :rows="3" placeholder="请输入作业内容" />
+          <el-form-item :label="t('schedules.homework')" prop="homework">
+            <el-input v-model="editFeedbackForm.homework" type="textarea" :rows="3" :placeholder="t('schedules.inputHomeworkContent')" />
           </el-form-item>
-          <el-form-item label="注意" prop="note">
-            <el-input v-model="editFeedbackForm.note" type="textarea" :rows="3" placeholder="请输入注意事项" />
+          <el-form-item :label="t('schedules.note')" prop="note">
+            <el-input v-model="editFeedbackForm.note" type="textarea" :rows="3" :placeholder="t('schedules.inputNoteContent')" />
           </el-form-item>
           
-          <el-divider>学员出勤状态</el-divider>
+          <el-divider>{{ t('schedules.studentAttendanceStatus') }}</el-divider>
           <el-table :data="editFeedbackForm.studentAttendance" border max-height="300">
-            <el-table-column prop="name" label="学员姓名" width="150" />
-            <el-table-column label="出勤状态" width="200">
+            <el-table-column prop="name" :label="t('schedules.studentName')" width="150" />
+            <el-table-column :label="t('schedules.attendanceStatus')" width="200">
               <template #default="{ row }">
                 <el-radio-group v-model="row.status">
-                  <el-radio value="present">出席</el-radio>
-                  <el-radio value="absent">缺席</el-radio>
-                  <el-radio value="leave">请假</el-radio>
+                  <el-radio value="present">{{ t('schedules.present') }}</el-radio>
+                  <el-radio value="absent">{{ t('schedules.absent') }}</el-radio>
+                  <el-radio value="leave">{{ t('schedules.leave') }}</el-radio>
                 </el-radio-group>
               </template>
             </el-table-column>
-            <el-table-column label="缺勤原因">
+            <el-table-column :label="t('schedules.absenceReason')">
               <template #default="{ row }">
                 <el-input 
                   v-if="row.status !== 'present'" 
                   v-model="row.absenceReason" 
-                  placeholder="请输入缺勤原因（可选）"
+                  :placeholder="t('schedules.inputAbsenceReason')"
                   size="small"
                 />
               </template>
             </el-table-column>
           </el-table>
         </template>
-        <!-- 延期原因 -->
         <template v-if="editFeedbackType === 'postpone'">
-          <el-form-item label="延期原因" prop="postpone_reason">
-            <el-input v-model="editFeedbackForm.postpone_reason" type="textarea" :rows="5" placeholder="请输入延期原因" />
+          <el-form-item :label="t('schedules.postponeReason')" prop="postpone_reason">
+            <el-input v-model="editFeedbackForm.postpone_reason" type="textarea" :rows="5" :placeholder="t('schedules.inputPostponeReason')" />
           </el-form-item>
         </template>
-        <!-- 取消原因 -->
         <template v-if="editFeedbackType === 'cancel'">
-          <el-form-item label="取消原因" prop="cancel_reason">
-            <el-input v-model="editFeedbackForm.cancel_reason" type="textarea" :rows="5" placeholder="请输入取消原因" />
+          <el-form-item :label="t('schedules.cancelReasonLabel')" prop="cancel_reason">
+            <el-input v-model="editFeedbackForm.cancel_reason" type="textarea" :rows="5" :placeholder="t('schedules.inputCancelReason')" />
           </el-form-item>
         </template>
       </el-form>
       <template #footer>
-        <el-button @click="editFeedbackDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleEditFeedback">确定</el-button>
+        <el-button @click="editFeedbackDialogVisible = false">{{ t('common.cancel') }}</el-button>
+        <el-button type="primary" @click="handleEditFeedback">{{ t('common.confirm') }}</el-button>
       </template>
     </el-dialog>
     <!-- 延期课程安排对话框 -->
-    <el-dialog v-model="postponeDialogVisible" title="调整日期和时间" width="600px" draggable>
+    <el-dialog v-model="postponeDialogVisible" :title="t('schedules.adjustDateTime')" width="600px" draggable>
       <el-form :model="postponeForm" :rules="postponeRules" ref="postponeFormRef" label-width="100px">
-        <el-form-item label="开始日期" prop="startDate">
+        <el-form-item :label="t('schedules.startDate')" prop="startDate">
           <el-date-picker
             v-model="postponeForm.startDate"
             type="date"
-            placeholder="选择开始日期"
+            :placeholder="t('schedules.selectStartDate')"
             value-format="YYYY-MM-DD"
             style="width: 100%"
           />
         </el-form-item>
-        <el-form-item label="结束日期" prop="endDate">
+        <el-form-item :label="t('schedules.endDate')" prop="endDate">
           <el-date-picker
             v-model="postponeForm.endDate"
             type="date"
-            placeholder="选择结束日期"
+            :placeholder="t('schedules.selectEndDate')"
             value-format="YYYY-MM-DD"
             style="width: 100%"
           />
         </el-form-item>
-        <el-form-item label="开始时间" prop="startTime">
+        <el-form-item :label="t('schedules.startTime')" prop="startTime">
           <el-time-picker
             v-model="postponeForm.startTime"
-            placeholder="选择开始时间"
+            :placeholder="t('schedules.selectStartTime')"
             format="HH:mm"
             value-format="HH:mm"
             style="width: 100%"
           />
         </el-form-item>
-        <el-form-item label="结束时间" prop="endTime">
+        <el-form-item :label="t('schedules.endTime')" prop="endTime">
           <el-time-picker
             v-model="postponeForm.endTime"
-            placeholder="选择结束时间"
+            :placeholder="t('schedules.selectEndTime')"
             format="HH:mm"
             value-format="HH:mm"
             style="width: 100%"
           />
         </el-form-item>
-        <el-form-item label="延期原因" prop="postponeReason">
+        <el-form-item :label="t('schedules.postponeReason')" prop="postponeReason">
           <el-input
             v-model="postponeForm.postponeReason"
             type="textarea"
             :rows="4"
-            placeholder="请输入延期原因"
+            :placeholder="t('schedules.inputPostponeReason')"
           />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="postponeDialogVisible = false">取消</el-button>
-        <el-button @click="handlePostpone(false)">保存并定时通知</el-button>
-        <el-button type="primary" @click="handlePostpone(true)">保存并立刻通知</el-button>
+        <el-button @click="postponeDialogVisible = false">{{ t('common.cancel') }}</el-button>
+        <el-button @click="handlePostpone(false)">{{ t('schedules.saveAndScheduleNotify') }}</el-button>
+        <el-button type="primary" @click="handlePostpone(true)">{{ t('schedules.saveAndNotifyNow') }}</el-button>
       </template>
     </el-dialog>
     <!-- 取消课程安排对话框 -->
-    <el-dialog v-model="cancelDialogVisible" title="确认取消" width="500px" draggable>
+    <el-dialog v-model="cancelDialogVisible" :title="t('schedules.confirmCancelTitle')" width="500px" draggable>
       <el-form :model="cancelForm" :rules="cancelRules" ref="cancelFormRef" label-width="100px">
-        <el-form-item label="取消原因" prop="cancelReason">
+        <el-form-item :label="t('schedules.cancelReasonLabel')" prop="cancelReason">
           <el-input
             v-model="cancelForm.cancelReason"
             type="textarea"
             :rows="4"
-            placeholder="请输入取消原因"
+            :placeholder="t('schedules.inputCancelReason')"
           />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="cancelDialogVisible = false">取消</el-button>
-        <el-button @click="handleCancel(false)">保存并定时通知</el-button>
-        <el-button type="danger" @click="handleCancel(true)">保存并立刻通知</el-button>
+        <el-button @click="cancelDialogVisible = false">{{ t('common.cancel') }}</el-button>
+        <el-button @click="handleCancel(false)">{{ t('schedules.saveAndScheduleNotify') }}</el-button>
+        <el-button type="danger" @click="handleCancel(true)">{{ t('schedules.saveAndNotifyNow') }}</el-button>
       </template>
     </el-dialog>
     <!-- 学员补课对话框 -->
-    <el-dialog v-model="makeupDialogVisible" title="学员补课" width="600px" draggable>
+    <el-dialog v-model="makeupDialogVisible" :title="t('schedules.studentMakeup')" width="600px" draggable>
       <el-form :model="makeupForm" :rules="makeupRules" ref="makeupFormRef" label-width="100px">
-        <el-form-item label="补课选项">
+        <el-form-item :label="t('schedules.makeupOptions')">
           <el-radio-group v-model="makeupForm.makeupType">
-            <el-radio value="makeup">补课</el-radio>
-            <el-radio value="decline">不补课</el-radio>
+            <el-radio value="makeup">{{ t('schedules.makeup') }}</el-radio>
+            <el-radio value="decline">{{ t('schedules.declineMakeup') }}</el-radio>
           </el-radio-group>
         </el-form-item>
         
-        <el-form-item label="选择学员" prop="studentIds">
+        <el-form-item :label="t('schedules.selectStudents')" prop="studentIds">
           <el-select 
             v-model="makeupForm.studentIds" 
-            placeholder="选择学员" 
+            :placeholder="t('schedules.selectStudentPlaceholder')" 
             multiple 
             collapse-tags 
             collapse-tags-tooltip 
@@ -1508,7 +1495,7 @@
             <el-option
               v-for="student in classStudents"
               :key="student.id"
-              :label="`${student.name} (${student.attendance_status === 'absent' ? '缺席' : '请假'})`"
+              :label="`${student.name} (${student.attendance_status === 'absent' ? t('schedules.absent') : t('schedules.onLeave')})`"
               :value="student.id"
             >
               <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -1517,110 +1504,110 @@
                   :type="student.attendance_status === 'absent' ? 'danger' : 'warning'" 
                   size="small"
                 >
-                  {{ student.attendance_status === 'absent' ? '缺席' : '请假' }}
+                  {{ student.attendance_status === 'absent' ? t('schedules.absent') : t('schedules.onLeave') }}
                 </el-tag>
               </div>
             </el-option>
           </el-select>
           <div v-if="classStudents.length > 0" style="margin-top: 8px; font-size: 12px; color: #909399;">
-            共 {{ classStudents.length }} 名学员需要补课
+            {{ t('schedules.studentsNeedMakeup', { count: classStudents.length }) }}
           </div>
         </el-form-item>
         
         <template v-if="makeupForm.makeupType === 'makeup'">
-          <el-form-item label="开始日期" prop="startDate">
+          <el-form-item :label="t('schedules.startDate')" prop="startDate">
             <el-date-picker
               v-model="makeupForm.startDate"
               type="date"
-              placeholder="选择开始日期"
+              :placeholder="t('schedules.selectStartDate')"
               value-format="YYYY-MM-DD"
               style="width: 100%"
             />
           </el-form-item>
-          <el-form-item label="结束日期" prop="endDate">
+          <el-form-item :label="t('schedules.endDate')" prop="endDate">
             <el-date-picker
               v-model="makeupForm.endDate"
               type="date"
-              placeholder="选择结束日期"
+              :placeholder="t('schedules.selectEndDate')"
               value-format="YYYY-MM-DD"
               style="width: 100%"
             />
           </el-form-item>
-          <el-form-item label="开始时间" prop="startTime">
+          <el-form-item :label="t('schedules.startTime')" prop="startTime">
             <el-time-picker
               v-model="makeupForm.startTime"
-              placeholder="选择开始时间"
+              :placeholder="t('schedules.selectStartTime')"
               format="HH:mm"
               value-format="HH:mm"
               style="width: 100%"
             />
           </el-form-item>
-          <el-form-item label="结束时间" prop="endTime">
+          <el-form-item :label="t('schedules.endTime')" prop="endTime">
             <el-time-picker
               v-model="makeupForm.endTime"
-              placeholder="选择结束时间"
+              :placeholder="t('schedules.selectEndTime')"
               format="HH:mm"
               value-format="HH:mm"
               style="width: 100%"
             />
           </el-form-item>
-          <el-form-item label="教室" prop="roomId">
-            <el-select v-model="makeupForm.roomId" placeholder="请选择教室" style="width: 100%">
+          <el-form-item :label="t('schedules.room')" prop="roomId">
+            <el-select v-model="makeupForm.roomId" :placeholder="t('schedules.selectRoom')" style="width: 100%">
               <el-option v-for="room in rooms" :key="room.id" :label="room.name" :value="room.id" />
             </el-select>
           </el-form-item>
         </template>
         
         <template v-if="makeupForm.makeupType === 'decline'">
-          <el-form-item label="不补课原因" prop="declinedReason">
+          <el-form-item :label="t('schedules.declinedReasonLabel')" prop="declinedReason">
             <el-input 
               v-model="makeupForm.declinedReason" 
               type="textarea" 
               :rows="4" 
-              placeholder="请输入不补课原因"
+              :placeholder="t('schedules.inputDeclinedReason')"
             />
           </el-form-item>
         </template>
       </el-form>
       <template #footer>
-        <el-button @click="makeupDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleMakeup">确定</el-button>
+        <el-button @click="makeupDialogVisible = false">{{ t('common.cancel') }}</el-button>
+        <el-button type="primary" @click="handleMakeup">{{ t('common.confirm') }}</el-button>
       </template>
     </el-dialog>
     <!-- 发送作业安排对话框 -->
-    <el-dialog v-model="homeworkDialogVisible" title="发送作业安排" width="700px" draggable>
+    <el-dialog v-model="homeworkDialogVisible" :title="t('schedules.sendHomework')" width="700px" draggable>
       <el-alert
-        title="作业说明"
+        :title="t('schedules.homeworkInstructions')"
         type="info"
         :closable="false"
         show-icon
         style="margin-bottom: 20px"
       >
         <template #default>
-          <div>随堂作业：从完训课程反馈中获取，可修改</div>
-          <div>常规作业：由导师填写</div>
-          <div>作业图片：可上传最多3张图片或直接截图</div>
-          <div>确定后将发送到班级企业微信群</div>
+          <div>{{ t('schedules.classHomeworkDesc') }}</div>
+          <div>{{ t('schedules.regularHomeworkDesc') }}</div>
+          <div>{{ t('schedules.homeworkImageDesc') }}</div>
+          <div>{{ t('schedules.sendToWechatGroup') }}</div>
         </template>
       </el-alert>
       <el-form :model="homeworkForm" :rules="homeworkRules" ref="homeworkFormRef" label-width="120px">
-        <el-form-item label="随堂作业" prop="classHomework">
+        <el-form-item :label="t('schedules.classHomework')" prop="classHomework">
           <el-input
             v-model="homeworkForm.classHomework"
             type="textarea"
             :rows="4"
-            placeholder="请输入随堂作业（从完训反馈中获取，可修改）"
+            :placeholder="t('schedules.inputClassHomework')"
           />
         </el-form-item>
-        <el-form-item label="常规作业" prop="regularHomework">
+        <el-form-item :label="t('schedules.regularHomework')" prop="regularHomework">
           <el-input
             v-model="homeworkForm.regularHomework"
             type="textarea"
             :rows="4"
-            placeholder="请输入常规作业（由导师填写）"
+            :placeholder="t('schedules.inputRegularHomework')"
           />
         </el-form-item>
-        <el-form-item label="作业图片">
+        <el-form-item :label="t('schedules.homeworkImage')">
           <el-upload
             v-model:file-list="homeworkForm.images"
             action="/api/upload"
@@ -1636,14 +1623,14 @@
             <el-icon><Plus /></el-icon>
           </el-upload>
           <div style="margin-top: 5px; font-size: 12px; color: #909399;">
-            <el-icon><InfoFilled /></el-icon> 提示：最多上传3张图片
+            <el-icon><InfoFilled /></el-icon> {{ t('schedules.maxImagesTip') }}
           </div>
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="homeworkDialogVisible = false">取消</el-button>
-        <el-button @click="handleHomeworkSubmit(false)" :loading="homeworkLoading">保存并定时通知</el-button>
-        <el-button type="primary" @click="handleHomeworkSubmit(true)" :loading="homeworkLoading">保存并立刻通知</el-button>
+        <el-button @click="homeworkDialogVisible = false">{{ t('common.cancel') }}</el-button>
+        <el-button @click="handleHomeworkSubmit(false)" :loading="homeworkLoading">{{ t('schedules.saveAndScheduleNotify') }}</el-button>
+        <el-button type="primary" @click="handleHomeworkSubmit(true)" :loading="homeworkLoading">{{ t('schedules.saveAndNotifyNow') }}</el-button>
       </template>
     </el-dialog>
   </div>
@@ -1658,7 +1645,10 @@ import api from '@/utils/api'
 import { hasFeature, FEATURES as licenseFeatures } from '@/utils/license'
 import * as XLSX from 'xlsx'
 import dayjs from 'dayjs'
+import { useI18n } from 'vue-i18n'
 
+
+const { t } = useI18n()
 const mainTableRef = ref(null)
 const topScrollbarRef = ref(null)
 const scrollbarWidth = ref(0)
@@ -1701,14 +1691,14 @@ const previewEditForm = ref({
   end_date: '',
 })
 const previewEditRules = {
-  course_id: [{ required: true, message: '请选择科目', trigger: 'change' }],
-  teacher_id: [{ required: true, message: '请选择导师', trigger: 'change' }],
-  class_id: [{ required: true, message: '请选择班级', trigger: 'change' }],
-  room_type: [{ required: true, message: '请选择教室类型', trigger: 'change' }],
-  start_time: [{ required: true, message: '请选择开始时间', trigger: 'change' }],
-  end_time: [{ required: true, message: '请选择结束时间', trigger: 'change' }],
-  start_date: [{ required: true, message: '请选择开始日期', trigger: 'change' }],
-  end_date: [{ required: true, message: '请选择结束日期', trigger: 'change' }],
+  course_id: [{ required: true, message: t('schedules.validation.selectCourse'), trigger: 'change' }],
+  teacher_id: [{ required: true, message: t('schedules.validation.selectTeacher'), trigger: 'change' }],
+  class_id: [{ required: true, message: t('schedules.validation.selectClass'), trigger: 'change' }],
+  room_type: [{ required: true, message: t('schedules.validation.selectRoomType'), trigger: 'change' }],
+  start_time: [{ required: true, message: t('schedules.validation.selectStartTime'), trigger: 'change' }],
+  end_time: [{ required: true, message: t('schedules.validation.selectEndTime'), trigger: 'change' }],
+  start_date: [{ required: true, message: t('schedules.validation.selectStartDate'), trigger: 'change' }],
+  end_date: [{ required: true, message: t('schedules.validation.selectEndDate'), trigger: 'change' }],
 }
 const previewEditAvailableTeachers = computed(() => {
   if (!previewEditForm.value.course_id) {
@@ -1837,9 +1827,9 @@ const completeRules = computed(() => {
   const schedule = currentCompleteSchedule.value
   if (!schedule) {
     return {
-      content: [{ required: true, message: '请输入课程内容', trigger: 'blur' }],
-      homework: [{ required: true, message: '请输入作业内容', trigger: 'blur' }],
-      note: [{ required: true, message: '请输入注意事项', trigger: 'blur' }]
+      content: [{ required: true, message: t('schedules.validation.inputCourseContent'), trigger: 'blur' }],
+      homework: [{ required: true, message: t('schedules.validation.inputHomeworkContent'), trigger: 'blur' }],
+      note: [{ required: true, message: t('schedules.validation.inputNoteContent'), trigger: 'blur' }]
     }
   }
   
@@ -1858,9 +1848,9 @@ const completeRules = computed(() => {
   
   // 否则反馈字段是必填的
   return {
-    content: [{ required: true, message: '请输入课程内容', trigger: 'blur' }],
-    homework: [{ required: true, message: '请输入作业内容', trigger: 'blur' }],
-    note: [{ required: true, message: '请输入注意事项', trigger: 'blur' }]
+    content: [{ required: true, message: t('schedules.validation.inputCourseContent'), trigger: 'blur' }],
+    homework: [{ required: true, message: t('schedules.validation.inputHomeworkContent'), trigger: 'blur' }],
+    note: [{ required: true, message: t('schedules.validation.inputNoteContent'), trigger: 'blur' }]
   }
 })
 
@@ -1875,11 +1865,11 @@ const postponeForm = ref({
   postponeReason: ''
 })
 const postponeRules = {
-  startDate: [{ required: true, message: '请选择开始日期', trigger: 'change' }],
-  endDate: [{ required: true, message: '请选择结束日期', trigger: 'change' }],
-  startTime: [{ required: true, message: '请选择开始时间', trigger: 'change' }],
-  endTime: [{ required: true, message: '请选择结束时间', trigger: 'change' }],
-  postponeReason: [{ required: true, message: '请输入延期原因', trigger: 'blur' }]
+  startDate: [{ required: true, message: t('schedules.validation.selectStartDate'), trigger: 'change' }],
+  endDate: [{ required: true, message: t('schedules.validation.selectEndDate'), trigger: 'change' }],
+  startTime: [{ required: true, message: t('schedules.validation.selectStartTime'), trigger: 'change' }],
+  endTime: [{ required: true, message: t('schedules.validation.selectEndTime'), trigger: 'change' }],
+  postponeReason: [{ required: true, message: t('schedules.validation.inputPostponeReason'), trigger: 'blur' }]
 }
 const currentPostponeSchedule = ref(null)
 // 取消对话框
@@ -1890,9 +1880,7 @@ const cancelForm = ref({
   cancelReason: ''
 })
 const cancelRules = {
-  cancelReason: [
-    { required: true, message: '请输入取消原因', trigger: 'blur' }
-  ]
+  cancelReason: [{ required: true, message: t('schedules.validation.inputCancelReason'), trigger: 'blur' }]
 }
 // 学员补课对话框
 const makeupDialogVisible = ref(false)
@@ -1916,8 +1904,8 @@ const homeworkForm = ref({
   images: []
 })
 const homeworkRules = {
-  classHomework: [{ required: true, message: '请输入随堂作业', trigger: 'blur' }],
-  regularHomework: [{ required: true, message: '请输入常规作业', trigger: 'blur' }]
+  classHomework: [{ required: true, message: t('schedules.validation.inputClassHomework'), trigger: 'blur' }],
+  regularHomework: [{ required: true, message: t('schedules.validation.inputRegularHomework'), trigger: 'blur' }]
 }
 // 修改反馈对话框
 const editFeedbackDialogVisible = ref(false)
@@ -1966,22 +1954,22 @@ const editFeedbackRules = computed(() => {
     
     // 否则反馈字段是必填的
     return {
-      content: [{ required: true, message: '请输入课程内容', trigger: 'blur' }],
-      homework: [{ required: true, message: '请输入作业内容', trigger: 'blur' }],
-      note: [{ required: true, message: '请输入注意事项', trigger: 'blur' }]
+      content: [{ required: true, message: t('schedules.validation.inputCourseContent'), trigger: 'blur' }],
+      homework: [{ required: true, message: t('schedules.validation.inputHomeworkContent'), trigger: 'blur' }],
+      note: [{ required: true, message: t('schedules.validation.inputNoteContent'), trigger: 'blur' }]
     }
   }
   
   // 如果是延期原因或取消原因，则必填
   if (editFeedbackType.value === 'postpone') {
     return {
-      postpone_reason: [{ required: true, message: '请输入延期原因', trigger: 'blur' }]
+      postpone_reason: [{ required: true, message: t('schedules.validation.inputPostponeReason'), trigger: 'blur' }]
     }
   }
   
   if (editFeedbackType.value === 'cancel') {
     return {
-      cancel_reason: [{ required: true, message: '请输入取消原因', trigger: 'blur' }]
+      cancel_reason: [{ required: true, message: t('schedules.validation.inputCancelReason'), trigger: 'blur' }]
     }
   }
   
@@ -1993,15 +1981,15 @@ const showEditFeedbackDialog = async (schedule, type) => {
   editFeedbackType.value = type
   
   if (type === 'complete') {
-    editFeedbackDialogTitle.value = '修改完训反馈'
+    editFeedbackDialogTitle.value = t('schedules.editCompleteFeedback')
     // 解析现有的反馈内容
     let formData
     if (schedule.content_feedback) {
       const feedback = parseContentFeedback(schedule.content_feedback)
       formData = {
-        content: feedback.find(f => f.label === '内容')?.content || '',
-        homework: feedback.find(f => f.label === '作业')?.content || '',
-        note: feedback.find(f => f.label === '注意')?.content || '',
+        content: feedback.find(f => f.rawLabel === '内容')?.content || '',
+        homework: feedback.find(f => f.rawLabel === '作业')?.content || '',
+        note: feedback.find(f => f.rawLabel === '注意')?.content || '',
         postpone_reason: '',
         cancel_reason: '',
         studentAttendance: []
@@ -2050,7 +2038,7 @@ const showEditFeedbackDialog = async (schedule, type) => {
     originalEditFeedbackForm.value = JSON.parse(JSON.stringify(formData))
     editFeedbackForm.value = formData
   } else if (type === 'postpone') {
-    editFeedbackDialogTitle.value = '修改延期原因'
+    editFeedbackDialogTitle.value = t('schedules.editPostponeReason')
     const formData = {
       content: '',
       homework: '',
@@ -2062,7 +2050,7 @@ const showEditFeedbackDialog = async (schedule, type) => {
     originalEditFeedbackForm.value = { ...formData }
     editFeedbackForm.value = formData
   } else if (type === 'cancel') {
-    editFeedbackDialogTitle.value = '修改取消原因'
+    editFeedbackDialogTitle.value = t('schedules.editCancelReason')
     const formData = {
       content: '',
       homework: '',
@@ -2100,7 +2088,7 @@ const handleEditFeedback = async () => {
             JSON.stringify(editFeedbackForm.value.studentAttendance) !== JSON.stringify(originalEditFeedbackForm.value.studentAttendance)
           
           if (!isContentChanged && !isAttendanceChanged) {
-            ElMessage.warning('内容未发生改变，无需保存')
+            ElMessage.warning(t('schedules.message.noChangeSave'))
             return
           }
           
@@ -2126,34 +2114,34 @@ const handleEditFeedback = async () => {
             })
           }
           
-          ElMessage.success('修改完训反馈成功')
+          ElMessage.success(t('schedules.message.editCompleteFeedbackSuccess'))
         } else if (editFeedbackType.value === 'postpone') {
           if (editFeedbackForm.value.postpone_reason === originalEditFeedbackForm.value.postpone_reason) {
-            ElMessage.warning('内容未发生改变，无需保存')
+            ElMessage.warning(t('schedules.message.noChangeSave'))
             return
           }
 
           await api.put(`/schedules/${scheduleId}`, {
             postpone_reason: editFeedbackForm.value.postpone_reason
           })
-          ElMessage.success('修改延期原因成功')
+          ElMessage.success(t('schedules.message.editPostponeReasonSuccess'))
         } else if (editFeedbackType.value === 'cancel') {
           if (editFeedbackForm.value.cancel_reason === originalEditFeedbackForm.value.cancel_reason) {
-            ElMessage.warning('内容未发生改变，无需保存')
+            ElMessage.warning(t('schedules.message.noChangeSave'))
             return
           }
           
           await api.put(`/schedules/${scheduleId}`, {
             cancel_reason: editFeedbackForm.value.cancel_reason
           })
-          ElMessage.success('修改取消原因成功')
+          ElMessage.success(t('schedules.message.editCancelReasonSuccess'))
         }
         
         editFeedbackDialogVisible.value = false
         fetchSchedules()
       } catch (error) {
         window.logger.error('修改反馈失败:', error)
-        ElMessage.error('修改反馈失败')
+        ElMessage.error(t('schedules.message.editFeedbackFailed'))
       }
     }
   })
@@ -2177,19 +2165,19 @@ const handleSelectNoConflicts = () => {
 }
 const handleSaveSelectedSchedules = async () => {
   if (selectedPreviewSchedules.value.length === 0) {
-    ElMessage.warning('请至少选择一个排课')
+    ElMessage.warning(t('schedules.message.selectAtLeastOne'))
     return
   }
   
   saveLoading.value = true
   try {
     const response = await api.post('/schedules/save-preview-schedules', selectedPreviewSchedules.value)
-    ElMessage.success(`保存成功！创建 ${response.data.schedules_created} 个排课，发现 ${response.data.conflicts_found} 个冲突`)
+    ElMessage.success(t('schedules.message.saveSuccess', { created: response.data.schedules_created, conflicts: response.data.conflicts_found }))
     previewDialogVisible.value = false
     fetchSchedules()
   } catch (error) {
     window.logger.error('保存排课失败:', error)
-    ElMessage.error('保存排课失败')
+    ElMessage.error(t('schedules.message.saveFailed'))
   } finally {
     saveLoading.value = false
   }
@@ -2290,10 +2278,10 @@ const handlePreviewEditConfirm = async () => {
       }
 
       previewEditDialogVisible.value = false
-      ElMessage.success('排课已更新，冲突状态已重新检查')
+      ElMessage.success(t('schedules.message.scheduleUpdated'))
     } catch (error) {
       window.logger.error('更新预览排课失败:', error)
-      ElMessage.error(error.response?.data?.detail || '更新排课失败')
+      ElMessage.error(error.response?.data?.detail || t('schedules.message.updatePreviewFailed'))
     } finally {
       previewEditLoading.value = false
     }
@@ -2302,17 +2290,17 @@ const handlePreviewEditConfirm = async () => {
 const makeupRules = computed(() => {
   if (makeupForm.value.makeupType === 'makeup') {
     return {
-      studentIds: [{ required: true, message: '请选择学员', trigger: 'change' }],
-      startDate: [{ required: true, message: '请选择开始日期', trigger: 'change' }],
-      endDate: [{ required: true, message: '请选择结束日期', trigger: 'change' }],
-      startTime: [{ required: true, message: '请选择开始时间', trigger: 'change' }],
-      endTime: [{ required: true, message: '请选择结束时间', trigger: 'change' }],
-      roomId: [{ required: true, message: '请选择教室', trigger: 'change' }]
+      studentIds: [{ required: true, message: t('schedules.validation.selectStudent'), trigger: 'change' }],
+      startDate: [{ required: true, message: t('schedules.validation.selectStartDate'), trigger: 'change' }],
+      endDate: [{ required: true, message: t('schedules.validation.selectEndDate'), trigger: 'change' }],
+      startTime: [{ required: true, message: t('schedules.validation.selectStartTime'), trigger: 'change' }],
+      endTime: [{ required: true, message: t('schedules.validation.selectEndTime'), trigger: 'change' }],
+      roomId: [{ required: true, message: t('schedules.validation.selectRoom'), trigger: 'change' }]
     }
   } else {
     return {
-      studentIds: [{ required: true, message: '请选择学员', trigger: 'change' }],
-      declinedReason: [{ required: true, message: '请输入不补课原因', trigger: 'blur' }]
+      studentIds: [{ required: true, message: t('schedules.validation.selectStudent'), trigger: 'change' }],
+      declinedReason: [{ required: true, message: t('schedules.validation.inputDeclinedReason'), trigger: 'blur' }]
     }
   }
 })
@@ -2320,17 +2308,17 @@ const currentMakeupSchedule = ref(null)
 const classStudents = ref([])
 
 const rules = {
-  course_id: [{ required: true, message: '请选择科目', trigger: 'change' }],
-  teacher_id: [{ required: true, message: '请选择导师', trigger: 'change' }],
-  class_id: [{ required: true, message: '请选择班级', trigger: 'change' }],
-  room_type: [{ required: true, message: '请选择教室类型', trigger: 'change' }],
+  course_id: [{ required: true, message: t('schedules.validation.selectCourse'), trigger: 'change' }],
+  teacher_id: [{ required: true, message: t('schedules.validation.selectTeacher'), trigger: 'change' }],
+  class_id: [{ required: true, message: t('schedules.validation.selectClass'), trigger: 'change' }],
+  room_type: [{ required: true, message: t('schedules.validation.selectRoomType'), trigger: 'change' }],
   room_id: [{ 
     required: true, 
-    message: '请选择教室', 
+    message: t('schedules.validation.selectRoom'), 
     trigger: 'change',
     validator: (rule, value, callback) => {
       if (form.value.room_type === 'offline_physical' && !value) {
-        callback(new Error('请选择教室'))
+        callback(new Error(t('schedules.validation.selectRoom')))
       } else {
         callback()
       }
@@ -2338,29 +2326,29 @@ const rules = {
   }],
   meeting_link: [{ 
     required: true, 
-    message: '请输入会议室链接', 
+    message: t('schedules.validation.inputMeetingLink'), 
     trigger: 'blur',
     validator: (rule, value, callback) => {
       if (form.value.room_type === 'online_virtual' && !value) {
-        callback(new Error('请输入会议室链接'))
+        callback(new Error(t('schedules.validation.inputMeetingLink')))
       } else {
         callback()
       }
     }
   }],
-  day_of_week: [{ required: true, message: '请选择星期', trigger: 'change' }],
-  start_time: [{ required: true, message: '请选择开始时间', trigger: 'change' }],
-  end_time: [{ required: true, message: '请选择结束时间', trigger: 'change' }],
-  start_date: [{ required: true, message: '请选择开始日期', trigger: 'change' }],
-  end_date: [{ required: true, message: '请选择结束日期', trigger: 'change' }]
+  day_of_week: [{ required: true, message: t('schedules.validation.selectDayOfWeek'), trigger: 'change' }],
+  start_time: [{ required: true, message: t('schedules.validation.selectStartTime'), trigger: 'change' }],
+  end_time: [{ required: true, message: t('schedules.validation.selectEndTime'), trigger: 'change' }],
+  start_date: [{ required: true, message: t('schedules.validation.selectStartDate'), trigger: 'change' }],
+  end_date: [{ required: true, message: t('schedules.validation.selectEndDate'), trigger: 'change' }]
 }
 
 
 const autoScheduleRules = {
-  algorithm: [{ required: true, message: '请选择排课算法', trigger: 'change' }],
-  room_type: [{ required: true, message: '请选择教室类型', trigger: 'change' }],
-  start_date: [{ required: true, message: '请选择开始日期', trigger: 'change' }],
-  end_date: [{ required: true, message: '请选择结束日期', trigger: 'change' }]
+  algorithm: [{ required: true, message: t('schedules.validation.selectAlgorithm'), trigger: 'change' }],
+  room_type: [{ required: true, message: t('schedules.validation.selectRoomType'), trigger: 'change' }],
+  start_date: [{ required: true, message: t('schedules.validation.selectStartDate'), trigger: 'change' }],
+  end_date: [{ required: true, message: t('schedules.validation.selectEndDate'), trigger: 'change' }]
 }
 
 const handleRoomTypeChange = () => {
@@ -2380,7 +2368,7 @@ const loadConflictSchedules = async (schedule) => {
     conflictSchedules.value = response.data
   } catch (error) {
     window.logger.error('获取冲突课程失败:', error)
-    ElMessage.error('获取冲突课程失败')
+    ElMessage.error(t('schedules.message.getConflictFailed'))
   } finally {
     conflictLoading.value = false
   }
@@ -2524,7 +2512,7 @@ const fetchSchedules = async () => {
     }
   } catch (error) {
     window.logger.error('获取课程安排失败:', error)
-    ElMessage.error('获取课程安排失败')
+    ElMessage.error(t('schedules.message.getScheduleFailed'))
   } finally {
     loading.value = false
   }
@@ -2579,7 +2567,7 @@ watch(() => form.value.start_date, (newDate) => {
 
 // 手动排课界面
 const showAddDialog = () => {
-  dialogTitle.value = '手动排课'
+  dialogTitle.value = t('schedules.manualScheduleTitle')
   startTime.value = ''
   endTime.value = ''
   // 重置编辑标志
@@ -2703,28 +2691,28 @@ const showAddDialog = () => {
       
       // 显示提示信息，告诉用户哪些字段已自动填充
       const filledFields = []
-      if (courseId) filledFields.push('科目')
-      if (teacherId) filledFields.push('导师')
-      if (classId || classIdFromName) filledFields.push('班级')
-      if (roomId) filledFields.push('教室')
-      if (data.dayOfWeek) filledFields.push('星期')
-      if (data.startTime) filledFields.push('开始时间')
-      if (data.endTime) filledFields.push('结束时间')
-      if (data.startDate) filledFields.push('日期')
+      if (courseId) filledFields.push(t('schedules.course'))
+      if (teacherId) filledFields.push(t('schedules.teacher'))
+      if (classId || classIdFromName) filledFields.push(t('schedules.class'))
+      if (roomId) filledFields.push(t('schedules.room'))
+      if (data.dayOfWeek) filledFields.push(t('schedules.dayOfWeek'))
+      if (data.startTime) filledFields.push(t('schedules.startTime'))
+      if (data.endTime) filledFields.push(t('schedules.endTime'))
+      if (data.startDate) filledFields.push(t('schedules.date'))
       
       window.logger.log('[DEBUG] 已填充的字段:', filledFields)
       
       if (filledFields.length > 0) {
-        ElMessage.success(`已自动填充：${filledFields.join('、')}`)
+        ElMessage.success(t('schedules.message.autoFilled', { fields: filledFields.join(t('common.listSeparator')) }))
       } else {
-        ElMessage.info('未找到匹配的信息，请手动填写')
+        ElMessage.info(t('schedules.message.noMatchFound'))
       }
       
     } catch (error) {
       window.logger.error('解析智能指令数据失败:', error)
       window.logger.error('错误详情:', error.message, error.stack)
       sessionStorage.removeItem('smartCommandScheduleData')
-      ElMessage.error('解析智能指令数据失败: ' + error.message)
+      ElMessage.error(t('schedules.message.parseSmartCommandFailed') + ': ' + error.message)
     }
   } else {
     // 没有智能指令数据，正常初始化
@@ -2817,7 +2805,7 @@ const canDeleteSchedule = (row) => {
 }
 
 const showEditDialog = (row) => {
-  dialogTitle.value = '编辑课程安排'
+  dialogTitle.value = t('schedules.editScheduleTitle')
   startTime.value = row.start_time
   endTime.value = row.end_time
   // 设置编辑标志，避免watch清空teacher_id
@@ -2850,7 +2838,7 @@ const showEditDialog = (row) => {
 }
 
 const showCopyDialog = (row) => {
-  dialogTitle.value = '复制课程安排'
+  dialogTitle.value = t('schedules.copyScheduleTitle')
   startTime.value = row.start_time
   endTime.value = row.end_time
   // 复制课程安排的所有参数，除了开始日期和结束日期
@@ -2928,15 +2916,15 @@ const handleSubmit = async (sendNotification = true) => {
             form.value.schedule_type !== originalForm.value.schedule_type
           
           if (!isChanged) {
-            ElMessage.warning('内容未发生改变，无需保存')
+            ElMessage.warning(t('schedules.message.noChangeSave'))
             return
           }
           
           await api.put(`/schedules/${form.value.id}`, scheduleData)
-          ElMessage.success(sendNotification ? '编辑成功并已发送通知' : '编辑成功')
+          ElMessage.success(sendNotification ? t('schedules.message.editSuccessNotify') : t('schedules.message.editSuccess'))
         } else {
           await api.post('/schedules', scheduleData)
-          ElMessage.success(sendNotification ? '添加成功并已发送通知' : '添加成功')
+          ElMessage.success(sendNotification ? t('schedules.message.addSuccessNotify') : t('schedules.message.addSuccess'))
         }
         dialogVisible.value = false
         fetchSchedules()
@@ -2954,20 +2942,20 @@ const handleSubmit = async (sendNotification = true) => {
 
 // 统一的排课错误处理函数
 const handleScheduleError = (error) => {
-  const errorMsg = error.response?.data?.detail || '操作失败'
+  const errorMsg = error.response?.data?.detail || t('schedules.message.operationFailed')
   
-  if (errorMsg.includes('以下学员在该时间段不可用')) {
+  if (errorMsg.includes(t('schedules.message.studentsUnavailable'))) {
     ElMessageBox.alert(
       `<div style="line-height: 1.6;">
-        <strong>⚠️ 排课冲突提醒</strong><br/>
+        <strong>⚠️ ${t('schedules.message.conflictReminder')}</strong><br/>
         ${errorMsg}<br/><br/>
-        <span style="color: #e6a23c;">💡 建议：</span><br/>
-        1. 请前往【学员管理】页面，调整这些学员的【可排课时间】设置。<br/>
-        2. 如果今天是法定节假日，请确认学员是否开启了【允许节假日排课】开关。
+        <span style="color: #e6a23c;">💡 ${t('schedules.message.conflictSuggestion')}</span><br/>
+        ${t('schedules.message.conflictSuggestion1')}<br/>
+        ${t('schedules.message.conflictSuggestion2')}
       </div>`,
-      '无法完成操作',
+      t('schedules.message.cannotComplete'),
       {
-        confirmButtonText: '我知道了',
+        confirmButtonText: t('schedules.message.iKnow'),
         dangerouslyUseHTMLString: true,
         type: 'warning'
       }
@@ -2978,14 +2966,14 @@ const handleScheduleError = (error) => {
 }
 
 const handleDelete = (row) => {
-  ElMessageBox.confirm('确定要删除该课程安排吗？', '提示', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
+  ElMessageBox.confirm(t('schedules.message.deleteConfirm'), t('common.tip'), {
+    confirmButtonText: t('common.confirm'),
+    cancelButtonText: t('common.cancel'),
     type: 'warning'
   }).then(async () => {
     try {
       await api.delete(`/schedules/${row.id}`)
-      ElMessage.success('删除成功')
+      ElMessage.success(t('common.deleteSuccess'))
       fetchSchedules()
     } catch (error) {
       window.logger.error('删除失败:', error)
@@ -3005,24 +2993,24 @@ const handleSortChange = ({ prop, order }) => {
 
 const batchDeleteSchedules = () => {
   if (selectedSchedules.value.length === 0) {
-    ElMessage.warning('请先选择要删除的课程安排')
+    ElMessage.warning(t('schedules.message.selectAtLeastOne'))
     return
   }
   
-  ElMessageBox.confirm(`确定要删除选中的 ${selectedSchedules.value.length} 个课程安排吗？`, '批量删除', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
+  ElMessageBox.confirm(t('schedules.message.batchDeleteConfirm', { count: selectedSchedules.value.length }), t('schedules.message.batchDeleteTitle'), {
+    confirmButtonText: t('common.confirm'),
+    cancelButtonText: t('common.cancel'),
     type: 'warning'
   }).then(async () => {
     try {
       const deletePromises = selectedSchedules.value.map(schedule => api.delete(`/schedules/${schedule.id}`))
       await Promise.all(deletePromises)
-      ElMessage.success(`成功删除 ${selectedSchedules.value.length} 个课程安排`)
+      ElMessage.success(t('schedules.message.batchDeleteSuccess', { count: selectedSchedules.value.length }))
       selectedSchedules.value = []
       fetchSchedules()
     } catch (error) {
       window.logger.error('批量删除失败:', error)
-      ElMessage.error('批量删除失败')
+      ElMessage.error(t('schedules.message.batchDeleteFailed'))
     }
   }).catch(() => {})
 }
@@ -3071,18 +3059,18 @@ const handleAutoSchedule = async () => {
         previewDialogVisible.value = true
         
         // 根据是否指定班级显示不同的消息
-        let message = `智能算法排课预览完成！算法: ${response.data.algorithm}`
+        let message = t('schedules.message.autoSchedulePreview', { algorithm: response.data.algorithm })
         if (autoScheduleForm.value.classIds && autoScheduleForm.value.classIds.length > 0) {
-          message += `，为 ${autoScheduleForm.value.classIds.length} 个班级`
+          message += t('schedules.message.forClasses', { count: autoScheduleForm.value.classIds.length })
         } else {
-          message += `，为所有班级`
+          message += t('schedules.message.forAllClasses')
         }
-        message += `，生成 ${response.data.total_schedules} 个课程安排，发现 ${response.data.conflicts_found} 个冲突`
+        message += t('schedules.message.generatedSchedules', { total: response.data.total_schedules, conflicts: response.data.conflicts_found })
         
         ElMessage.success(message)
       } catch (error) {
         window.logger.error('智能算法排课失败:', error)
-        ElMessage.error('智能算法排课失败')
+        ElMessage.error(t('schedules.message.autoScheduleFailed'))
       } finally {
         autoScheduleLoading.value = false
       }
@@ -3107,7 +3095,7 @@ const previewDisplayDates = computed(() => {
     const dateStr = schedule.start_date
     if (!dates.has(dateStr)) {
       const dateObj = new Date(dateStr)
-      const dayNames = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
+      const dayNames = [t('schedules.sunday'), t('schedules.monday'), t('schedules.tuesday'), t('schedules.wednesday'), t('schedules.thursday'), t('schedules.friday'), t('schedules.saturday')]
       dates.set(dateStr, {
         dateStr,
         dateNum: dateObj.getDate(),
@@ -3214,22 +3202,22 @@ const handleClearSelectionCalendar = () => {
 
 // 下载导入模板方法
 const downloadImportTemplate = () => {
-  const headers = ['科目', '导师', '班级', '教室类型', '教室', '会议室链接', '时间', '日期']
-  const example1 = [
-    '数学', '张老师', '一班', '线下物理', '101教室', '', '09:00-10:30', '2024-01-01'
+  const headers = [t('schedules.course'), t('schedules.teacher'), t('schedules.class'), t('schedules.roomType'), t('schedules.room'), t('schedules.meetingLink'), t('schedules.time'), t('schedules.date')]
+  const exampleRow1 = [
+    t('schedules.message.templateExampleCourse1'), t('schedules.message.templateExampleTeacher1'), t('schedules.message.templateExampleClass1'), t('schedules.offlinePhysical'), t('schedules.message.templateExampleRoom1'), '', '09:00-10:30', '2024-01-01'
   ]
-  const example2 = [
-    '英语', '李老师', '二班', '线上虚拟', '', 'https://meeting.tencent.com/xxx', '14:00-15:30', '2024-01-02'
+  const exampleRow2 = [
+    t('schedules.message.templateExampleCourse2'), t('schedules.message.templateExampleTeacher2'), t('schedules.message.templateExampleClass2'), t('schedules.onlineVirtual'), '', 'https://meeting.tencent.com/xxx', '14:00-15:30', '2024-01-02'
   ]
   const data = [headers, example1, example2]
   
   const ws = XLSX.utils.aoa_to_sheet(data)
   const wb = XLSX.utils.book_new()
-  XLSX.utils.book_append_sheet(wb, ws, '排课导入模板')
+  XLSX.utils.book_append_sheet(wb, ws, t('schedules.message.templateSheetName'))
   
-  XLSX.writeFile(wb, '排课导入模板.xlsx')
+  XLSX.writeFile(wb, t('schedules.message.templateFileName'))
   
-  ElMessage.warning('重要说明：1) 教室类型填写"线下物理"或"线上虚拟"；2) 线下物理课程必须填写教室名称，会议室链接留空；3) 线上虚拟课程必须填写会议室链接，教室留空；4) 时间格式为：开始时间-结束时间，如：09:00-10:30；5) 日期格式为：YYYY-MM-DD，如：2024-01-01；6) 科目、导师、班级名称必须与系统中已存在的名称完全一致')
+  ElMessage.warning(t('schedules.message.templateDownloadTip'))
 }
 
 // 导入课程安排方法
@@ -3248,7 +3236,7 @@ const handleFileChange = (file) => {
 
 const handleImport = async () => {
   if (!importFile.value) {
-    ElMessage.warning('请选择要导入的文件')
+    ElMessage.warning(t('schedules.message.selectFileFirst'))
     return
   }
   
@@ -3264,9 +3252,9 @@ const handleImport = async () => {
       }
     })
     
-    let message = `成功导入 ${response.data.count} 条课程安排`
+    let message = t('schedules.message.importSuccess', { count: response.data.count })
     if (response.data.skipped > 0) {
-      message += `，跳过 ${response.data.skipped} 条`
+      message += t('schedules.message.importSkipped', { skipped: response.data.skipped })
       
       // 显示失败详情
       if (response.data.failed_rows && response.data.failed_rows.length > 0) {
@@ -3274,14 +3262,14 @@ const handleImport = async () => {
           ElMessageBox.alert(
             `<div style="max-height: 300px; overflow-y: auto;">
               ${response.data.failed_rows.map(row => 
-                `<p style="margin: 5px 0;"><strong>第${row.row}行:</strong> ${row.reason}</p>`
+                `<p style="margin: 5px 0;"><strong>${t('schedules.message.rowFailed', { row: row.row })}:</strong> ${row.reason}</p>`
               ).join('')}
-              ${response.data.skipped > 30 ? '<p style="color: #999;">...仅显示前30条失败记录</p>' : ''}
+              ${response.data.skipped > 30 ? `<p style="color: #999;">${t('schedules.message.onlyShowFirst30')}</p>` : ''}
             </div>`,
-            '导入结果',
+            t('schedules.message.importResultTitle'),
             {
               dangerouslyUseHTMLString: true,
-              confirmButtonText: '确定'
+              confirmButtonText: t('common.confirm')
             }
           )
         }, 500)
@@ -3293,7 +3281,7 @@ const handleImport = async () => {
     fetchSchedules()
   } catch (error) {
     window.logger.error('导入失败:', error)
-    ElMessage.error(error.response?.data?.detail || '导入失败')
+    ElMessage.error(error.response?.data?.detail || t('schedules.message.importFailed'))
   } finally {
     importUploading.value = false
   }
@@ -3364,10 +3352,10 @@ const handleExport = async (format) => {
     document.body.removeChild(link)
     window.URL.revokeObjectURL(url)
 
-    ElMessage.success(`导出${format.toUpperCase()}成功`)
+    ElMessage.success(t('schedules.message.exportSuccess', { format: format.toUpperCase() }))
   } catch (error) {
     window.logger.error('导出失败:', error)
-    ElMessage.error('导出失败')
+    ElMessage.error(t('schedules.message.exportFailed'))
   }
 }
 
@@ -3472,7 +3460,7 @@ const showCompleteDialog = async (schedule) => {
           window.logger.log(`✓ 学员 ${item.name} 匹配到请假记录，状态设置为leave，原因: ${matchedLeave.reason}`)
           item.status = 'leave'
           // 使用请假记录中的实际原因，如果没有则使用默认文本
-          item.absenceReason = matchedLeave.reason || '已有请假记录'
+          item.absenceReason = matchedLeave.reason || t('schedules.hasLeaveRecord')
           item.isLocked = true  // 锁定该学员的出勤状态
         } else {
           window.logger.log(`✗ 学员 ${item.name} 未匹配到请假记录`)
@@ -3520,12 +3508,12 @@ const handleComplete = async (sendNotification = false) => {
           absence_reasons: absenceReasons,
           send_notification: sendNotification
         })
-        ElMessage.success(sendNotification ? '完训成功并已发送通知' : '完训成功')
+        ElMessage.success(sendNotification ? t('schedules.message.editSuccessNotify') : t('schedules.completeSuccess'))
         completeDialogVisible.value = false
         fetchSchedules()
       } catch (error) {
         window.logger.error('完训失败:', error)
-        ElMessage.error('完训失败')
+        ElMessage.error(t('schedules.message.operationFailed'))
       }
     }
   })
@@ -3556,12 +3544,12 @@ const handlePostpone = async (sendNotification = false) => {
           postpone_reason: postponeForm.value.postponeReason,
           send_notification: sendNotification
         })
-        ElMessage.success(sendNotification ? '延期成功并已发送通知' : '延期成功')
+        ElMessage.success(sendNotification ? t('schedules.message.editSuccessNotify') : t('schedules.postponeSuccess'))
         postponeDialogVisible.value = false
         fetchSchedules()
       } catch (error) {
         window.logger.error('延期失败:', error)
-        ElMessage.error('延期失败')
+        ElMessage.error(t('schedules.message.operationFailed'))
       }
     }
   })
@@ -3580,13 +3568,13 @@ const handleCancel = async (sendNotification = false) => {
       cancel_reason: cancelForm.value.cancelReason,
       send_notification: sendNotification
     })
-    ElMessage.success(sendNotification ? '成功取消该排课并已发送通知' : '成功取消该排课')
+    ElMessage.success(sendNotification ? t('schedules.message.editSuccessNotify') : t('schedules.cancelSuccess'))
     cancelDialogVisible.value = false
     fetchSchedules()
   } catch (error) {
     if (error !== 'cancel') {
       window.logger.error('取消失败:', error)
-      ElMessage.error('取消失败')
+      ElMessage.error(t('schedules.message.operationFailed'))
     }
   }
 }
@@ -3611,13 +3599,13 @@ const showMakeupDialog = async (schedule) => {
     classStudents.value = response.data
     
     if (classStudents.value.length === 0) {
-      ElMessage.info('该课程没有需要补课的学员')
+      ElMessage.info(t('schedules.noStudent'))
       makeupDialogVisible.value = false
       return
     }
   } catch (error) {
     window.logger.error('获取需要补课的学员失败:', error)
-    ElMessage.error('获取需要补课的学员失败')
+    ElMessage.error(t('schedules.message.operationFailed'))
     return
   }
   
@@ -3639,19 +3627,19 @@ const handleMakeup = async () => {
             student_ids: makeupForm.value.studentIds,
             room_id: makeupForm.value.roomId
           })
-          ElMessage.success('补课安排成功')
+          ElMessage.success(t('schedules.makeup') + t('common.success'))
         } else {
           await api.post(`/schedules/${currentMakeupSchedule.value.id}/decline-makeup`, {
             student_ids: makeupForm.value.studentIds,
             declined_reason: makeupForm.value.declinedReason
           })
-          ElMessage.success('不补课记录成功')
+          ElMessage.success(t('schedules.declineMakeup') + t('common.success'))
         }
         makeupDialogVisible.value = false
         fetchSchedules()
       } catch (error) {
         window.logger.error('操作失败:', error)
-        ElMessage.error('操作失败')
+        ElMessage.error(t('schedules.message.operationFailed'))
       }
     }
   })
@@ -3676,9 +3664,9 @@ const getMakeupInfoText = (schedule) => {
   const lines = []
   makeupStudents.forEach(student => {
     if (student.makeup_status === 'completed') {
-      lines.push(`${student.name}: 已补课 (补课课程ID: ${student.makeup_schedule_id})`)
+      lines.push(`${student.name}: ${t('schedules.madeUp')} (ID: ${student.makeup_schedule_id})`)
     } else if (student.makeup_status === 'declined') {
-      lines.push(`${student.name}: 不补课 (${student.declined_reason})`)
+      lines.push(`${student.name}: ${t('schedules.declineMakeup')} (${student.declined_reason})`)
     }
   })
   
@@ -3695,7 +3683,7 @@ const showHomeworkDialog = (schedule) => {
   // 从完训反馈中提取作业部分
   if (schedule.content_feedback) {
     const feedbackParts = parseContentFeedback(schedule.content_feedback)
-    const homeworkPart = feedbackParts.find(p => p.label === '作业')
+    const homeworkPart = feedbackParts.find(p => p.rawLabel === '作业')
     homeworkForm.value.classHomework = homeworkPart ? homeworkPart.content : ''
   } else {
     homeworkForm.value.classHomework = ''
@@ -3731,8 +3719,8 @@ const handleHomeworkSubmit = async (sendNotification = false) => {
         const classInfo = classes.value.find(c => c.id === currentHomeworkSchedule.value.class_id)
         
         const feedbackParts = parseContentFeedback(currentHomeworkSchedule.value.content_feedback || '')
-        const contentPart = feedbackParts.find(p => p.label === '内容')
-        const notePart = feedbackParts.find(p => p.label === '注意')
+        const contentPart = feedbackParts.find(p => p.rawLabel === '内容')
+        const notePart = feedbackParts.find(p => p.rawLabel === '注意')
         
         const newContentFeedback = `内容：${contentPart ? contentPart.content : ''}|作业：${homeworkForm.value.classHomework}|注意：${notePart ? notePart.content : ''}`
         
@@ -3775,9 +3763,18 @@ const handleHomeworkSubmit = async (sendNotification = false) => {
             const scheduleDate = currentHomeworkSchedule.value.start_date
             const scheduleTime = `${currentHomeworkSchedule.value.start_time}-${currentHomeworkSchedule.value.end_time}`
             const classStudents = getActiveClassStudents(currentHomeworkSchedule.value.class_id)
-            const studentNames = classStudents.length > 0 ? classStudents.map(s => s.name).join('、') : '无'
+            const studentNames = classStudents.length > 0 ? classStudents.map(s => s.name).join(t('schedules.nameSeparator')) : t('common.none')
             
-            let homeworkMessage = `【作业安排】\n\n科目：${getCourseName(currentHomeworkSchedule.value.course_id)}\n课程日期时间：${scheduleDate} ${scheduleTime}\n课程内容：${contentPart ? contentPart.content : '无'}\n班级：${getClassName(currentHomeworkSchedule.value.class_id)}\n学员：${studentNames}\n\n随堂作业：${homeworkForm.value.classHomework}\n常规作业：${homeworkForm.value.regularHomework}\n\n请同学们按时完成作业。@所有人`
+            let homeworkMessage = t('schedules.homeworkNotificationTemplate', {
+              course: getCourseName(currentHomeworkSchedule.value.course_id),
+              date: scheduleDate,
+              time: scheduleTime,
+              content: contentPart ? contentPart.content : t('common.none'),
+              className: getClassName(currentHomeworkSchedule.value.class_id),
+              students: studentNames,
+              classHomework: homeworkForm.value.classHomework,
+              regularHomework: homeworkForm.value.regularHomework
+            })
             
             try {
               await api.post('/wechat/send-message', {
@@ -3806,12 +3803,12 @@ const handleHomeworkSubmit = async (sendNotification = false) => {
           }
         }
         
-        ElMessage.success(sendNotification ? '作业安排成功并已发送通知' : '作业安排保存成功')
+        ElMessage.success(sendNotification ? t('schedules.message.editSuccessNotify') : t('schedules.homeworkNotify') + t('common.success'))
         homeworkDialogVisible.value = false
         fetchSchedules()
       } catch (error) {
         window.logger.error('作业安排失败:', error)
-        ElMessage.error('作业安排失败')
+        ElMessage.error(t('schedules.message.operationFailed'))
       } finally {
         homeworkLoading.value = false
       }
@@ -3820,14 +3817,14 @@ const handleHomeworkSubmit = async (sendNotification = false) => {
 }
 
 const clearAllSchedules = () => {
-  ElMessageBox.confirm('确定要清空所有课程安排吗？此操作不可恢复！', '警告', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
+  ElMessageBox.confirm(t('schedules.message.clearAllConfirm'), t('common.tip'), {
+    confirmButtonText: t('common.confirm'),
+    cancelButtonText: t('common.cancel'),
     type: 'error'
   }).then(async () => {
     try {
       await api.delete('/schedules/clear-all')
-      ElMessage.success('已清空所有课程安排')
+      ElMessage.success(t('schedules.message.clearAllSuccess'))
       fetchSchedules()
     } catch (error) {
       window.logger.error('清空失败:', error)
@@ -3876,11 +3873,11 @@ const beforeUpload = (file) => {
   const isLt2M = file.size / 1024 / 1024 < 2
   
   if (!isImage) {
-    ElMessage.error('只能上传图片文件!')
+    ElMessage.error(t('schedules.message.imageOnlyError'))
     return false
   }
   if (!isLt2M) {
-    ElMessage.error('图片大小不能超过2MB!')
+    ElMessage.error(t('schedules.message.imageSizeError'))
     return false
   }
   return true
@@ -4051,7 +4048,7 @@ const getDayOfWeekFromDate = (date) => {
   // 转换为与 Python 一致的星期几表示方式（1=周一，7=周日）
   const dayOfWeek = dayjs(date).day() || 7
   const pythonDayOfWeek = dayOfWeek === 0 ? 7 : dayOfWeek
-  const days = ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
+  const days = [t('schedules.monday'), t('schedules.tuesday'), t('schedules.wednesday'), t('schedules.thursday'), t('schedules.friday'), t('schedules.saturday'), t('schedules.sunday')]
   return days[pythonDayOfWeek - 1] || '-'
 }
 
@@ -4062,7 +4059,7 @@ const getDayOfWeekIntFromDate = (date) => {
 }
 
 const getDayOfWeek = (day) => {
-  const days = ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
+  const days = [t('schedules.monday'), t('schedules.tuesday'), t('schedules.wednesday'), t('schedules.thursday'), t('schedules.friday'), t('schedules.saturday'), t('schedules.sunday')]
   return days[day - 1] || '-'
 }
 
@@ -4075,19 +4072,28 @@ const goToPage = (path) => {
   router.push(path)
 }
 
+const feedbackLabelMap = {
+  '内容': 'schedules.content',
+  '作业': 'schedules.homework',
+  '注意': 'schedules.note'
+}
+
 const parseContentFeedback = (feedback) => {
   if (!feedback) return []
   const lines = feedback.split('|').filter(line => line.trim())
   return lines.map(line => {
     const parts = line.split('：')
     if (parts.length >= 2) {
+      const rawLabel = parts[0].trim()
       return {
-        label: parts[0].trim(),
+        label: feedbackLabelMap[rawLabel] ? t(feedbackLabelMap[rawLabel]) : rawLabel,
+        rawLabel,
         content: parts.slice(1).join('：').trim()
       }
     }
     return {
-      label: '反馈',
+      label: t('schedules.feedback'),
+      rawLabel: '',
       content: line.trim()
     }
   })
@@ -4129,25 +4135,25 @@ const handleCompleteSchedule = async (schedule, prefillData) => {
   try {
     const contentFeedback = prefillData.content_feedback || ''
     
-    await ElMessageBox.prompt('请输入课程内容反馈', '完成课程', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      inputPlaceholder: '例如：学习了第一章内容',
+    await ElMessageBox.prompt(t('schedules.feedbackPlaceholder'), t('schedules.markComplete'), {
+      confirmButtonText: t('common.confirm'),
+      cancelButtonText: t('common.cancel'),
+      inputPlaceholder: t('schedules.feedbackPlaceholder'),
       inputValue: contentFeedback,
       inputPattern: /.+/,
-      inputErrorMessage: '反馈内容不能为空'
+      inputErrorMessage: t('schedules.feedbackRequired')
     })
     
     const response = await api.post(`/schedules/${schedule.id}/complete`, {
       content_feedback: contentFeedback
     })
     
-    ElMessage.success('课程已完成')
+    ElMessage.success(t('schedules.completeSuccess'))
     await fetchSchedules()
   } catch (error) {
     if (error !== 'cancel') {
       window.logger.error('完成课程失败:', error)
-      ElMessage.error('完成课程失败')
+      ElMessage.error(t('schedules.message.operationFailed'))
     }
   }
 }
@@ -4157,13 +4163,13 @@ const handleCancelSchedule = async (schedule, prefillData) => {
     const cancelReason = prefillData.cancel_reason || ''
     const sendNotification = prefillData.send_notification || false
     
-    await ElMessageBox.prompt('请输入取消原因', '取消课程', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      inputPlaceholder: '例如：学生请假',
+    await ElMessageBox.prompt(t('schedules.inputCancelReason'), t('schedules.markCancel'), {
+      confirmButtonText: t('common.confirm'),
+      cancelButtonText: t('common.cancel'),
+      inputPlaceholder: t('schedules.inputCancelReason'),
       inputValue: cancelReason,
       inputPattern: /.+/,
-      inputErrorMessage: '取消原因不能为空'
+      inputErrorMessage: t('schedules.validation.inputCancelReason')
     })
     
     const response = await api.post(`/schedules/${schedule.id}/cancel`, {
@@ -4171,12 +4177,12 @@ const handleCancelSchedule = async (schedule, prefillData) => {
       send_notification: sendNotification
     })
     
-    ElMessage.success('课程已取消')
+    ElMessage.success(t('schedules.cancelSuccess'))
     await fetchSchedules()
   } catch (error) {
     if (error !== 'cancel') {
       window.logger.error('取消课程失败:', error)
-      ElMessage.error('取消课程失败')
+      ElMessage.error(t('schedules.message.operationFailed'))
     }
   }
 }
@@ -4190,17 +4196,17 @@ const handlePostponeSchedule = async (schedule, prefillData) => {
     const postponeReason = prefillData.postpone_reason || ''
     
     if (!startDate || !startTime) {
-      ElMessage.warning('请提供新的开始日期和时间')
+      ElMessage.warning(t('schedules.validation.selectStartDate'))
       return
     }
     
-    await ElMessageBox.prompt('请输入延期原因', '延期课程', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      inputPlaceholder: '例如：教师出差',
+    await ElMessageBox.prompt(t('schedules.inputPostponeReason'), t('schedules.markPostpone'), {
+      confirmButtonText: t('common.confirm'),
+      cancelButtonText: t('common.cancel'),
+      inputPlaceholder: t('schedules.inputPostponeReason'),
       inputValue: postponeReason,
       inputPattern: /.+/,
-      inputErrorMessage: '延期原因不能为空'
+      inputErrorMessage: t('schedules.validation.inputPostponeReason')
     })
     
     const response = await api.post(`/schedules/${schedule.id}/postpone`, {
@@ -4211,12 +4217,12 @@ const handlePostponeSchedule = async (schedule, prefillData) => {
       postpone_reason: postponeReason
     })
     
-    ElMessage.success('课程已延期')
+    ElMessage.success(t('schedules.postponeSuccess'))
     await fetchSchedules()
   } catch (error) {
     if (error !== 'cancel') {
       window.logger.error('延期课程失败:', error)
-      ElMessage.error('延期课程失败')
+      ElMessage.error(t('schedules.message.operationFailed'))
     }
   }
 }
@@ -4484,10 +4490,10 @@ onMounted(async () => {
       }
       if (student) {
         filterStudentIds.value = [student.id]
-        ElMessage.success(`已筛选学员"${student.name}"的课程安排`)
+        ElMessage.success(t('schedules.message.filterStudentSuccess', { name: student.name }))
         foundAndApplied = true
       } else {
-        ElMessage.warning(`未找到学员"${filterValue}"`)
+        ElMessage.warning(t('schedules.message.filterStudentNotFound', { value: filterValue }))
       }
     } else if (filterBy === 'teacher') {
       filterTeacherIds.value = []
@@ -4500,10 +4506,10 @@ onMounted(async () => {
       }
       if (teacher) {
         filterTeacherIds.value = [teacher.id]
-        ElMessage.success(`已筛选导师"${teacher.name}"的课程安排`)
+        ElMessage.success(t('schedules.message.filterTeacherSuccess', { name: teacher.name }))
         foundAndApplied = true
       } else {
-        ElMessage.warning(`未找到导师"${filterValue}"`)
+        ElMessage.warning(t('schedules.message.filterTeacherNotFound', { value: filterValue }))
       }
     } else if (filterBy === 'class') {
       filterClassIds.value = []
@@ -4516,10 +4522,10 @@ onMounted(async () => {
       }
       if (cls) {
         filterClassIds.value = [cls.id]
-        ElMessage.success(`已筛选班级"${cls.name}"的课程安排`)
+        ElMessage.success(t('schedules.message.filterClassSuccess', { name: cls.name }))
         foundAndApplied = true
       } else {
-        ElMessage.warning(`未找到班级"${filterValue}"`)
+        ElMessage.warning(t('schedules.message.filterClassNotFound', { value: filterValue }))
       }
     } else if (filterBy === 'course') {
       filterCourseIds.value = []
@@ -4532,10 +4538,10 @@ onMounted(async () => {
       }
       if (course) {
         filterCourseIds.value = [course.id]
-        ElMessage.success(`已筛科目"${course.name}"的课程安排`)
+        ElMessage.success(t('schedules.message.filterCourseSuccess', { name: course.name }))
         foundAndApplied = true
       } else {
-        ElMessage.warning(`未找到科目"${filterValue}"`)
+        ElMessage.warning(t('schedules.message.filterCourseNotFound', { value: filterValue }))
       }
     } else if (filterBy === 'room') {
       filterRoomIds.value = []
@@ -4548,47 +4554,47 @@ onMounted(async () => {
       }
       if (room) {
         filterRoomIds.value = [room.id]
-        ElMessage.success(`已筛选教室"${room.name}"`)
+        ElMessage.success(t('schedules.message.filterRoomSuccess', { name: room.name }))
         foundAndApplied = true
       } else {
-        ElMessage.warning(`未找到教室"${filterValue}"`)
+        ElMessage.warning(t('schedules.message.filterRoomNotFound', { value: filterValue }))
       }
     } else if (filterBy === 'schedule_type') {
       if (['formal', 'trial'].includes(filterValue)) {
         filterScheduleType.value = filterValue
-        ElMessage.success(`已筛选${filterValue === 'formal' ? '正式课' : '试听课'}`)
+        ElMessage.success(t('schedules.message.filterScheduleTypeSuccess', { type: filterValue === 'formal' ? t('schedules.message.formalClass') : t('schedules.message.trialClassShort') }))
         foundAndApplied = true
       } else {
-        ElMessage.warning(`无效的课程类型"${filterValue}"`)
+        ElMessage.warning(t('schedules.message.filterScheduleTypeInvalid', { value: filterValue }))
       }
     } else if (filterBy === 'execution_status') {
       if (['pending', 'completed', 'postponed', 'cancelled'].includes(filterValue)) {
         filterExecutionStatus.value = filterValue
         const statusMap = {
-          'pending': '待执行',
-          'completed': '完训',
-          'postponed': '延期',
-          'cancelled': '取消'
+          'pending': t('schedules.pending'),
+          'completed': t('schedules.completed'),
+          'postponed': t('schedules.postponed'),
+          'cancelled': t('schedules.cancelled')
         }
-        ElMessage.success(`已筛选${statusMap[filterValue]}的课程`)
+        ElMessage.success(t('schedules.message.filterStatusSuccess', { status: statusMap[filterValue] }))
         foundAndApplied = true
       } else {
-        ElMessage.warning(`无效的执行状态"${filterValue}"`)
+        ElMessage.warning(t('schedules.message.filterStatusInvalid', { value: filterValue }))
       }
     } else if (filterBy === 'has_conflict') {
       if (filterValue === 'true' || filterValue === '1') {
         filterHasConflict.value = true
-        ElMessage.success('已筛选有冲突的课程')
+        ElMessage.success(t('schedules.message.filterConflictTrue'))
         foundAndApplied = true
       } else if (filterValue === 'false' || filterValue === '0') {
         filterHasConflict.value = false
-        ElMessage.success('已筛选无冲突的课程')
+        ElMessage.success(t('schedules.message.filterConflictFalse'))
         foundAndApplied = true
       } else {
-        ElMessage.warning(`无效的冲突状态"${filterValue}"`)
+        ElMessage.warning(t('schedules.message.filterConflictInvalid', { value: filterValue }))
       }
     } else {
-      ElMessage.warning(`不支持的过滤类型"${filterBy}"`)
+      ElMessage.warning(t('schedules.message.filterTypeUnsupported', { value: filterBy }))
     }
     
     if (foundAndApplied) {
@@ -4599,14 +4605,14 @@ onMounted(async () => {
   // 13. 处理日期快捷过滤（今天、明天、后天等）
   if (dateFilter) {
     let targetDate = new Date()
-    if (dateFilter === '今天') {
+    if (dateFilter === t('schedules.validation.dateToday')) {
       targetDate = new Date()
-    } else if (dateFilter === '明天') {
+    } else if (dateFilter === t('schedules.validation.dateTomorrow')) {
       targetDate.setDate(targetDate.getDate() + 1)
-    } else if (dateFilter === '后天') {
+    } else if (dateFilter === t('schedules.validation.dateDayAfterTomorrow')) {
       targetDate.setDate(targetDate.getDate() + 2)
-    } else if (dateFilter.includes('天后')) {
-      const days = parseInt(dateFilter.replace('天后', ''))
+    } else if (dateFilter.includes(t('schedules.validation.dateDaysLater', { n: '' }))) {
+      const days = parseInt(dateFilter.replace(t('schedules.validation.dateDaysLater', { n: '' }), ''))
       targetDate.setDate(targetDate.getDate() + days)
     } else if (dateFilter.match(/\d{4}-\d{2}-\d{2}/)) {
       targetDate = new Date(dateFilter)
@@ -4618,7 +4624,7 @@ onMounted(async () => {
     hasUrlFilters = true
     
     setTimeout(() => {
-      ElMessage.info(`已筛选${dateFilter}的课程安排`)
+      ElMessage.info(t('schedules.message.filterDateInfo', { date: dateFilter }))
     }, 600)
   }
   
@@ -4628,24 +4634,24 @@ onMounted(async () => {
       fetchSchedules()
       // 显示综合提示
       const appliedFilters = []
-      if (filterStartDate.value) appliedFilters.push(`日期: ${filterStartDate.value}${filterEndDate.value && filterEndDate.value !== filterStartDate.value ? ' 至 ' + filterEndDate.value : ''}`)
-      if (filterCourseIds.value.length > 0) appliedFilters.push(`科目: ${filterCourseIds.value.length}个`)
-      if (filterScheduleType.value) appliedFilters.push(`类型: ${filterScheduleType.value === 'formal' ? '正式课' : '试听课'}`)
-      if (filterTeacherIds.value.length > 0) appliedFilters.push(`导师: ${filterTeacherIds.value.length}个`)
-      if (filterClassIds.value.length > 0) appliedFilters.push(`班级: ${filterClassIds.value.length}个`)
-      if (filterStudentIds.value.length > 0) appliedFilters.push(`学员: ${filterStudentIds.value.length}个`)
-      if (filterRoomIds.value.length > 0) appliedFilters.push(`教室: ${filterRoomIds.value.length}个`)
-      if (filterDaysOfWeek.value.length > 0) appliedFilters.push(`星期: ${filterDaysOfWeek.value.length}个`)
-      if (filterHasConflict.value !== null) appliedFilters.push(`冲突: ${filterHasConflict.value ? '有' : '无'}`)
+      if (filterStartDate.value) appliedFilters.push(`${t('schedules.date')}: ${filterStartDate.value}${filterEndDate.value && filterEndDate.value !== filterStartDate.value ? ' - ' + filterEndDate.value : ''}`)
+      if (filterCourseIds.value.length > 0) appliedFilters.push(`${t('schedules.course')}: ${filterCourseIds.value.length}`)
+      if (filterScheduleType.value) appliedFilters.push(`${t('schedules.scheduleType')}: ${filterScheduleType.value === 'formal' ? t('schedules.message.formalClass') : t('schedules.message.trialClassShort')}`)
+      if (filterTeacherIds.value.length > 0) appliedFilters.push(`${t('schedules.teacher')}: ${filterTeacherIds.value.length}`)
+      if (filterClassIds.value.length > 0) appliedFilters.push(`${t('schedules.class')}: ${filterClassIds.value.length}`)
+      if (filterStudentIds.value.length > 0) appliedFilters.push(`${t('schedules.student')}: ${filterStudentIds.value.length}`)
+      if (filterRoomIds.value.length > 0) appliedFilters.push(`${t('schedules.room')}: ${filterRoomIds.value.length}`)
+      if (filterDaysOfWeek.value.length > 0) appliedFilters.push(`${t('schedules.dayOfWeek')}: ${filterDaysOfWeek.value.length}`)
+      if (filterHasConflict.value !== null) appliedFilters.push(`${t('schedules.hasConflict')}: ${filterHasConflict.value ? t('common.yes') : t('common.no')}`)
       if (filterExecutionStatus.value) {
-        const statusMap = { 'pending': '待执行', 'completed': '完训', 'postponed': '延期', 'cancelled': '取消' }
-        appliedFilters.push(`状态: ${statusMap[filterExecutionStatus.value]}`)
+        const statusMap = { 'pending': t('schedules.pending'), 'completed': t('schedules.completed'), 'postponed': t('schedules.postponed'), 'cancelled': t('schedules.cancelled') }
+        appliedFilters.push(`${t('schedules.executionStatus')}: ${statusMap[filterExecutionStatus.value]}`)
       }
-      if (filterHasAbsentStudents.value !== null) appliedFilters.push(`出席: ${filterHasAbsentStudents.value ? '未全员出席' : '全员出席'}`)
+      if (filterHasAbsentStudents.value !== null) appliedFilters.push(`${t('schedules.attendance')}: ${filterHasAbsentStudents.value ? t('schedules.notAllPresent') : t('schedules.allPresent')}`)
       
       if (appliedFilters.length > 0) {
         ElMessage.success({
-          message: `已应用 ${appliedFilters.length} 个过滤条件`,
+          message: t('schedules.message.appliedFilters', { count: appliedFilters.length }),
           duration: 3000
         })
       }
@@ -4672,7 +4678,7 @@ watch(() => route.query, (newQuery) => {
     if (!isNaN(scheduleId)) {
       filterScheduleId.value = scheduleId
       fetchSchedules()
-      ElMessage.success(`已定位到课程安排 #${scheduleId}`)
+      ElMessage.success(t('schedules.message.locateScheduleSuccess', { id: scheduleId }))
     }
   }
 
@@ -4681,14 +4687,14 @@ watch(() => route.query, (newQuery) => {
     let targetDate = new Date()
     const dateFilter = newQuery.date
     
-    if (dateFilter === '今天') {
+    if (dateFilter === t('schedules.validation.dateToday')) {
       targetDate = new Date()
-    } else if (dateFilter === '明天') {
+    } else if (dateFilter === t('schedules.validation.dateTomorrow')) {
       targetDate.setDate(targetDate.getDate() + 1)
-    } else if (dateFilter === '后天') {
+    } else if (dateFilter === t('schedules.validation.dateDayAfterTomorrow')) {
       targetDate.setDate(targetDate.getDate() + 2)
-    } else if (dateFilter.includes('天后')) {
-      const days = parseInt(dateFilter.replace('天后', ''))
+    } else if (dateFilter.includes(t('schedules.validation.dateDaysLater', { n: '' }))) {
+      const days = parseInt(dateFilter.replace(t('schedules.validation.dateDaysLater', { n: '' }), ''))
       targetDate.setDate(targetDate.getDate() + days)
     } else if (dateFilter.match(/\d{4}-\d{2}-\d{2}/)) {
       targetDate = new Date(dateFilter)
@@ -4700,7 +4706,7 @@ watch(() => route.query, (newQuery) => {
     fetchSchedules()
     
     setTimeout(() => {
-      ElMessage.info(`已筛选${dateFilter}的课程安排`)
+      ElMessage.info(t('schedules.message.filterDateInfo', { date: dateFilter }))
     }, 300)
   }
 
@@ -4710,7 +4716,7 @@ watch(() => route.query, (newQuery) => {
     fetchSchedules()
     
     setTimeout(() => {
-      ElMessage.info(`已筛选${filterHasAbsentStudents.value ? '未全员出席' : '全员出席'}的课程安排`)
+      ElMessage.info(t('schedules.message.filterAttendanceInfo', { type: filterHasAbsentStudents.value ? t('schedules.notAllPresent') : t('schedules.allPresent') }))
     }, 300)
   }
 }, { deep: true })
@@ -5100,9 +5106,8 @@ watch(schedules, () => {
   .el-pagination :deep(.el-pager li) {
     min-width: 28px;
     height: 28px;
-    line-height: 28px;
+    line-height: 28p;
     font-size: 12px;
   }
 }
-
 </style>

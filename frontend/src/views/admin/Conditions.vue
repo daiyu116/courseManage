@@ -8,49 +8,49 @@
         <el-col :span="3">
           <el-button type="primary" @click="goToPage('/admin/dashboard')" style="width: 100%;height: 100%;">
             <el-icon><Reading /></el-icon>
-            面板
+            {{ t('nav.dashboard') }}
           </el-button>
         </el-col>
         <el-col :span="3">
           <el-button type="primary" @click="goToPage('/admin/courses')" style="width: 100%;height: 100%;">
             <el-icon><Reading /></el-icon>
-            科目管理
+            {{ t('nav.courses') }}
           </el-button>
         </el-col>
         <el-col :span="3">
           <el-button type="success" @click="goToPage('/admin/teachers')" style="width: 100%;height: 100%;">
             <el-icon><User /></el-icon>
-            导师管理
+            {{ t('nav.teachers') }}
           </el-button>
         </el-col>
         <el-col :span="3">
             <el-button type="warning" @click="goToPage('/admin/classes')" style="width: 100%;height: 100%;">
             <el-icon><OfficeBuilding /></el-icon>
-            班级管理
+            {{ t('nav.classes') }}
             </el-button>
         </el-col>
         <el-col :span="3">
           <el-button type="warning" @click="goToPage('/admin/students')" style="width: 100%;height: 100%;">
             <el-icon><UserFilled /></el-icon>
-            学员管理
+            {{ t('nav.students') }}
           </el-button>
         </el-col>
         <el-col :span="3">
           <el-button type="info" @click="goToPage('/admin/rooms')" style="width: 100%;height: 100%;">
             <el-icon><OfficeBuilding /></el-icon>
-            教室管理
+            {{ t('nav.rooms') }}
           </el-button>
         </el-col>
         <el-col :span="3">
           <el-button type="danger" @click="goToPage('/admin/leaves')" style="width: 100%;height: 100%;">
             <el-icon><Calendar /></el-icon>
-            假日管理
+            {{ t('nav.leaves') }}
           </el-button>
         </el-col>
         <el-col :span="3">
           <el-button type="primary" @click="goToPage('/admin/schedules')" style="width: 100%;height: 100%;">
             <el-icon><Clock /></el-icon>
-            排课管理
+            {{ t('nav.schedules') }}
           </el-button>
         </el-col>
       </el-row>
@@ -59,46 +59,46 @@
     <el-card>
       <template #header>
         <div class="card-header">
-          <span>条件管理</span>
+          <span>{{ t('conditions.title') }}</span>
         </div>
       </template>
 
       <el-tabs v-model="activeTab">
-        <el-tab-pane label="硬性约束" name="hard">
+        <el-tab-pane :label="t('conditions.hardConstraint')" name="hard">
           <el-table :data="hardConstraints" stripe>
-            <el-table-column prop="name" label="约束名称" />
-            <el-table-column prop="description" label="描述" />
-            <el-table-column label="状态" width="100">
+            <el-table-column prop="name" :label="t('conditions.constraintName')" />
+            <el-table-column prop="description" :label="t('common.description')" />
+            <el-table-column :label="t('common.status')" width="100">
               <template #default="{ row }">
-                <el-tag type="success">启用</el-tag>
+                <el-tag type="success">{{ t('common.enabled') }}</el-tag>
               </template>
             </el-table-column>
           </el-table>
         </el-tab-pane>
 
-        <el-tab-pane label="软性约束" name="soft">
+        <el-tab-pane :label="t('conditions.softConstraint')" name="soft">
           <div class="table-operations">
             <el-button type="primary" @click="showAddDialog">
               <el-icon><Plus /></el-icon>
-              新增条件
+              {{ t('conditions.addCondition') }}
             </el-button>
           </div>
           <el-table :data="softConstraints" stripe v-loading="loading">
             <el-table-column prop="id" label="ID" width="50" />
-            <el-table-column prop="name" label="条件名称" />
-            <el-table-column prop="condition_type" label="条件类型" />
-            <el-table-column prop="description" label="描述" />
-            <el-table-column label="状态" width="100">
+            <el-table-column prop="name" :label="t('conditions.conditionName')" />
+            <el-table-column prop="condition_type" :label="t('conditions.conditionType')" />
+            <el-table-column prop="description" :label="t('common.description')" />
+            <el-table-column :label="t('common.status')" width="100">
               <template #default="{ row }">
                 <el-tag :type="row.is_active ? 'success' : 'info'">
-                  {{ row.is_active ? '启用' : '禁用' }}
+                  {{ row.is_active ? t('common.enabled') : t('common.disabled') }}
                 </el-tag>
               </template>
             </el-table-column>
-            <el-table-column label="操作" width="80">
+            <el-table-column :label="t('common.operation')" width="80">
               <template #default="{ row }">
-                <el-button size="small" @click="showEditDialog(row)">编辑</el-button>
-                <el-button v-if="currentUser && (currentUser.role === 'super_admin' || currentUser.role === 'course_admin')" size="small" type="danger" @click="handleDelete(row)">删除</el-button>
+                <el-button size="small" @click="showEditDialog(row)">{{ t('common.edit') }}</el-button>
+                <el-button v-if="currentUser && (currentUser.role === 'super_admin' || currentUser.role === 'course_admin')" size="small" type="danger" @click="handleDelete(row)">{{ t('common.delete') }}</el-button>
               </template>
             </el-table-column>
           </el-table>
@@ -118,39 +118,42 @@
 
     <el-dialog v-model="dialogVisible" :title="dialogTitle" width="500px" draggable>
       <el-form :model="form" :rules="rules" ref="formRef" label-width="100px">
-        <el-form-item label="条件名称" prop="name">
-          <el-input v-model="form.name" placeholder="请输入条件名称" />
+        <el-form-item :label="t('conditions.conditionName')" prop="name">
+          <el-input v-model="form.name" :placeholder="t('conditions.conditionNamePlaceholder')" />
         </el-form-item>
-        <el-form-item label="条件类型" prop="condition_type">
-          <el-select v-model="form.condition_type" placeholder="请选择条件类型">
-            <el-option label="导师偏好" value="teacher_preference" />
-            <el-option label="教室偏好" value="room_preference" />
-            <el-option label="时间偏好" value="time_preference" />
-            <el-option label="其他" value="other" />
+        <el-form-item :label="t('conditions.conditionType')" prop="condition_type">
+          <el-select v-model="form.condition_type" :placeholder="t('conditions.conditionTypePlaceholder')">
+            <el-option :label="t('conditions.teacherPreference')" value="teacher_preference" />
+            <el-option :label="t('conditions.roomPreference')" value="room_preference" />
+            <el-option :label="t('conditions.timePreference')" value="time_preference" />
+            <el-option :label="t('conditions.other')" value="other" />
           </el-select>
         </el-form-item>
-        <el-form-item label="描述" prop="description">
-          <el-input v-model="form.description" type="textarea" :rows="3" placeholder="请输入条件描述" />
+        <el-form-item :label="t('common.description')" prop="description">
+          <el-input v-model="form.description" type="textarea" :rows="3" :placeholder="t('conditions.descriptionPlaceholder')" />
         </el-form-item>
-        <el-form-item label="状态" prop="is_active">
+        <el-form-item :label="t('common.status')" prop="is_active">
           <el-switch v-model="form.is_active" />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleSubmit">确定</el-button>
+        <el-button @click="dialogVisible = false">{{ t('common.cancel') }}</el-button>
+        <el-button type="primary" @click="handleSubmit">{{ t('common.confirm') }}</el-button>
       </template>
     </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ArrowLeft, Plus, Reading, User, UserFilled, OfficeBuilding, Calendar, Clock } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import api from '@/utils/api'
+import { useI18n } from 'vue-i18n'
 
+
+const { t } = useI18n()
 const currentUser = ref(null)
 const router = useRouter()
 
@@ -164,22 +167,22 @@ const goBack = () => {
   router.back()
 }
 
-const hardConstraints = ref([
+const hardConstraints = computed(() => [
   {
-    name: '导师时间约束',
-    description: '一个导师在同一个时间（课节）内只能教授一门课程'
+    name: t('conditions.teacherTimeConstraint'),
+    description: t('conditions.teacherTimeConstraintDesc')
   },
   {
-    name: '学员时间约束',
-    description: '一个学员在同一个时间（课节）内只能被安排一门课程'
+    name: t('conditions.studentTimeConstraint'),
+    description: t('conditions.studentTimeConstraintDesc')
   },  
   {
-    name: '班级时间约束',
-    description: '一个班级在同一个时间（课节）内只能安排一门课程'
+    name: t('conditions.classTimeConstraint'),
+    description: t('conditions.classTimeConstraintDesc')
   },
   {
-    name: '教室时间约束',
-    description: '一个教室在同一个时间（课节）内只能承接一门课程'
+    name: t('conditions.roomTimeConstraint'),
+    description: t('conditions.roomTimeConstraintDesc')
   }
 ])
 
@@ -210,8 +213,8 @@ const form = ref({
 })
 
 const rules = {
-  name: [{ required: true, message: '请输入条件名称', trigger: 'blur' }],
-  condition_type: [{ required: true, message: '请选择条件类型', trigger: 'change' }]
+  name: [{ required: true, message: () => t('conditions.conditionNameRequired'), trigger: 'blur' }],
+  condition_type: [{ required: true, message: () => t('conditions.conditionTypeRequired'), trigger: 'change' }]
 }
 
 const fetchSoftConstraints = async () => {
@@ -231,7 +234,7 @@ const fetchSoftConstraints = async () => {
   }
 }
 const showAddDialog = () => {
-  dialogTitle.value = '新增条件'
+  dialogTitle.value = t('conditions.addCondition')
   form.value = {
     name: '',
     condition_type: '',
@@ -242,7 +245,7 @@ const showAddDialog = () => {
 }
 
 const showEditDialog = (row) => {
-  dialogTitle.value = '编辑条件'
+  dialogTitle.value = t('conditions.editCondition')
   form.value = {
     id: row.id,
     name: row.name,
@@ -261,10 +264,10 @@ const handleSubmit = async () => {
       try {
         if (form.value.id) {
           await api.put(`/conditions/${form.value.id}`, form.value)
-          ElMessage.success('更新成功')
+          ElMessage.success(t('common.updateSuccess'))
         } else {
           await api.post('/conditions', form.value)
-          ElMessage.success('创建成功')
+          ElMessage.success(t('common.createSuccess'))
         }
         dialogVisible.value = false
         fetchSoftConstraints()
@@ -276,14 +279,14 @@ const handleSubmit = async () => {
 }
 
 const handleDelete = (row) => {
-  ElMessageBox.confirm('确定要删除该条件吗？', '提示', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
+  ElMessageBox.confirm(t('conditions.confirmDeleteCondition'), t('common.tip'), {
+    confirmButtonText: t('common.confirm'),
+    cancelButtonText: t('common.cancel'),
     type: 'warning'
   }).then(async () => {
     try {
       await api.delete(`/conditions/${row.id}`)
-      ElMessage.success('删除成功')
+      ElMessage.success(t('common.deleteSuccess'))
       fetchSoftConstraints()
     } catch (error) {
       window.logger.error('删除失败:', error)

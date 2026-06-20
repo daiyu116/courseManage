@@ -5,21 +5,21 @@
     <el-card>
       <template #header>
         <div class="card-header">
-          <span>成绩管理</span>
+          <span>{{ t('grade.title') }}</span>
           <div class="header-actions">
             <el-button type="info" @click="goBack">
               <el-icon><ArrowLeft /></el-icon>
-              返回上一页
+              {{ t('grade.goBack') }}
             </el-button>
-            <el-button type="primary" @click="showAddDialog">添加成绩</el-button>
-            <el-button type="success" @click="showBatchAddDialog">批量添加</el-button>
+            <el-button type="primary" @click="showAddDialog">{{ t('grade.addGradeButton') }}</el-button>
+            <el-button type="success" @click="showBatchAddDialog">{{ t('grade.batchAddButtonShort') }}</el-button>
           </div>
         </div>
       </template>
 
       <!-- 查询条件 -->
       <div class="search-bar">
-        <el-select v-model="filters.student_id" placeholder="选择学员" clearable filterable style="width: 200px">
+        <el-select v-model="filters.student_id" :placeholder="t('grade.selectStudent')" clearable filterable style="width: 200px">
           <el-option
             v-for="student in students"
             :key="student.id"
@@ -29,24 +29,24 @@
             <el-tooltip placement="right" :show-after="200">
               <template #content>
                 <div style="min-width: 200px;">
-                  <div><strong>学员：</strong>{{ student.name }}</div>
-                  <div v-if="student.school"><strong>学校：</strong>{{ student.school }}</div>
-                  <div v-if="student.grade"><strong>年级：</strong>{{ student.grade }}</div>
+                  <div><strong>{{ t('grade.studentLabel') }}：</strong>{{ student.name }}</div>
+                  <div v-if="student.school"><strong>{{ t('grade.schoolLabel') }}：</strong>{{ student.school }}</div>
+                  <div v-if="student.grade"><strong>{{ t('grade.gradeLabel') }}：</strong>{{ student.grade }}</div>
                   <div v-if="student.classes && student.classes.length > 0">
-                    <strong>本机构所属班级：</strong>
+                    <strong>{{ t('grade.classLabel') }}：</strong>
                     <div v-for="cls in student.classes" :key="cls.id" style="margin-left: 10px;">
                       {{ cls.name }}
                     </div>
                   </div>
-                  <div v-else><strong>本机构所属班级：</strong>无</div>
-                  <div><strong>是否在读：</strong>{{ student.is_active ? '是' : '否' }}</div>
+                  <div v-else><strong>{{ t('grade.classLabel') }}：</strong>{{ t('grade.noClass') }}</div>
+                  <div><strong>{{ t('grade.isActiveLabel') }}：</strong>{{ student.is_active ? t('grade.yes') : t('grade.no') }}</div>
                 </div>
               </template>
               <span>{{ student.name }}</span>
             </el-tooltip>
           </el-option>
         </el-select>
-        <el-select v-model="filters.course_id" placeholder="选择科目" clearable style="width: 200px">
+        <el-select v-model="filters.course_id" :placeholder="t('grade.selectCourse')" clearable style="width: 200px">
           <el-option
             v-for="course in courses"
             :key="course.id"
@@ -56,16 +56,16 @@
             <el-tooltip placement="right" :show-after="200">
               <template #content>
                 <div style="min-width: 200px;">
-                  <div><strong>科目：</strong>{{ course.name }}</div>
-                  <div v-if="course.code"><strong>代码：</strong>{{ course.code }}</div>
+                  <div><strong>{{ t('grade.course') }}：</strong>{{ course.name }}</div>
+                  <div v-if="course.code"><strong>{{ t('grade.code') }}：</strong>{{ course.code }}</div>
                   <div v-if="course.teachers && course.teachers.length > 0">
-                    <strong>教授导师：</strong>
+                    <strong>{{ t('grade.teacherLabel') }}：</strong>
                     <div v-for="teacher in course.teachers" :key="teacher.id" style="margin-left: 10px;">
                       {{ teacher.name }}
                       <span v-if="teacher.contact_phone" style="color: #999; font-size: 12px;">（{{ teacher.contact_phone }}）</span>
                     </div>
                   </div>
-                  <div v-else><strong>教授导师：</strong>无</div>
+                  <div v-else><strong>{{ t('grade.teacherLabel') }}：</strong>{{ t('grade.noClass') }}</div>
                 </div>
               </template>
               <span>{{ course.name }}</span>
@@ -75,111 +75,111 @@
         <el-date-picker
           v-model="filters.date_range"
           type="daterange"
-          range-separator="至"
-          start-placeholder="开始日期"
-          end-placeholder="结束日期"
+          :range-separator="t('grade.to')"
+          :start-placeholder="t('grade.startDate')"
+          :end-placeholder="t('grade.endDate')"
           value-format="YYYY-MM-DD"
           style="width: 300px"
         />
         <el-button @click="handleSearch">
           <el-icon><Search /></el-icon>
-          查询
+          {{ t('grade.search') }}
         </el-button>
-        <el-button @click="resetFilters">重置</el-button>
+        <el-button @click="resetFilters">{{ t('grade.reset') }}</el-button>
       </div>
 
       <!-- 成绩比例趋势图 -->
       <el-card v-if="filters.student_id && filters.course_id" style="margin-top: 20px;">
         <template #header>
-          <span>成绩比例趋势</span>
+          <span>{{ t('grade.scoreProportionTrend') }}</span>
         </template>
         <div ref="trendChart" style="width: 100%; height: 400px;"></div>
       </el-card>
 
       <!-- 成绩列表表格 -->
       <el-table :data="grades" stripe v-loading="loading" style="margin-top: 20px">
-        <el-table-column prop="student_name" label="学员" width="120">
+        <el-table-column prop="student_name" :label="t('grade.student')" width="120">
           <template #default="{ row }">
             <el-tooltip placement="top" effect="light">
               <template #content>
                 <div v-if="row.student_school">
-                  <div><strong>学校：</strong>{{ row.student_school }}</div>
+                  <div><strong>{{ t('grade.schoolLabel') }}：</strong>{{ row.student_school }}</div>
                 </div>
                 <div v-if="row.student_grade">
-                  <div><strong>年级：</strong>{{ row.student_grade }}</div>
+                  <div><strong>{{ t('grade.gradeLabel') }}：</strong>{{ row.student_grade }}</div>
                 </div>
                 <div v-if="row.student_contact_person">
-                  <div><strong>联系人：</strong>{{ row.student_contact_person }}</div>
+                  <div><strong>{{ t('grade.contactLabel') }}：</strong>{{ row.student_contact_person }}</div>
                 </div>
                 <div v-if="row.student_contact_phone">
-                  <div><strong>联系电话：</strong>{{ row.student_contact_phone }}</div>
+                  <div><strong>{{ t('grade.contactPhoneLabel') }}：</strong>{{ row.student_contact_phone }}</div>
                 </div>
                 <div v-if="row.student_classes && row.student_classes.length > 0">
-                  <div><strong>本机构所属班级：</strong></div>
+                  <div><strong>{{ t('grade.classLabel') }}：</strong></div>
                   <div v-for="class_ in row.student_classes" :key="class_.id" style="margin-left: 10px;">
                     {{ class_.name }}
                   </div>
                 </div>
-                <div v-else><strong>本机构所属班级：</strong>无</div>
+                <div v-else><strong>{{ t('grade.classLabel') }}：</strong>{{ t('grade.noClass') }}</div>
                 <div>
-                  <div><strong>本机构是否在读：</strong>{{ row.student_is_active ? '在读' : '非在读' }}</div>
+                  <div><strong>{{ t('grade.isActiveLabel') }}：</strong>{{ row.student_is_active ? t('grade.reading') : t('grade.notReading') }}</div>
                 </div>
               </template>
               <span style="cursor: help; color: #409EFF;">{{ row.student_name }}</span>
             </el-tooltip>
           </template>
         </el-table-column>
-        <el-table-column prop="course_name" label="科目" width="120">
+        <el-table-column prop="course_name" :label="t('grade.course')" width="120">
           <template #default="{ row }">
             <el-tooltip placement="top" effect="light">
               <template #content>
                 <div v-if="row.course_teachers && row.course_teachers.length > 0">
-                  <div><strong>教授导师：</strong></div>
+                  <div><strong>{{ t('grade.teacherLabel') }}：</strong></div>
                   <div v-for="teacher in row.course_teachers" :key="teacher.id" style="margin-left: 10px;">
                     {{ teacher.name }}
                     <div v-if="teacher.contact_phone" style="margin-left: 10px; color: #909399;">
-                      联系电话：{{ teacher.contact_phone }}
+                      {{ t('grade.contactPhoneLabel') }}：{{ teacher.contact_phone }}
                     </div>
                     <div v-if="teacher.email" style="margin-left: 10px; color: #909399;">
-                      电子邮件：{{ teacher.email }}
+                      {{ t('grade.emailLabel') }}：{{ teacher.email }}
                     </div>
                   </div>
                 </div>
-                <div v-else><strong>教授导师：</strong>无</div>
+                <div v-else><strong>{{ t('grade.teacherLabel') }}：</strong>{{ t('grade.noClass') }}</div>
               </template>
               <span style="cursor: help; color: #409EFF;">{{ row.course_name }}</span>
             </el-tooltip>
           </template>
         </el-table-column>
-        <el-table-column prop="grade_level" label="考试年级" width="120" />
-        <el-table-column prop="exam_stage" label="考试阶段" width="120" />
-        <el-table-column prop="exam_date" label="考试日期" width="120">
+        <el-table-column prop="grade_level" :label="t('grade.gradeLevel')" width="120" />
+        <el-table-column prop="exam_stage" :label="t('grade.examStage')" width="120" />
+        <el-table-column prop="exam_date" :label="t('grade.examDate')" width="120">
           <template #default="{ row }">
             {{ row.exam_date ? formatDate(row.exam_date) : '-' }}
           </template>
         </el-table-column>
-        <el-table-column prop="score" label="当次成绩" width="100">
+        <el-table-column prop="score" :label="t('grade.currentScore')" width="100">
           <template #default="{ row }">
-            {{ row.score.toFixed(1) }}分
+            {{ row.score.toFixed(1) }}{{ t('grade.scoreUnit') }}
           </template>
         </el-table-column>
-        <el-table-column prop="total_score" label="当次总分" width="100">
+        <el-table-column prop="total_score" :label="t('grade.totalScoreLabel')" width="100">
           <template #default="{ row }">
-            {{ row.total_score ? row.total_score.toFixed(1) + '分' : '-' }}
+            {{ row.total_score ? row.total_score.toFixed(1) + t('grade.scoreUnit') : '-' }}
           </template>
         </el-table-column>
-        <el-table-column label="成绩变化" width="150">
+        <el-table-column :label="t('grade.scoreChange')" width="150">
           <template #default="{ row }">
-            <span v-if="row.score_change > 0" style="color: #67c23a;">+{{ row.score_change.toFixed(1) }}分</span>
-            <span v-else-if="row.score_change < 0" style="color: #f56c6c;">{{ row.score_change.toFixed(1) }}分</span>
-            <span v-else style="color: #909399;">持平</span>
+            <span v-if="row.score_change > 0" style="color: #67c23a;">+{{ row.score_change.toFixed(1) }}{{ t('grade.scoreUnit') }}</span>
+            <span v-else-if="row.score_change < 0" style="color: #f56c6c;">{{ row.score_change.toFixed(1) }}{{ t('grade.scoreUnit') }}</span>
+            <span v-else style="color: #909399;">{{ t('grade.flat') }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="description" label="备注" />
-        <el-table-column label="操作" width="90" fixed="right">
+        <el-table-column prop="description" :label="t('grade.remark')" />
+        <el-table-column :label="t('grade.action')" width="90" fixed="right">
           <template #default="{ row }">
-            <el-button size="small" @click="showEditDialog(row)">编辑</el-button>
-            <el-button size="small" type="danger" @click="handleDelete(row)">删除</el-button>
+            <el-button size="small" @click="showEditDialog(row)">{{ t('grade.edit') }}</el-button>
+            <el-button size="small" type="danger" @click="handleDelete(row)">{{ t('grade.delete') }}</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -198,8 +198,8 @@
     <!-- 添加/编辑对话框 -->
     <el-dialog v-model="dialogVisible" :title="dialogTitle" width="600px" draggable>
       <el-form :model="form" :rules="rules" ref="formRef" label-width="100px">
-        <el-form-item label="学员" prop="student_id">
-          <el-select v-model="form.student_id" placeholder="选择学员" filterable style="width: 100%">
+        <el-form-item :label="t('grade.student')" prop="student_id">
+          <el-select v-model="form.student_id" :placeholder="t('grade.selectStudent')" filterable style="width: 100%">
             <el-option
               v-for="student in students"
               :key="student.id"
@@ -209,17 +209,17 @@
               <el-tooltip placement="right" :show-after="200">
                 <template #content>
                   <div style="min-width: 200px;">
-                    <div><strong>学员：</strong>{{ student.name }}</div>
-                    <div v-if="student.school"><strong>学校：</strong>{{ student.school }}</div>
-                    <div v-if="student.grade"><strong>年级：</strong>{{ student.grade }}</div>
+                    <div><strong>{{ t('grade.studentLabel') }}：</strong>{{ student.name }}</div>
+                    <div v-if="student.school"><strong>{{ t('grade.schoolLabel') }}：</strong>{{ student.school }}</div>
+                    <div v-if="student.grade"><strong>{{ t('grade.gradeLabel') }}：</strong>{{ student.grade }}</div>
                     <div v-if="student.classes && student.classes.length > 0">
-                      <strong>本机构所属班级：</strong>
+                      <strong>{{ t('grade.classLabel') }}：</strong>
                       <div v-for="cls in student.classes" :key="cls.id" style="margin-left: 10px;">
                         {{ cls.name }}
                       </div>
                     </div>
-                    <div v-else><strong>本机构所属班级：</strong>无</div>
-                    <div><strong>是否在读：</strong>{{ student.is_active ? '是' : '否' }}</div>
+                    <div v-else><strong>{{ t('grade.classLabel') }}：</strong>{{ t('grade.noClass') }}</div>
+                    <div><strong>{{ t('grade.isActiveLabel') }}：</strong>{{ student.is_active ? t('grade.yes') : t('grade.no') }}</div>
                   </div>
                 </template>
                 <span>{{ student.name }}</span>
@@ -227,8 +227,8 @@
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="科目" prop="course_id">
-          <el-select v-model="form.course_id" filterable placeholder="选择科目" style="width: 100%">
+        <el-form-item :label="t('grade.course')" prop="course_id">
+          <el-select v-model="form.course_id" filterable :placeholder="t('grade.selectCourse')" style="width: 100%">
             <el-option
               v-for="course in courses"
               :key="course.id"
@@ -238,17 +238,17 @@
               <el-tooltip placement="right" :show-after="200">
                 <template #content>
                   <div style="min-width: 200px;">
-                    <div><strong>科目：</strong>{{ course.name }}</div>
-                    <div v-if="course.code"><strong>代码：</strong>{{ course.code }}</div>
+                    <div><strong>{{ t('grade.course') }}：</strong>{{ course.name }}</div>
+                    <div v-if="course.code"><strong>{{ t('grade.code') }}：</strong>{{ course.code }}</div>
                     <div v-if="course.teachers && course.teachers.length > 0">
-                      <strong>教授导师：</strong>
+                      <strong>{{ t('grade.teacherLabel') }}：</strong>
                       <div v-for="teacher in course.teachers" :key="teacher.id" style="margin-left: 10px;">
                         {{ teacher.name }}
                         <span v-if="teacher.contact_phone" style="color: #999; font-size: 12px;">（{{ teacher.contact_phone }}）</span>
                         <span v-if="teacher.email" style="color: #999; font-size: 12px;">（{{ teacher.email }}）</span>
                       </div>
                     </div>
-                    <div v-else><strong>教授导师：</strong>无</div>
+                    <div v-else><strong>{{ t('grade.teacherLabel') }}：</strong>{{ t('grade.noClass') }}</div>
                   </div>
                 </template>
                 <span>{{ course.name }}</span>
@@ -256,8 +256,8 @@
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="年级" prop="grade_level">
-          <el-select v-model="form.grade_level" placeholder="选择年级" style="width: 100%" @change="handleGradeLevelChange">
+        <el-form-item :label="t('grade.gradeLabelShort')" prop="grade_level">
+          <el-select v-model="form.grade_level" :placeholder="t('grade.selectGradeLevel')" style="width: 100%" @change="handleGradeLevelChange">
             <el-option
               v-for="grade in gradeOptions"
               :key="grade"
@@ -266,8 +266,8 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="考试阶段" prop="exam_stage">
-          <el-select v-model="form.exam_stage" placeholder="选择考试阶段" style="width: 100%" @change="handleExamStageChange">
+        <el-form-item :label="t('grade.examStage')" prop="exam_stage">
+          <el-select v-model="form.exam_stage" :placeholder="t('grade.selectExamStage')" style="width: 100%" @change="handleExamStageChange">
             <el-option
               v-for="stage in examStageOptions"
               :key="stage"
@@ -276,59 +276,59 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="考试日期">
+        <el-form-item :label="t('grade.examDate')">
           <el-date-picker
             v-model="form.exam_date"
             type="date"
-            placeholder="选择考试日期"
+            :placeholder="t('grade.selectExamDate')"
             value-format="YYYY-MM-DD"
             style="width: 100%"
           />
         </el-form-item>
-        <el-form-item label="当次成绩" prop="score">
+        <el-form-item :label="t('grade.currentScore')" prop="score">
           <el-input-number v-model="form.score" :min="0" :precision="1" style="width: 100%" />
         </el-form-item>
-        <el-form-item label="当次总分" prop="total_score">
-          <el-input-number v-model="form.total_score" :min="0.1" :precision="1" style="width: 100%" placeholder="请输入当次科目总分（必填）" />
+        <el-form-item :label="t('grade.totalScoreLabel')" prop="total_score">
+          <el-input-number v-model="form.total_score" :min="0.1" :precision="1" style="width: 100%" :placeholder="t('grade.totalScorePlaceholder')" />
         </el-form-item>
-        <el-form-item label="备注">
-          <el-input v-model="form.description" type="textarea" :rows="3" placeholder="请输入备注" />
+        <el-form-item :label="t('grade.remark')">
+          <el-input v-model="form.description" type="textarea" :rows="3" :placeholder="t('grade.remarkPlaceholder')" />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleSubmit">确定</el-button>
+        <el-button @click="dialogVisible = false">{{ t('grade.cancel') }}</el-button>
+        <el-button type="primary" @click="handleSubmit">{{ t('grade.confirm') }}</el-button>
       </template>
     </el-dialog>
 
     <!-- 批量添加成绩对话框 -->
-    <el-dialog v-model="batchDialogVisible" title="批量添加成绩" width="90%" top="5vh" draggable>
+    <el-dialog v-model="batchDialogVisible" :title="t('grade.batchAddTitle')" width="90%" top="5vh" draggable>
       <div style="margin-bottom: 15px;">
         <el-alert
-          title="批量添加说明"
+          :title="t('grade.batchAddInfo')"
           type="info"
           :closable="false"
           show-icon
         >
-          <p>1. 点击"添加行"按钮可以添加多条成绩记录</p>
-          <p>2. 可以为不同学员、不同科目批量添加成绩</p>
-          <p>3. 所有字段均为必填项</p>
-          <p>4. 提交后将显示成功和失败的记录数</p>
+          <p>1. {{ t('grade.batchAddStep1') }}</p>
+          <p>2. {{ t('grade.batchAddStep2') }}</p>
+          <p>3. {{ t('grade.batchAddStep3') }}</p>
+          <p>4. {{ t('grade.batchAddStep4') }}</p>
         </el-alert>
       </div>
       
       <div style="max-height: 60vh; overflow-y: auto;">
         <el-table :data="batchForm.grades" border style="width: 100%">
-          <el-table-column label="序号" width="60">
+          <el-table-column :label="t('grade.serialNumber')" width="60">
             <template #default="{ $index }">
               {{ $index + 1 }}
             </template>
           </el-table-column>
-          <el-table-column label="学员" min-width="90">
+          <el-table-column :label="t('grade.student')" min-width="90">
             <template #default="{ row, $index }">
               <el-select 
                 v-model="row.student_id" 
-                placeholder="选择学员" 
+                :placeholder="t('grade.selectStudent')" 
                 filterable 
                 style="width: 100%"
               >
@@ -341,11 +341,11 @@
               </el-select>
             </template>
           </el-table-column>
-          <el-table-column label="科目" min-width="150">
+          <el-table-column :label="t('grade.course')" min-width="150">
             <template #default="{ row }">
               <el-select 
                 v-model="row.course_id" 
-                placeholder="选择科目" 
+                :placeholder="t('grade.selectCourse')" 
                 filterable 
                 style="width: 100%"
               >
@@ -358,11 +358,11 @@
               </el-select>
             </template>
           </el-table-column>
-          <el-table-column label="年级" width="140">
+          <el-table-column :label="t('grade.gradeLabelShort')" width="140">
             <template #default="{ row }">
               <el-select 
                 v-model="row.grade_level" 
-                placeholder="选择年级" 
+                :placeholder="t('grade.selectGradeLevel')" 
                 style="width: 100%"
               >
                 <el-option
@@ -374,11 +374,11 @@
               </el-select>
             </template>
           </el-table-column>
-          <el-table-column label="考试阶段" width="140">
+          <el-table-column :label="t('grade.examStage')" width="140">
             <template #default="{ row }">
               <el-select 
                 v-model="row.exam_stage" 
-                placeholder="选择阶段" 
+                :placeholder="t('grade.selectStageShort')" 
                 style="width: 100%"
               >
                 <el-option
@@ -390,18 +390,18 @@
               </el-select>
             </template>
           </el-table-column>
-          <el-table-column label="考试日期" width="160">
+          <el-table-column :label="t('grade.examDate')" width="160">
             <template #default="{ row }">
               <el-date-picker
                 v-model="row.exam_date"
                 type="date"
-                placeholder="选择日期"
+                :placeholder="t('grade.selectDateShort')"
                 value-format="YYYY-MM-DD"
                 style="width: 100%"
               />
             </template>
           </el-table-column>
-          <el-table-column label="成绩" width="130">
+          <el-table-column :label="t('grade.scoreShort')" width="130">
             <template #default="{ row }">
               <el-input-number 
                 v-model="row.score" 
@@ -411,7 +411,7 @@
               />
             </template>
           </el-table-column>
-          <el-table-column label="总分" width="130">
+          <el-table-column :label="t('grade.totalScoreShort')" width="130">
             <template #default="{ row }">
               <el-input-number 
                 v-model="row.total_score" 
@@ -421,16 +421,16 @@
               />
             </template>
           </el-table-column>
-          <el-table-column label="备注" min-width="135">
+          <el-table-column :label="t('grade.remark')" min-width="135">
             <template #default="{ row }">
               <el-input 
                 v-model="row.description" 
-                placeholder="选填" 
+                :placeholder="t('grade.optional')" 
                 size="small"
               />
             </template>
           </el-table-column>
-          <el-table-column label="操作" width="80" fixed="right">
+          <el-table-column :label="t('grade.action')" width="80" fixed="right">
             <template #default="{ $index }">
               <el-button 
                 size="small" 
@@ -438,7 +438,7 @@
                 @click="removeBatchRow($index)"
                 :disabled="batchForm.grades.length <= 1"
               >
-                删除
+                {{ t('grade.deleteShort') }}
               </el-button>
             </template>
           </el-table-column>
@@ -448,15 +448,15 @@
       <div style="margin-top: 15px; display: flex; justify-content: space-between; align-items: center;">
         <el-button type="primary" plain @click="addBatchRow">
           <el-icon><Plus /></el-icon>
-          添加行
+          {{ t('grade.addRow') }}
         </el-button>
-        <span style="color: #909399;">共 {{ batchForm.grades.length }} 条记录</span>
+        <span style="color: #909399;">{{ t('grade.totalRecords', { n: batchForm.grades.length }) }}</span>
       </div>
       
       <template #footer>
-        <el-button @click="batchDialogVisible = false">取消</el-button>
+        <el-button @click="batchDialogVisible = false">{{ t('grade.cancel') }}</el-button>
         <el-button type="primary" @click="handleBatchSubmit" :loading="batchSubmitting">
-          批量提交
+          {{ t('grade.batchSubmit') }}
         </el-button>
       </template>
     </el-dialog>
@@ -470,6 +470,9 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { ArrowLeft, Search, Plus } from '@element-plus/icons-vue'
 import api from '@/utils/api'
 import * as echarts from 'echarts'
+import { useI18n } from 'vue-i18n'
+
+const { t, locale } = useI18n()
 const router = useRouter()
 const route = useRoute()
 
@@ -561,16 +564,16 @@ const defaultExamStages = [
 const examStageOptions = ref([...defaultExamStages])
 
 const rules = {
-  student_id: [{ required: true, message: '请选择学员', trigger: 'change' }],
-  course_id: [{ required: true, message: '请选择科目', trigger: 'change' }],
-  grade_level: [{ required: true, message: '请选择年级', trigger: 'change' }],
-  exam_stage: [{ required: true, message: '请选择考试阶段', trigger: 'change' }],
-  score: [{ required: true, message: '请输入成绩', trigger: 'blur' }],
+  student_id: [{ required: true, message: t('grade.studentRequired'), trigger: 'change' }],
+  course_id: [{ required: true, message: t('grade.courseRequired'), trigger: 'change' }],
+  grade_level: [{ required: true, message: t('grade.gradeLevelRequired'), trigger: 'change' }],
+  exam_stage: [{ required: true, message: t('grade.examStageRequired'), trigger: 'change' }],
+  score: [{ required: true, message: t('grade.scoreRequired'), trigger: 'blur' }],
   total_score: [
-    { required: true, message: '请输入当次科目总分', trigger: 'blur' },
+    { required: true, message: t('grade.totalScoreRequired'), trigger: 'blur' },
     { validator: (rule, value, callback) => {
         if (value === null || value === undefined || value <= 0) {
-          callback(new Error('当次科目总分必须大于0'))
+          callback(new Error(t('grade.totalScoreGreaterThanZero')))
         } else {
           callback()
         }
@@ -595,7 +598,7 @@ const fetchStudents = async () => {
     students.value = response.data.items || response.data
   } catch (error) {
     window.logger.error('获取学员列表失败:', error)
-    ElMessage.error('获取学员列表失败')
+    ElMessage.error(t('grade.fetchStudentsFailed'))
   }
 }
 
@@ -605,7 +608,7 @@ const fetchCourses = async () => {
     courses.value = response.data.items || response.data
   } catch (error) {
     window.logger.error('获取科目列表失败:', error)
-    ElMessage.error('获取科目列表失败')
+    ElMessage.error(t('grade.fetchCoursesFailed'))
   }
 }
 
@@ -641,7 +644,7 @@ const fetchGrades = async () => {
     }
   } catch (error) {
     window.logger.error('获取成绩列表失败:', error)
-    ElMessage.error('获取成绩列表失败')
+    ElMessage.error(t('grade.fetchGradesFailed'))
   } finally {
     loading.value = false
   }
@@ -662,7 +665,7 @@ const fetchGradeTrend = async () => {
     renderTrendChart(trendData)
   } catch (error) {
     window.logger.error('获取成绩趋势失败:', error)
-    ElMessage.error('获取成绩趋势失败')
+    ElMessage.error(t('grade.fetchTrendFailed'))
   }
 }
 
@@ -675,7 +678,7 @@ const renderTrendChart = (data) => {
   
   const option = {
     title: {
-      text: '成绩比例趋势',
+      text: t('grade.scoreProportionTrend'),
       left: 'center'
     },
     tooltip: {
@@ -688,24 +691,24 @@ const renderTrendChart = (data) => {
         const totalScore = param.data.total_score !== null && param.data.total_score !== undefined ? param.data.total_score : 0
         const ratio = param.data.ratio !== null && param.data.ratio !== undefined ? param.data.ratio : 0
         
-        html += `当次考试成绩: ${Number(score).toFixed(1)}分<br/>`
-        html += `当次科目总分: ${Number(totalScore).toFixed(1)}分<br/>`
+        html += `${t('grade.currentExamScore')}: ${Number(score).toFixed(1)}${t('grade.scoreUnit')}<br/>`
+        html += `${t('grade.currentTotalScore')}: ${Number(totalScore).toFixed(1)}${t('grade.scoreUnit')}<br/>`
         
         if (ratio !== null && ratio !== undefined) {
-          html += `成绩比例: ${Number(ratio).toFixed(1)}%<br/>`
+          html += `${t('grade.scoreRatio')}: ${Number(ratio).toFixed(1)}%<br/>`
         } else {
-          html += `成绩比例: 未计算（总分可能为0）<br/>`
+          html += `${t('grade.scoreRatioUncalculated')}<br/>`
         }
         
-        html += `考试日期: ${param.name}<br/>`
+        html += `${t('grade.examDateLabel')}: ${param.name}<br/>`
         
         if (param.data.score_change !== null && param.data.score_change !== undefined) {
           if (param.data.score_change > 0) {
-            html += `<span style="color: #67c23a;">较上次 +${param.data.score_change.toFixed(1)}分</span>`
+            html += `<span style="color: #67c23a;">${t('grade.comparedToLastTime')} +${param.data.score_change.toFixed(1)}${t('grade.scoreUnit')}</span>`
           } else if (param.data.score_change < 0) {
-            html += `<span style="color: #f56c6c;">较上次 ${param.data.score_change.toFixed(1)}分</span>`
+            html += `<span style="color: #f56c6c;">${t('grade.comparedToLastTime')} ${param.data.score_change.toFixed(1)}${t('grade.scoreUnit')}</span>`
           } else {
-            html += `<span style="color: #909399;">较上次持平</span>`
+            html += `<span style="color: #909399;">${t('grade.comparedToLastTime')}${t('grade.flat')}</span>`
           }
         }
         return html
@@ -719,7 +722,7 @@ const renderTrendChart = (data) => {
       type: 'value',
       min: 0,
       max: 100,
-      name: '比例(%)',
+      name: t('grade.scoreRatio'),
       axisLabel: {
         formatter: '{value}%'
       }
@@ -735,13 +738,13 @@ const renderTrendChart = (data) => {
       smooth: true,
       markPoint: {
         data: [
-          { type: 'max', name: '最高比例' },
-          { type: 'min', name: '最低比例' }
+          { type: 'max', name: t('grade.maxRatio') },
+          { type: 'min', name: t('grade.minRatio') }
         ]
       },
       markLine: {
         data: [
-          { type: 'average', name: '平均比例' }
+          { type: 'average', name: t('grade.averageRatio') }
         ]
       }
     }]
@@ -751,7 +754,7 @@ const renderTrendChart = (data) => {
 }
 
 const showAddDialog = () => {
-  dialogTitle.value = '添加成绩'
+  dialogTitle.value = t('grade.addGradeTitle')
   
   // 检查是否有预填充数据
   const storageData = sessionStorage.getItem('smartCommandData')
@@ -820,20 +823,20 @@ const handleBatchSubmit = async () => {
   const invalidRows = []
   batchForm.value.grades.forEach((row, index) => {
     const errors = []
-    if (!row.student_id) errors.push('学员')
-    if (!row.course_id) errors.push('科目')
-    if (!row.grade_level) errors.push('年级')
-    if (!row.exam_stage) errors.push('考试阶段')
-    if (row.score === null || row.score === undefined) errors.push('成绩')
-    if (!row.total_score || row.total_score <= 0) errors.push('总分')
+    if (!row.student_id) errors.push(t('grade.student'))
+    if (!row.course_id) errors.push(t('grade.course'))
+    if (!row.grade_level) errors.push(t('grade.gradeLabelShort'))
+    if (!row.exam_stage) errors.push(t('grade.examStageShort'))
+    if (row.score === null || row.score === undefined) errors.push(t('grade.scoreShort'))
+    if (!row.total_score || row.total_score <= 0) errors.push(t('grade.totalScoreShort'))
     
     if (errors.length > 0) {
-      invalidRows.push(`第${index + 1}行缺少：${errors.join('、')}`)
+      invalidRows.push(`${t('grade.batchRow', { n: index + 1 })}${errors.join(t('grade.comma'))}`)
     }
   })
   
   if (invalidRows.length > 0) {
-    ElMessage.error('以下行数据不完整：\n' + invalidRows.join('\n'))
+    ElMessage.error(t('grade.batchValidationFailed') + '\n' + invalidRows.join('\n'))
     return
   }
   
@@ -854,11 +857,11 @@ const handleBatchSubmit = async () => {
     
     const { success_count, failed_count, errors } = response.data
     
-    let message = `批量添加完成！成功：${success_count}条`
+    let message = t('grade.batchAddComplete', { success: success_count })
     if (failed_count > 0) {
-      message += `，失败：${failed_count}条`
+      message += t('grade.batchAddWithFail', { fail: failed_count })
       if (errors && errors.length > 0) {
-        message += '\n\n失败详情：\n' + errors.join('\n')
+        message += '\n\n' + t('grade.failureDetails') + '\n' + errors.join('\n')
       }
     }
     
@@ -872,14 +875,14 @@ const handleBatchSubmit = async () => {
   } catch (error) {
     window.logger.error('批量添加失败:', error)
     const errorMsg = error.response?.data?.detail || error.message
-    ElMessage.error('批量添加失败：' + errorMsg)
+    ElMessage.error(t('grade.batchAddFailedMsg') + errorMsg)
   } finally {
     batchSubmitting.value = false
   }
 }
 
 const showEditDialog = (row) => {
-  dialogTitle.value = '编辑成绩'
+  dialogTitle.value = t('grade.editGradeTitle')
   const formData = {
     id: row.id,
     student_id: row.student_id,
@@ -926,15 +929,15 @@ const handleSubmit = async () => {
             form.value.description !== originalForm.value.description
           
           if (!isChanged) {
-            ElMessage.warning('内容未发生改变，无需保存')
+            ElMessage.warning(t('grade.noChange'))
             return
           }
           
           await api.put(`/grades/${form.value.id}`, formData)
-          ElMessage.success('更新成功')
+          ElMessage.success(t('grade.updateSuccess'))
         } else {
           await api.post('/grades', formData)
-          ElMessage.success('添加成功')
+          ElMessage.success(t('grade.addSuccess'))
         }
         
         dialogVisible.value = false
@@ -942,9 +945,9 @@ const handleSubmit = async () => {
       } catch (error) {
         window.logger.error('操作失败:', error)
         if (error.response && error.response.data && error.response.data.detail) {
-          ElMessage.error(`操作失败: ${JSON.stringify(error.response.data.detail)}`)
+          ElMessage.error(t('grade.operationFailed') + ': ' + JSON.stringify(error.response.data.detail))
         } else {
-          ElMessage.error('操作失败')
+          ElMessage.error(t('grade.operationFailed'))
         }
       }
     }
@@ -952,18 +955,18 @@ const handleSubmit = async () => {
 }
 
 const handleDelete = (row) => {
-  ElMessageBox.confirm('确定要删除该成绩记录吗？', '提示', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
+  ElMessageBox.confirm(t('grade.confirmDeleteMsg'), t('grade.confirmDeleteTitle'), {
+    confirmButtonText: t('grade.confirm'),
+    cancelButtonText: t('grade.cancel'),
     type: 'warning'
   }).then(async () => {
     try {
       await api.delete(`/grades/${row.id}`)
-      ElMessage.success('删除成功')
+      ElMessage.success(t('grade.deleteSuccess'))
       fetchGrades()
     } catch (error) {
       window.logger.error('删除失败:', error)
-      ElMessage.error('删除失败')
+      ElMessage.error(t('grade.deleteFailed'))
     }
   }).catch(() => {})
 }
@@ -1032,7 +1035,7 @@ onMounted(() => {
         try {
           const smartData = JSON.parse(sessionStorage.getItem('smartCommandData'))
           if (smartData.target_path && smartData.target_label) {
-            ElMessage.info(`已找到学员"${searchQuery}"的成绩记录，正在跳转到${smartData.target_label}...`)
+            ElMessage.info(t('grade.foundStudentRecord', { name: searchQuery, target: smartData.target_label }))
             setTimeout(() => {
               window.location.href = `${smartData.target_path}?filter_by=student&filter_value=${encodeURIComponent(searchQuery)}`
             }, 1500)
@@ -1053,6 +1056,13 @@ onMounted(() => {
       const studentId = parseInt(route.query.student_id)
       form.value.student_id = studentId
     }
+  }
+})
+
+// 监听语言变化，刷新图表以更新翻译
+watch(locale, () => {
+  if (chartInstance && trendChart.value) {
+    fetchTrendData()
   }
 })
 

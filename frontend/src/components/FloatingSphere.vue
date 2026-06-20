@@ -17,7 +17,7 @@
     @mouseleave="handleMouseLeave"
   >
     <!-- 未授权状态：显示禁用的触发按钮 -->
-    <el-tooltip v-if="!props.licensed && isCollapsed" content="全站快捷按钮为授权功能，请在系统授权管理中激活" placement="left" effect="light">
+    <el-tooltip v-if="!props.licensed && isCollapsed" :content="t('floatingSphere.licenseRequired')" placement="left" effect="light">
       <div class="collapsed-trigger unlicensed-trigger">
         <el-icon :size="24"><Lock /></el-icon>
       </div>
@@ -79,7 +79,10 @@ import {
 } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { hasFeature, FEATURES, FEATURE_NAMES } from '@/utils/license'
+import { useI18n } from 'vue-i18n'
 
+
+const { t } = useI18n()
 const props = defineProps({
   licensed: {
     type: Boolean,
@@ -105,7 +108,7 @@ let touchStartPos = { x: 0, y: 0 }
 const menuItems = [
   { 
     key: 'dashboard', 
-    label: '面板', 
+    label: t('nav.dashboard'), 
     icon: DataAnalysis, 
     path: '/admin/dashboard',
     color: 'color-indigo',
@@ -113,7 +116,7 @@ const menuItems = [
   },
   { 
     key: 'scheduleview', 
-    label: '课程视图', 
+    label: t('app.courseView'), 
     icon: View, 
     path: '/',
     color: 'color-teal',
@@ -121,7 +124,7 @@ const menuItems = [
   },
   { 
     key: 'dashboardview', 
-    label: '运营大屏', 
+    label: t('app.dashboardView'), 
     icon: Monitor, 
     path: '/admin/dashboard-view',
     color: 'color-magenta',
@@ -132,7 +135,7 @@ const menuItems = [
   },
   { 
     key: 'courses', 
-    label: '新增科目', 
+    label: t('courses.addCourse'), 
     icon: Reading, 
     path: '/admin/courses',
     color: 'color-blue',
@@ -140,7 +143,7 @@ const menuItems = [
   },
   { 
     key: 'teachers', 
-    label: '新增导师', 
+    label: t('teachers.addTeacher'), 
     icon: UserFilled, 
     path: '/admin/teachers',
     color: 'color-green',
@@ -148,7 +151,7 @@ const menuItems = [
   },
   { 
     key: 'students', 
-    label: '新增学员', 
+    label: t('students.addStudent'), 
     icon: Avatar, 
     path: '/admin/students',
     color: 'color-orange',
@@ -156,7 +159,7 @@ const menuItems = [
   },
   { 
     key: 'classes', 
-    label: '新增班级', 
+    label: t('classes.addClass'), 
     icon: OfficeBuilding, 
     path: '/admin/classes',
     color: 'color-purple',
@@ -164,7 +167,7 @@ const menuItems = [
   },
   { 
     key: 'schedules', 
-    label: '新增排课', 
+    label: t('schedules.addSchedule'), 
     icon: Calendar, 
     path: '/admin/schedules',
     color: 'color-red',
@@ -172,7 +175,7 @@ const menuItems = [
   },
   { 
     key: 'grades', 
-    label: '新增成绩', 
+    label: t('grade.addGrade'), 
     icon: Trophy, 
     path: '/admin/grades',
     color: 'color-yellow',
@@ -180,7 +183,7 @@ const menuItems = [
   },
   { 
     key: 'leaves', 
-    label: '新增请假', 
+    label: t('leaves.addLeave'), 
     icon: Clock, 
     path: '/admin/leaves',
     color: 'color-cyan',
@@ -188,7 +191,7 @@ const menuItems = [
   },
   { 
     key: 'fees', 
-    label: '课费管理', 
+    label: t('fee.title'), 
     icon: Money, 
     path: '/admin/feemanagement',
     color: 'color-pink',
@@ -459,8 +462,8 @@ const handleMouseLeave = () => {
 // 获取菜单项的tooltip内容
 const getItemTooltip = (item) => {
   if (item.requiresLicense && item.licenseFeature && !hasFeature(item.licenseFeature)) {
-    const featureName = FEATURE_NAMES[item.licenseFeature] || '该功能'
-    return `${featureName}为授权功能，请在系统授权管理中激活`
+    const featureName = FEATURE_NAMES[item.licenseFeature] ? FEATURE_NAMES[item.licenseFeature]() : t('floatingSphere.thisFeature')
+    return t('floatingSphere.licenseRequired', { feature: featureName })
   }
   return item.label
 }
@@ -468,14 +471,14 @@ const getItemTooltip = (item) => {
 // 菜单项点击处理
 const handleMenuClick = (item) => {
   if (item.requiresLicense && item.licenseFeature && !hasFeature(item.licenseFeature)) {
-    const featureName = FEATURE_NAMES[item.licenseFeature] || '该'
-    ElMessage.warning(`${featureName}为授权功能，请在系统授权管理中激活`)
+    const featureName = FEATURE_NAMES[item.licenseFeature] ? FEATURE_NAMES[item.licenseFeature]() : t('floatingSphere.thisFeature')
+    ElMessage.warning(t('floatingSphere.licenseRequired', { feature: featureName }))
     return
   }
   // '课费管理\仪表盘\课程视图\运营大屏'直接跳转，不自动打开新增对话框
   if (item.key === 'fees' || item.key === 'dashboard'|| item.key === 'scheduleview' || item.key === 'dashboardview') {
     router.push(item.path)
-    ElMessage.success(`正在跳转到${item.label}`)
+    ElMessage.success(t('floatingSphere.jumpingTo', { label: item.label }))
   } else {
     // 其他按钮跳转到对应页面，并携带参数表示要打开新增对话框
     // 添加时间戳确保每次点击都能触发路由变化
@@ -486,7 +489,7 @@ const handleMenuClick = (item) => {
         _t: Date.now()  // 添加时间戳确保路由变化能被检测到
       }
     })
-    ElMessage.success(`正在打开${item.label}`)
+    ElMessage.success(t('floatingSphere.opening', { label: item.label }))
   }
   isCollapsed.value = true
   isHiddenHalf.value = false

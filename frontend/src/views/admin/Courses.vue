@@ -8,49 +8,49 @@
         <el-col :span="3">
           <el-button type="primary" @click="goToPage('/admin/dashboard')" style="width: 100%;height: 100%;">
             <el-icon><Reading /></el-icon>
-            面板
+            {{ t('nav.dashboard') }}
           </el-button>
         </el-col>
         <el-col :span="3">
           <el-button type="success" @click="goToPage('/admin/teachers')" style="width: 100%;height: 100%;">
             <el-icon><User /></el-icon>
-            导师管理
+            {{ t('nav.teachers') }}
           </el-button>
         </el-col>
         <el-col :span="3">
           <el-button type="success" @click="goToPage('/admin/classes')" style="width: 100%;height: 100%;">
             <el-icon><User /></el-icon>
-            班级管理
+            {{ t('nav.classes') }}
           </el-button>
         </el-col>
         <el-col :span="3">
           <el-button type="warning" @click="goToPage('/admin/students')" style="width: 100%;height: 100%;">
             <el-icon><UserFilled /></el-icon>
-            学员管理
+            {{ t('nav.students') }}
           </el-button>
         </el-col>
         <el-col :span="3">
           <el-button type="info" @click="goToPage('/admin/rooms')" style="width: 100%;height: 100%;">
             <el-icon><OfficeBuilding /></el-icon>
-            教室管理
+            {{ t('nav.rooms') }}
           </el-button>
         </el-col>
         <el-col :span="3">
           <el-button type="danger" @click="goToPage('/admin/leaves')" style="width: 100%;height: 100%;">
             <el-icon><Calendar /></el-icon>
-            假日管理
+            {{ t('nav.leaves') }}
           </el-button>
         </el-col>
         <el-col :span="3">
           <el-button type="primary" @click="goToPage('/admin/schedules')" style="width: 100%;height: 100%;">
             <el-icon><Clock /></el-icon>
-            排课管理
+            {{ t('nav.schedules') }}
           </el-button>
         </el-col>
         <el-col :span="3">
           <el-button type="primary" @click="goToPage('/admin/conditions')" style="width: 100%;height: 100%;">
             <el-icon><Setting /></el-icon>
-            条件管理
+            {{ t('nav.conditions') }}
           </el-button>
         </el-col>
       </el-row>
@@ -58,19 +58,19 @@
     <el-card>
       <template #header>
         <div class="card-header">
-          <span>科目管理</span>
+          <span>{{ t('courses.title') }}</span>
           <div class="button-group">
             <el-button type="info" @click="goBack">
               <el-icon><ArrowLeft /></el-icon>
-              返回上一页
+              {{ t('common.back') }}
             </el-button>
             <el-button type="primary" @click="showAddDialog">
               <el-icon><Plus /></el-icon>
-              新增科目
+              {{ t('courses.addCourse') }}
             </el-button>
             <el-button type="success" @click="showBatchAddDialog">
               <el-icon><Upload /></el-icon>
-              批量添加
+              {{ t('common.batchAdd') }}
             </el-button>
           </div>
         </div>
@@ -78,7 +78,7 @@
       <div class="search-bar">
         <el-input
           v-model="searchKeyword"
-          placeholder="搜索科目名称或代码"
+          :placeholder="t('courses.searchPlaceholder')"
           style="width: 300px"
           clearable
           @clear="fetchCourses"
@@ -90,21 +90,21 @@
             </el-button>
           </template>
         </el-input>
-        <el-button @click="resetFilters" style="width: 50px">重置</el-button>
+        <el-button @click="resetFilters" style="width: 50px">{{ t('common.reset') }}</el-button>
       </div>
       <el-table :data="courses" stripe v-loading="loading" style="margin-top: 20px" @sort-change="handleSortChange">
         <el-table-column prop="id" label="ID" width="70" sortable />
-        <el-table-column prop="code" label="科目代码" width="120" sortable />
-        <el-table-column prop="name" label="科目名称" width="200" sortable />
-        <el-table-column prop="priority" label="优先级" width="100" sortable />
-        <el-table-column label="授课导师" min-width="200">
+        <el-table-column prop="code" :label="t('courses.courseCode')" width="120" sortable />
+        <el-table-column prop="name" :label="t('courses.courseName')" width="200" sortable />
+        <el-table-column prop="priority" :label="t('courses.priority')" width="100" sortable />
+        <el-table-column :label="t('courses.teachingTeachers')" min-width="200">
           <template #default="{ row }">
             <el-tooltip v-for="teacherId in row.teacher_ids" :key="teacherId" placement="top" effect="light">
               <template #content>
                 <div style="min-width: 200px;">
-                  <div><strong>导师：</strong>{{ getTeacherName(teacherId) }}</div>
-                  <div v-if="getTeacherContactPhone(teacherId)"><strong>联系电话：</strong>{{ getTeacherContactPhone(teacherId) }}</div>
-                  <div v-if="getTeacherEmail(teacherId)"><strong>电子邮箱：</strong>{{ getTeacherEmail(teacherId) }}</div>
+                  <div><strong>{{ t('courses.teacher') }}：</strong>{{ getTeacherName(teacherId) }}</div>
+                  <div v-if="getTeacherContactPhone(teacherId)"><strong>{{ t('courses.contactPhone') }}：</strong>{{ getTeacherContactPhone(teacherId) }}</div>
+                  <div v-if="getTeacherEmail(teacherId)"><strong>{{ t('courses.email') }}：</strong>{{ getTeacherEmail(teacherId) }}</div>
                 </div>
               </template>
               <el-tag style="margin-right: 5px; margin-bottom: 5px; cursor: help;">
@@ -113,10 +113,10 @@
             </el-tooltip>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="80" fixed="right">
+        <el-table-column :label="t('common.operation')" width="80" fixed="right">
           <template #default="{ row }">
-            <el-button size="small" @click="showEditDialog(row)">编辑</el-button>
-            <el-button v-if="currentUser && (currentUser.role === 'super_admin' || currentUser.role === 'course_admin')" size="small" type="danger" @click="handleDelete(row)">删除</el-button>
+            <el-button size="small" @click="showEditDialog(row)">{{ t('common.edit') }}</el-button>
+            <el-button v-if="currentUser && (currentUser.role === 'super_admin' || currentUser.role === 'course_admin')" size="small" type="danger" @click="handleDelete(row)">{{ t('common.delete') }}</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -134,17 +134,17 @@
 
     <el-dialog v-model="dialogVisible" :title="dialogTitle" width="600px" draggable>
       <el-form :model="form" :rules="rules" ref="formRef" label-width="100px">
-        <el-form-item label="科目代码" prop="code">
-          <el-input v-model="form.code" :placeholder="lastCourseCode ? `请输入科目代码(不能与现有重复否则无法创建，当前已到：${lastCourseCode})` : '请输入科目代码(不能与现有重复)'" :disabled="!!form.id" />
+        <el-form-item :label="t('courses.courseCode')" prop="code">
+          <el-input v-model="form.code" :placeholder="lastCourseCode ? t('courses.courseCodePlaceholderWithLast', { code: lastCourseCode }) : t('courses.courseCodePlaceholder')" :disabled="!!form.id" />
         </el-form-item>
-        <el-form-item label="科目名称" prop="name">
-          <el-input v-model="form.name" placeholder="请输入科目名称" />
+        <el-form-item :label="t('courses.courseName')" prop="name">
+          <el-input v-model="form.name" :placeholder="t('courses.courseNamePlaceholder')" />
         </el-form-item>
-        <el-form-item label="优先级" prop="priority">
+        <el-form-item :label="t('courses.priority')" prop="priority">
           <el-input-number v-model="form.priority" :min="0" :max="100" />
         </el-form-item>
-        <el-form-item label="授课导师" prop="teacher_ids">
-          <el-select v-model="form.teacher_ids" multiple filterable placeholder="请选择授课导师" style="width: 100%">
+        <el-form-item :label="t('courses.teachingTeachers')" prop="teacher_ids">
+          <el-select v-model="form.teacher_ids" multiple filterable :placeholder="t('courses.selectTeachers')" style="width: 100%">
             <el-option
               v-for="teacher in teachers"
               :key="teacher.id"
@@ -154,11 +154,11 @@
               <el-tooltip placement="right" :show-after="200">
                 <template #content>
                   <div style="min-width: 200px;">
-                    <div><strong>导师：</strong>{{ teacher.name }}</div>
-                    <div v-if="teacher.code"><strong>代码：</strong>{{ teacher.code }}</div>
-                    <div v-if="teacher.department"><strong>部门：</strong>{{ teacher.department }}</div>
-                    <div v-if="teacher.contact_phone"><strong>联系电话：</strong>{{ teacher.contact_phone }}</div>
-                    <div v-if="teacher.email"><strong>电子邮箱：</strong>{{ teacher.email }}</div>
+                    <div><strong>{{ t('courses.teacher') }}：</strong>{{ teacher.name }}</div>
+                    <div v-if="teacher.code"><strong>{{ t('courses.code') }}：</strong>{{ teacher.code }}</div>
+                    <div v-if="teacher.department"><strong>{{ t('courses.department') }}：</strong>{{ teacher.department }}</div>
+                    <div v-if="teacher.contact_phone"><strong>{{ t('courses.contactPhone') }}：</strong>{{ teacher.contact_phone }}</div>
+                    <div v-if="teacher.email"><strong>{{ t('courses.email') }}：</strong>{{ teacher.email }}</div>
                   </div>
                 </template>
                 <span>{{ teacher.name }}</span>
@@ -168,53 +168,53 @@
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleSubmit">确定</el-button>
+        <el-button @click="dialogVisible = false">{{ t('common.cancel') }}</el-button>
+        <el-button type="primary" @click="handleSubmit">{{ t('common.confirm') }}</el-button>
       </template>
     </el-dialog>
     <!-- 批量添加科目对话框 -->
-    <el-dialog v-model="batchAddDialogVisible" title="批量添加科目" width="800px" draggable>
+    <el-dialog v-model="batchAddDialogVisible" :title="t('courses.batchAddTitle')" width="800px" draggable>
       <div style="margin-bottom: 20px;">
         <el-alert
-          title="批量添加说明"
+          :title="t('courses.batchAddInfo')"
           type="info"
           :closable="false"
           show-icon
         >
           <template #default>
-            <div>请按照以下格式输入科目信息，每行一个科目：</div>
+            <div>{{ t('courses.batchAddFormat') }}</div>
             <div style="margin-top: 10px; font-family: monospace; background: #f5f7fa; padding: 10px; border-radius: 4px;">
-              代码(*必填),名称(*必填),优先级
+              {{ t('courses.batchAddFormatLine') }}
             </div>
-            <div style="margin-top: 10px;">例如：</div>
+            <div style="margin-top: 10px;">{{ t('courses.batchAddExample') }}</div>
             <div style="margin-top: 5px; font-family: monospace; background: #f5f7fa; padding: 10px; border-radius: 4px;">
-              MATH001,数学,10<br/>
-              CHIN001,语文,20<br/>
-              ENG001,英语,15
+              MATH001,{{ t('courses.batchAddExampleMath') }},10<br/>
+              CHIN001,{{ t('courses.batchAddExampleChinese') }},20<br/>
+              ENG001,{{ t('courses.batchAddExampleEnglish') }},15
             </div>
-            <div style="margin-top: 10px;">注意：</div>
+            <div style="margin-top: 10px;">{{ t('courses.batchAddNote') }}</div>
             <ul style="margin-top: 5px;">
-              <li>代码不能与现有科目重复否则无法创建，上一个科目代码：<span v-if="lastCourseCode">{{ lastCourseCode }}</span><span v-else>无</span>，请在这个代码+1的基础上开始</li>
-              <li>优先级：数字越大优先级越高，默认为0</li>
+              <li>{{ t('courses.batchAddNoteCode') }}<span v-if="lastCourseCode">{{ lastCourseCode }}</span><span v-else>{{ t('courses.batchAddNoteNone') }}</span>{{ t('courses.batchAddNoteCodeContinue') }}</li>
+              <li>{{ t('courses.batchAddNotePriority') }}</li>
             </ul>
           </template>
         </el-alert>
       </div>
       
       <el-form label-width="120px">
-        <el-form-item label="科目信息">
+        <el-form-item :label="t('courses.courseInfo')">
           <el-input
             v-model="batchAddText"
             type="textarea"
             :rows="15"
-            placeholder="请输入科目信息，每行一个科目"
+            :placeholder="t('courses.batchAddPlaceholder')"
           />
         </el-form-item>
       </el-form>
       
       <template #footer>
-        <el-button @click="batchAddDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleBatchAddSubmit" :loading="batchAddLoading">批量添加</el-button>
+        <el-button @click="batchAddDialogVisible = false">{{ t('common.cancel') }}</el-button>
+        <el-button type="primary" @click="handleBatchAddSubmit" :loading="batchAddLoading">{{ t('common.batchAdd') }}</el-button>
       </template>
     </el-dialog>
   </div>
@@ -226,7 +226,10 @@ import { useRouter, useRoute } from 'vue-router'
 import { ArrowLeft, Plus, Search, Reading, User, UserFilled, OfficeBuilding, Calendar, Clock, Upload } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import api from '@/utils/api'
+import { useI18n } from 'vue-i18n'
 
+
+const { t } = useI18n()
 const currentUser = ref(null)
 const router = useRouter()
 const route = useRoute()
@@ -302,8 +305,8 @@ const originalForm = ref({
 })
 
 const rules = {
-  code: [{ required: true, message: '请输入科目代码', trigger: 'blur' }],
-  name: [{ required: true, message: '请输入科目名称', trigger: 'blur' }]
+  code: [{ required: true, message: () => t('courses.courseCodeRequired'), trigger: 'blur' }],
+  name: [{ required: true, message: () => t('courses.courseNameRequired'), trigger: 'blur' }]
 }
 
 const fetchTeachers = async () => {
@@ -366,7 +369,7 @@ const resetFilters = () => {
 }
 
 const showAddDialog = () => {
-  dialogTitle.value = '新增科目'
+  dialogTitle.value = t('courses.addCourseTitle')
   
   // 检查是否有预填充数据
   const storageData = sessionStorage.getItem('smartCommandData')
@@ -396,7 +399,7 @@ const showBatchAddDialog = () => {
 }
 const handleBatchAddSubmit = async () => {
   if (!batchAddText.value.trim()) {
-    ElMessage.warning('请输入科目信息')
+    ElMessage.warning(t('courses.batchAddWarning'))
     return
   }
   
@@ -410,7 +413,7 @@ const handleBatchAddSubmit = async () => {
     
     const parts = line.split(',').map(p => p.trim())
     if (parts.length < 2) {
-      errors.push(`第${i + 1}行：格式错误，至少需要代码和名称`)
+      errors.push(t('courses.lineError', { line: i + 1, msg: t('courses.lineFormatError') }))
       continue
     }
     
@@ -425,14 +428,14 @@ const handleBatchAddSubmit = async () => {
   }
   
   if (errors.length > 0) {
-    ElMessage.error(`发现${errors.length}个错误：\n${errors.join('\n')}`)
+    ElMessage.error(t('courses.batchAddErrorCount', { count: errors.length }) + '\n' + errors.join('\n'))
     if (coursesToAdd.length === 0) {
       return
     }
   }
   
   if (coursesToAdd.length === 0) {
-    ElMessage.warning('没有有效的科目信息')
+    ElMessage.warning(t('courses.batchAddNoValid'))
     return
   }
   
@@ -448,28 +451,28 @@ const handleBatchAddSubmit = async () => {
         successCount++
       } catch (error) {
         failCount++
-        failMessages.push(`${course.code}(${course.name}): ${error.response?.data?.detail || error.message}`)
+        failMessages.push(t('courses.batchAddFailDetail', { code: course.code, name: course.name, detail: error.response?.data?.detail || error.message }))
       }
     }
     
     if (failCount > 0) {
-      ElMessage.warning(`批量添加完成：成功${successCount}个，失败${failCount}个\n失败详情：\n${failMessages.join('\n')}`)
+      ElMessage.warning(t('courses.batchAddPartial', { success: successCount, fail: failCount }) + '\n' + failMessages.join('\n'))
     } else {
-      ElMessage.success(`批量添加成功，共添加${successCount}个科目`)
+      ElMessage.success(t('courses.batchAddSuccess', { n: successCount }))
     }
     
     batchAddDialogVisible.value = false
     await fetchCourses()
   } catch (error) {
     window.logger.error('批量添加科目失败:', error)
-    ElMessage.error('批量添加科目失败')
+    ElMessage.error(t('courses.batchAddFailed'))
   } finally {
     batchAddLoading.value = false
   }
 }
 
 const showEditDialog = (row) => {
-  dialogTitle.value = '编辑科目'
+  dialogTitle.value = t('courses.editCourseTitle')
   originalForm.value = {
     id: row.id,
     code: row.code,
@@ -522,15 +525,15 @@ const handleSubmit = async () => {
             JSON.stringify(form.value.teacher_ids || []) !== JSON.stringify(originalForm.value.teacher_ids || [])
           
           if (!isChanged) {
-            ElMessage.warning('内容未发生改变，无需保存')
+            ElMessage.warning(t('common.noChange'))
             return
           }
           
           await api.put(`/courses/${form.value.id}`, form.value)
-          ElMessage.success('更新成功')
+          ElMessage.success(t('common.updateSuccess'))
         } else {
           await api.post('/courses', form.value)
-          ElMessage.success('创建成功')
+          ElMessage.success(t('common.createSuccess'))
         }
         dialogVisible.value = false
         fetchCourses()
@@ -542,14 +545,14 @@ const handleSubmit = async () => {
 }
 
 const handleDelete = (row) => {
-  ElMessageBox.confirm('确定要删除该科目吗？', '提示', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
+  ElMessageBox.confirm(t('courses.confirmDeleteCourse'), t('common.tip'), {
+    confirmButtonText: t('common.confirm'),
+    cancelButtonText: t('common.cancel'),
     type: 'warning'
   }).then(async () => {
     try {
       await api.delete(`/courses/${row.id}`)
-      ElMessage.success('删除成功')
+      ElMessage.success(t('common.deleteSuccess'))
       fetchCourses()
     } catch (error) {
       window.logger.error('删除失败:', error)
@@ -585,21 +588,21 @@ const applyUrlFilters = (urlParams) => {
   if (urlParams.get('name')) {
     filterName.value = urlParams.get('name')
     hasUrlFilters = true
-    appliedFilters.push(`名称: ${filterName.value}`)
+    appliedFilters.push(t('courses.filterName', { value: filterName.value }))
   }
   
   // 2. 处理按代码过滤
   if (urlParams.get('code')) {
     filterCode.value = urlParams.get('code')
     hasUrlFilters = true
-    appliedFilters.push(`代码: ${filterCode.value}`)
+    appliedFilters.push(t('courses.filterCode', { value: filterCode.value }))
   }
   
   // 3. 处理旧的search参数（向后兼容，仅在没有name和code时使用）
   if (urlParams.get('search') && !urlParams.get('name') && !urlParams.get('code')) {
     searchKeyword.value = urlParams.get('search')
     hasUrlFilters = true
-    appliedFilters.push(`搜索: ${searchKeyword.value}`)
+    appliedFilters.push(t('courses.filterSearch', { value: searchKeyword.value }))
   }
   
   return { hasUrlFilters, appliedFilters }
@@ -631,7 +634,7 @@ onMounted(async () => {
     // 显示应用的过滤条件提示
     if (appliedFilters.length > 0) {
       ElMessage.success({
-        message: `已应用过滤条件：${appliedFilters.join('、')}`,
+        message: t('courses.appliedFilters', { filters: appliedFilters.join(t('common.listSeparator')) }),
         duration: 3000
       })
     }
@@ -642,7 +645,7 @@ onMounted(async () => {
         const smartData = JSON.parse(sessionStorage.getItem('smartCommandData'))
         if (smartData.target_path && smartData.target_label) {
           const filterValue = filterName.value || filterCode.value || searchKeyword.value
-          ElMessage.info(`已找到科目"${filterValue}"，正在跳转到${smartData.target_label}...`)
+          ElMessage.info(t('courses.foundCourseJump', { name: filterValue, label: smartData.target_label }))
           setTimeout(() => {
             window.location.href = `${smartData.target_path}?filter_by=course&filter_value=${encodeURIComponent(filterValue)}`
           }, 1500)
@@ -663,7 +666,7 @@ onMounted(async () => {
         if (targetCourse) {
           showEditDialog(targetCourse)
         } else {
-          ElMessage.warning('未找到匹配的科目')
+          ElMessage.warning(t('courses.noMatchingCourse'))
         }
       }, 800)
     }
@@ -688,10 +691,11 @@ onMounted(async () => {
         }
       } catch (error) {
         window.logger.error('获取科目信息失败:', error)
-        ElMessage.error('无法加载科目信息')
+        ElMessage.error(t('courses.fetchCourseFailed'))
       }
     }
   }
+
 })
 
 // 监听路由参数变化，支持从悬浮球等外部触发的操作
@@ -715,7 +719,7 @@ watch(() => route.query, (newQuery, oldQuery) => {
         }
       }).catch(error => {
         window.logger.error('获取科目信息失败:', error)
-        ElMessage.error('无法加载科目信息')
+        ElMessage.error(t('courses.fetchCourseFailed'))
       })
     }
   } else if (newQuery.name !== undefined || newQuery.code !== undefined || newQuery.search !== undefined) {
@@ -733,7 +737,7 @@ watch(() => route.query, (newQuery, oldQuery) => {
       
       if (appliedFilters.length > 0) {
         ElMessage.success({
-          message: `已应用过滤条件：${appliedFilters.join('、')}`,
+          message: t('courses.appliedFilters', { filters: appliedFilters.join(t('common.listSeparator')) }),
           duration: 3000
         })
       }

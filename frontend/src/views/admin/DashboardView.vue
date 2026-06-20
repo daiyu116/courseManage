@@ -7,22 +7,22 @@
       <div class="header-left">
         <h1 class="dashboard-title">
           <el-icon><DataAnalysis /></el-icon>
-          运营大屏
+          {{ t('dashboardView.title') }}
         </h1>
-        <span class="last-update">最后更新: {{ lastUpdateTime }}</span>
+        <span class="last-update">{{ t('dashboardView.lastUpdate') }}: {{ lastUpdateTime }}</span>
       </div>
       <div class="header-right">
         <el-button type="primary" :icon="Refresh" @click="refreshData" :loading="loading">
-          刷新数据
+          {{ t('dashboardView.refresh') }}
         </el-button>
         <el-button type="info" :icon="Hide" @click="toggleRevenueVisibility">
-          {{ hideRevenue ? '显示营收' : '隐藏营收' }}
+          {{ hideRevenue ? t('dashboardView.showRevenue') : t('dashboardView.hideRevenue') }}
         </el-button>
         <el-button type="success" :icon="FullScreen" @click="toggleFullscreen">
-          {{ isFullscreen ? '退出全屏' : '全屏模式' }}
+          {{ isFullscreen ? t('dashboardView.exitFullscreen') : t('dashboardView.fullscreen') }}
         </el-button>
         <el-button type="warning" :icon="Download" @click="exportDashboard">
-          导出图片
+          {{ t('dashboardView.exportImage') }}
         </el-button>
       </div>
     </div>
@@ -35,7 +35,7 @@
           :sm="8" 
           :md="4" 
           :lg="4"
-          v-if="!['本月收入', '当年收入', '退费总额', '累计优惠额度', '本月续费率'].includes(kpi.label)"
+          v-if="!feeAllLabels.includes(kpi.label) && kpi.label !== conversionLabel"
         >
           <el-card class="kpi-card" shadow="hover" @click="handleKpiClick(kpi)">
             <div class="kpi-content">
@@ -44,7 +44,7 @@
               </div>
               <div class="kpi-info">
                 <div class="kpi-value">{{ kpi.value }}</div>
-                <div class="kpi-label">{{ kpi.label }}</div>
+                <div class="kpi-label">{{ t(kpi.label) }}</div>
               </div>
             </div>
           </el-card>
@@ -54,7 +54,7 @@
           :sm="12" 
           :md="6" 
           :lg="6"
-          v-else-if="['本月收入', '当年收入'].includes(kpi.label) && !hideRevenue && hasFeature('fee_management')"
+          v-else-if="revenueLabels.includes(kpi.label) && !hideRevenue && hasFeature('fee_management')"
         >
           <el-card class="kpi-card income-card" shadow="hover" @click="handleKpiClick(kpi)">
             <div class="kpi-content">
@@ -63,7 +63,7 @@
               </div>
               <div class="kpi-info">
                 <div class="kpi-value">{{ kpi.value }}</div>
-                <div class="kpi-label">{{ kpi.label }}</div>
+                <div class="kpi-label">{{ t(kpi.label) }}</div>
               </div>
             </div>
           </el-card>
@@ -73,9 +73,9 @@
           :sm="12" 
           :md="6" 
           :lg="6"
-          v-else-if="['本月收入', '当年收入'].includes(kpi.label) && !hideRevenue && !hasFeature('fee_management')"
+          v-else-if="revenueLabels.includes(kpi.label) && !hideRevenue && !hasFeature('fee_management')"
         >
-          <el-tooltip content="费用管理为授权功能，请在系统授权管理中激活" placement="bottom">
+          <el-tooltip :content="t('dashboardView.feeManagementAuthRequired')" placement="bottom">
             <el-card class="kpi-card income-card" style="opacity: 0.5; cursor: not-allowed;">
               <div class="kpi-content">
                 <div class="kpi-icon" style="background: linear-gradient(135deg, #909399 0%, #b1b3b8 100%);">
@@ -83,7 +83,7 @@
                 </div>
                 <div class="kpi-info">
                   <div class="kpi-value" style="color: #909399;">--</div>
-                  <div class="kpi-label">{{ kpi.label }}</div>
+                  <div class="kpi-label">{{ t(kpi.label) }}</div>
                 </div>
               </div>
             </el-card>
@@ -94,7 +94,7 @@
           :sm="8" 
           :md="4" 
           :lg="4"
-          v-else-if="['退费总额', '累计优惠额度', '本月续费率'].includes(kpi.label) && !hideRevenue && hasFeature('fee_management')"
+          v-else-if="feeExtraLabels.includes(kpi.label) && !hideRevenue && hasFeature('fee_management')"
         >
           <el-card class="kpi-card" shadow="hover" @click="handleKpiClick(kpi)">
             <div class="kpi-content">
@@ -103,7 +103,7 @@
               </div>
               <div class="kpi-info">
                 <div class="kpi-value">{{ kpi.value }}</div>
-                <div class="kpi-label">{{ kpi.label }}</div>
+                <div class="kpi-label">{{ t(kpi.label) }}</div>
               </div>
             </div>
           </el-card>
@@ -113,9 +113,9 @@
           :sm="8" 
           :md="4" 
           :lg="4"
-          v-else-if="['退费总额', '累计优惠额度', '本月续费率'].includes(kpi.label) && !hideRevenue && !hasFeature('fee_management')"
+          v-else-if="feeExtraLabels.includes(kpi.label) && !hideRevenue && !hasFeature('fee_management')"
         >
-          <el-tooltip content="费用管理为授权功能，请在系统授权管理中激活" placement="bottom">
+          <el-tooltip :content="t('dashboardView.feeManagementAuthRequired')" placement="bottom">
             <el-card class="kpi-card" style="opacity: 0.5; cursor: not-allowed;">
               <div class="kpi-content">
                 <div class="kpi-icon" style="background: linear-gradient(135deg, #909399 0%, #b1b3b8 100%);">
@@ -123,7 +123,7 @@
                 </div>
                 <div class="kpi-info">
                   <div class="kpi-value" style="color: #909399;">--</div>
-                  <div class="kpi-label">{{ kpi.label }}</div>
+                  <div class="kpi-label">{{ t(kpi.label) }}</div>
                 </div>
               </div>
             </el-card>
@@ -134,7 +134,7 @@
           :sm="8" 
           :md="4" 
           :lg="4"
-          v-else-if="['本月转化率'].includes(kpi.label)"
+          v-else-if="kpi.label === conversionLabel"
         >
           <el-card class="kpi-card" shadow="hover" @click="handleKpiClick(kpi)">
             <div class="kpi-content">
@@ -143,7 +143,7 @@
               </div>
               <div class="kpi-info">
                 <div class="kpi-value">{{ kpi.value }}</div>
-                <div class="kpi-label">{{ kpi.label }}</div>
+                <div class="kpi-label">{{ t(kpi.label) }}</div>
               </div>
             </div>
           </el-card>
@@ -162,7 +162,7 @@
               </div>
               <div class="kpi-info">
                 <div class="kpi-value">{{ kpi.value }}</div>
-                <div class="kpi-label">{{ kpi.label }}</div>
+                <div class="kpi-label">{{ t(kpi.label) }}</div>
               </div>
             </div>
           </el-card>
@@ -177,10 +177,10 @@
         <el-card class="chart-card" shadow="hover">
           <template #header>
             <div class="card-header">
-              <span>成绩等级分布</span>
-              <el-tooltip v-if="!hasFeature('grade_trend')" content="学员成绩曲线为授权功能，请在系统授权管理中激活" placement="top">
+              <span>{{ t('dashboardView.gradeDistribution') }}</span>
+              <el-tooltip v-if="!hasFeature('grade_trend')" :content="t('dashboardView.gradeCurveAuthRequired')" placement="top">
                 <el-tag type="info" effect="plain" style="cursor: not-allowed;">
-                  <el-icon><Lock /></el-icon> 未授权
+                  <el-icon><Lock /></el-icon> {{ t('dashboardView.unauthorized') }}
                 </el-tag>
               </el-tooltip>
             </div>
@@ -189,8 +189,8 @@
           <div v-else class="unauthorized-placeholder" style="height: 350px; display: flex; align-items: center; justify-content: center; color: #909399;">
             <div style="text-align: center;">
               <el-icon :size="48"><Lock /></el-icon>
-              <p style="margin-top: 12px;">学员成绩曲线为授权功能</p>
-              <p>请在系统授权管理中激活</p>
+              <p style="margin-top: 12px;">{{ t('dashboardView.gradeCurveAuthFeature') }}</p>
+              <p>{{ t('dashboardView.pleaseActivateAuth') }}</p>
             </div>
           </div>
         </el-card>
@@ -200,7 +200,7 @@
         <el-card class="chart-card" shadow="hover">
           <template #header>
             <div class="card-header">
-              <span>学员进步榜TopN</span>
+              <span>{{ t('dashboardView.studentProgressTopN') }}</span>
               <el-select v-if="hasFeature('grade_trend')" v-model="improvementRankingLimit" @change="handleImprovementRankingLimitChange" style="width: 120px">
                 <el-option label="TOP10" :value="10" />
                 <el-option label="TOP15" :value="15" />
@@ -208,73 +208,73 @@
                 <el-option label="TOP50" :value="50" />
                 <el-option label="TOP100" :value="100" />
               </el-select>
-              <el-tooltip v-if="!hasFeature('grade_trend')" content="学员成绩曲线为授权功能，请在系统授权管理中激活" placement="top">
+              <el-tooltip v-if="!hasFeature('grade_trend')" :content="t('dashboardView.gradeCurveAuthRequired')" placement="top">
                 <el-tag type="info" effect="plain" style="cursor: not-allowed;">
-                  <el-icon><Lock /></el-icon> 未授权
+                  <el-icon><Lock /></el-icon> {{ t('dashboardView.unauthorized') }}
                 </el-tag>
               </el-tooltip>
             </div>
           </template>
           <template v-if="hasFeature('grade_trend')">
           <el-table :data="improvementRanking" style="width: 100%" max-height="350">
-            <el-table-column prop="student_name" label="学员姓名" width="100">
+            <el-table-column prop="student_name" :label="t('dashboardView.studentName')" width="100">
               <template #default="{ row }">
                 <el-tooltip placement="right" effect="light" popper-class="student-info-tooltip">
                   <template #content>
                     <div class="student-detail-info">
-                      <div class="info-item"><strong>学员代码：</strong>{{ getStudentCode(row.student_id) }}</div>
-                      <div class="info-item"><strong>学员姓名：</strong>{{ row.student_name }}</div>
-                      <div class="info-item"><strong>学校：</strong>{{ getStudentSchool(row.student_id) }}</div>
-                      <div class="info-item"><strong>年级：</strong>{{ getStudentGrade(row.student_id) }}</div>
-                      <div class="info-item"><strong>进入机构日期：</strong>{{ getStudentJoinDate(row.student_id) }}</div>
-                      <div class="info-item"><strong>联系人：</strong>{{ getStudentContact(row.student_id) }}</div>
-                      <div class="info-item"><strong>联系电话：</strong>{{ getStudentPhone(row.student_id) }}</div>
-                      <div class="info-item"><strong>邮箱：</strong>{{ getStudentEmail(row.student_id) }}</div>
-                      <div class="info-item"><strong>所属班级：</strong>{{ getStudentClasses(row.student_id) }}</div>
-                      <div class="info-item"><strong>是否在读：</strong>{{ getStudentIsActive(row.student_id) ? '是' : '否' }}</div>
+                      <div class="info-item"><strong>{{ t('dashboardView.studentCode') }}：</strong>{{ getStudentCode(row.student_id) }}</div>
+                      <div class="info-item"><strong>{{ t('dashboardView.studentName') }}：</strong>{{ row.student_name }}</div>
+                      <div class="info-item"><strong>{{ t('dashboardView.school') }}：</strong>{{ getStudentSchool(row.student_id) }}</div>
+                      <div class="info-item"><strong>{{ t('dashboardView.grade') }}：</strong>{{ getStudentGrade(row.student_id) }}</div>
+                      <div class="info-item"><strong>{{ t('dashboardView.enrollmentDate') }}：</strong>{{ getStudentJoinDate(row.student_id) }}</div>
+                      <div class="info-item"><strong>{{ t('dashboardView.contact') }}：</strong>{{ getStudentContact(row.student_id) }}</div>
+                      <div class="info-item"><strong>{{ t('dashboardView.contactPhone') }}：</strong>{{ getStudentPhone(row.student_id) }}</div>
+                      <div class="info-item"><strong>{{ t('dashboardView.email') }}：</strong>{{ getStudentEmail(row.student_id) }}</div>
+                      <div class="info-item"><strong>{{ t('dashboardView.class') }}：</strong>{{ getStudentClasses(row.student_id) }}</div>
+                      <div class="info-item"><strong>{{ t('dashboardView.isActive') }}：</strong>{{ getStudentIsActive(row.student_id) ? t('dashboardView.yes') : t('dashboardView.no') }}</div>
                     </div>
                   </template>
                   <span style="cursor: pointer; color: #409eff;">{{ row.student_name }}</span>
                 </el-tooltip>
               </template>
             </el-table-column>
-            <el-table-column prop="course_name" label="科目" width="180" />
-            <el-table-column prop="score_change" label="最大进步幅度" width="120">
+            <el-table-column prop="course_name" :label="t('dashboardView.course')" width="180" />
+            <el-table-column prop="score_change" :label="t('dashboardView.maxProgress')" width="120">
               <template #default="{ row }">
                 <span :style="{ color: row.score_change > 0 ? '#67C23A' : '#F56C6C' }">
                   {{ row.score_change > 0 ? '+' : '' }}{{ row.score_change }}%
                 </span>
               </template>
             </el-table-column>
-            <el-table-column prop="max_ratio" label="最高得分比" width="100">
+            <el-table-column prop="max_ratio" :label="t('dashboardView.maxScoreRatio')" width="100">
               <template #default="{ row }">
                 <el-tooltip placement="top" effect="dark">
                   <template #content>
-                    <div>该次考试年级：{{ row.grade_level }}</div>
-                    <div>该次考试阶段：{{ row.max_ratio_exam_stage }}</div>
+                    <div>{{ t('dashboardView.examGrade') }}：{{ row.grade_level }}</div>
+                    <div>{{ t('dashboardView.examStage') }}：{{ row.max_ratio_exam_stage }}</div>
                   </template>
                   <span>{{ row.max_ratio }}%</span>
                 </el-tooltip>
               </template>
             </el-table-column>
-            <el-table-column prop="current_ratio" label="最近得分比" width="100">
+            <el-table-column prop="current_ratio" :label="t('dashboardView.latestScoreRatio')" width="100">
               <template #default="{ row }">
                 <el-tooltip placement="top" effect="dark">
                   <template #content>
-                    <div>该次考试年级：{{ row.grade_level }}</div>
-                    <div>该次考试阶段：{{ row.exam_stage }}</div>
+                    <div>{{ t('dashboardView.examGrade') }}：{{ row.grade_level }}</div>
+                    <div>{{ t('dashboardView.examStage') }}：{{ row.exam_stage }}</div>
                   </template>
                   <span>{{ row.current_ratio }}%</span>
                 </el-tooltip>
               </template>
             </el-table-column>
-            <el-table-column label="显示" width="180" fixed="right">
+            <el-table-column :label="t('dashboardView.show')" width="180" fixed="right">
               <template #default="{ row }">
                 <el-button type="primary" size="small" @click="showGradeCurve(row)">
-                  成绩曲线
+                  {{ t('dashboardView.gradeCurve') }}
                 </el-button>
                 <el-button v-if="hasFeature('student_evaluation')" type="warning" size="small" @click="goToStudentEvaluation(row)">
-                  评价信息
+                  {{ t('dashboardView.evaluationInfo') }}
                 </el-button>
               </template>
             </el-table-column>
@@ -283,8 +283,8 @@
           <div v-else class="unauthorized-placeholder" style="height: 350px; display: flex; align-items: center; justify-content: center; color: #909399;">
             <div style="text-align: center;">
               <el-icon :size="48"><Lock /></el-icon>
-              <p style="margin-top: 12px;">学员成绩曲线为授权功能</p>
-              <p>请在系统授权管理中激活</p>
+              <p style="margin-top: 12px;">{{ t('dashboardView.gradeCurveAuthFeature') }}</p>
+              <p>{{ t('dashboardView.pleaseActivateAuth') }}</p>
             </div>
           </div>
         </el-card>
@@ -297,54 +297,54 @@
         <el-card class="chart-card" shadow="hover" v-loading="loading">
           <template #header>
             <div class="card-header">
-              <span>收费预警列表</span>
-              <el-tag type="danger" effect="dark">{{ feeAlerts.length }} 条预警</el-tag>
+              <span>{{ t('dashboardView.feeAlertList') }}</span>
+              <el-tag type="danger" effect="dark">{{ feeAlerts.length }} {{ t('dashboardView.alertEntries') }}</el-tag>
             </div>
           </template>
           <el-table :data="feeAlerts" style="width: 100%" max-height="400">
-            <el-table-column prop="student_name" label="学员姓名" width="120">
+            <el-table-column prop="student_name" :label="t('dashboardView.studentName')" width="120">
               <template #default="{ row }">
                 <el-tooltip placement="right" effect="light" popper-class="student-info-tooltip">
                   <template #content>
                     <div class="student-detail-info">
-                      <div class="info-item"><strong>学员代码：</strong>{{ getStudentCode(row.student_id) }}</div>
-                      <div class="info-item"><strong>学员姓名：</strong>{{ row.student_name }}</div>
-                      <div class="info-item"><strong>学校：</strong>{{ getStudentSchool(row.student_id) }}</div>
-                      <div class="info-item"><strong>年级：</strong>{{ getStudentGrade(row.student_id) }}</div>
-                      <div class="info-item"><strong>进入机构日期：</strong>{{ getStudentJoinDate(row.student_id) }}</div>
-                      <div class="info-item"><strong>联系人：</strong>{{ getStudentContact(row.student_id) }}</div>
-                      <div class="info-item"><strong>联系电话：</strong>{{ getStudentPhone(row.student_id) }}</div>
-                      <div class="info-item"><strong>邮箱：</strong>{{ getStudentEmail(row.student_id) }}</div>
-                      <div class="info-item"><strong>所属班级：</strong>{{ getStudentClasses(row.student_id) }}</div>
-                      <div class="info-item"><strong>是否在读：</strong>{{ getStudentIsActive(row.student_id) ? '是' : '否' }}</div>
+                      <div class="info-item"><strong>{{ t('dashboardView.studentCode') }}：</strong>{{ getStudentCode(row.student_id) }}</div>
+                      <div class="info-item"><strong>{{ t('dashboardView.studentName') }}：</strong>{{ row.student_name }}</div>
+                      <div class="info-item"><strong>{{ t('dashboardView.school') }}：</strong>{{ getStudentSchool(row.student_id) }}</div>
+                      <div class="info-item"><strong>{{ t('dashboardView.grade') }}：</strong>{{ getStudentGrade(row.student_id) }}</div>
+                      <div class="info-item"><strong>{{ t('dashboardView.enrollmentDate') }}：</strong>{{ getStudentJoinDate(row.student_id) }}</div>
+                      <div class="info-item"><strong>{{ t('dashboardView.contact') }}：</strong>{{ getStudentContact(row.student_id) }}</div>
+                      <div class="info-item"><strong>{{ t('dashboardView.contactPhone') }}：</strong>{{ getStudentPhone(row.student_id) }}</div>
+                      <div class="info-item"><strong>{{ t('dashboardView.email') }}：</strong>{{ getStudentEmail(row.student_id) }}</div>
+                      <div class="info-item"><strong>{{ t('dashboardView.class') }}：</strong>{{ getStudentClasses(row.student_id) }}</div>
+                      <div class="info-item"><strong>{{ t('dashboardView.isActive') }}：</strong>{{ getStudentIsActive(row.student_id) ? t('dashboardView.yes') : t('dashboardView.no') }}</div>
                     </div>
                   </template>
                   <span style="cursor: pointer; color: #409eff;">{{ row.student_name }}</span>
                 </el-tooltip>
               </template>
             </el-table-column>
-            <el-table-column prop="course_name" label="科目" width="120" />
-            <el-table-column prop="remaining_hours" label="剩余课时" width="100">
+            <el-table-column prop="course_name" :label="t('dashboardView.course')" width="120" />
+            <el-table-column prop="remaining_hours" :label="t('dashboardView.remainingHours')" width="100">
               <template #default="{ row }">
                 <el-tag :type="row.alert_level === 'danger' ? 'danger' : row.alert_level === 'warning' ? 'warning' : 'info'">
-                  {{ row.remaining_hours }}小时
+                  {{ row.remaining_hours }}{{ t('dashboardView.hours') }}
                 </el-tag>
               </template>
             </el-table-column>
-            <el-table-column prop="remaining_amount" label="剩余金额" width="120">
+            <el-table-column prop="remaining_amount" :label="t('dashboardView.remainingAmount')" width="120">
               <template #default="{ row }">
                 ¥{{ row.remaining_amount.toFixed(2) }}
               </template>
             </el-table-column>
-            <el-table-column prop="alert_threshold" label="预警阈值" width="100">
+            <el-table-column prop="alert_threshold" :label="t('dashboardView.alertThreshold')" width="100">
               <template #default="{ row }">
-                {{ row.alert_threshold }}小时
+                {{ row.alert_threshold }}{{ t('dashboardView.hours') }}
               </template>
             </el-table-column>
-            <el-table-column label="操作">
+            <el-table-column :label="t('dashboardView.action')">
               <template #default="{ row }">
                 <el-button type="primary" size="small" @click="goToFeeManagement(row)">
-                  查看
+                  {{ t('dashboardView.view') }}
                 </el-button>
               </template>
             </el-table-column>
@@ -357,33 +357,33 @@
         <el-card class="chart-card" shadow="hover" v-loading="loading">
           <template #header>
             <div class="card-header">
-              <span>待缴费学员列表</span>
-              <el-tag type="warning" effect="dark">{{ unpaidStudents.length }} 人</el-tag>
+              <span>{{ t('dashboardView.unpaidStudentList') }}</span>
+              <el-tag type="warning" effect="dark">{{ unpaidStudents.length }} {{ t('dashboardView.person') }}</el-tag>
             </div>
           </template>
           <el-table :data="unpaidStudents" style="width: 100%" max-height="400">
-            <el-table-column prop="student_name" label="学员姓名" width="120">
+            <el-table-column prop="student_name" :label="t('dashboardView.studentName')" width="120">
               <template #default="{ row }">
                 <el-tooltip placement="right" effect="light" popper-class="student-info-tooltip">
                   <template #content>
                     <div class="student-detail-info">
-                      <div class="info-item"><strong>学员代码：</strong>{{ getStudentCode(row.student_id) }}</div>
-                      <div class="info-item"><strong>学员姓名：</strong>{{ row.student_name }}</div>
-                      <div class="info-item"><strong>学校：</strong>{{ getStudentSchool(row.student_id) }}</div>
-                      <div class="info-item"><strong>年级：</strong>{{ getStudentGrade(row.student_id) }}</div>
-                      <div class="info-item"><strong>进入机构日期：</strong>{{ getStudentJoinDate(row.student_id) }}</div>
-                      <div class="info-item"><strong>联系人：</strong>{{ getStudentContact(row.student_id) }}</div>
-                      <div class="info-item"><strong>联系电话：</strong>{{ getStudentPhone(row.student_id) }}</div>
-                      <div class="info-item"><strong>邮箱：</strong>{{ getStudentEmail(row.student_id) }}</div>
-                      <div class="info-item"><strong>所属班级：</strong>{{ getStudentClasses(row.student_id) }}</div>
-                      <div class="info-item"><strong>是否在读：</strong>{{ getStudentIsActive(row.student_id) ? '是' : '否' }}</div>
+                      <div class="info-item"><strong>{{ t('dashboardView.studentCode') }}：</strong>{{ getStudentCode(row.student_id) }}</div>
+                      <div class="info-item"><strong>{{ t('dashboardView.studentName') }}：</strong>{{ row.student_name }}</div>
+                      <div class="info-item"><strong>{{ t('dashboardView.school') }}：</strong>{{ getStudentSchool(row.student_id) }}</div>
+                      <div class="info-item"><strong>{{ t('dashboardView.grade') }}：</strong>{{ getStudentGrade(row.student_id) }}</div>
+                      <div class="info-item"><strong>{{ t('dashboardView.enrollmentDate') }}：</strong>{{ getStudentJoinDate(row.student_id) }}</div>
+                      <div class="info-item"><strong>{{ t('dashboardView.contact') }}：</strong>{{ getStudentContact(row.student_id) }}</div>
+                      <div class="info-item"><strong>{{ t('dashboardView.contactPhone') }}：</strong>{{ getStudentPhone(row.student_id) }}</div>
+                      <div class="info-item"><strong>{{ t('dashboardView.email') }}：</strong>{{ getStudentEmail(row.student_id) }}</div>
+                      <div class="info-item"><strong>{{ t('dashboardView.class') }}：</strong>{{ getStudentClasses(row.student_id) }}</div>
+                      <div class="info-item"><strong>{{ t('dashboardView.isActive') }}：</strong>{{ getStudentIsActive(row.student_id) ? t('dashboardView.yes') : t('dashboardView.no') }}</div>
                     </div>
                   </template>
                   <span style="cursor: pointer; color: #409eff;">{{ row.student_name }}</span>
                 </el-tooltip>
               </template>
             </el-table-column>
-            <el-table-column label="未缴费科目" min-width="250">
+            <el-table-column :label="t('dashboardView.unpaidCourses')" min-width="250">
               <template #default="{ row }">
                 <div v-if="row.unpaid_courses && row.unpaid_courses.length > 0">
                   <el-tag
@@ -396,10 +396,10 @@
                     <el-tooltip placement="top" effect="light">
                       <template #content>
                         <div style="padding: 5px;">
-                          <div><strong>科目：</strong>{{ course.course_name }}</div>
-                          <div><strong>导师：</strong>{{ course.teacher_name }}</div>
-                          <div><strong>已上课：</strong>{{ course.schedule_count }} 节</div>
-                          <div><strong>欠缴课时：</strong>{{ course.unpaid_hours }} 小时</div>
+                          <div><strong>{{ t('dashboardView.course') }}：</strong>{{ course.course_name }}</div>
+                          <div><strong>{{ t('dashboardView.teacher') }}：</strong>{{ course.teacher_name }}</div>
+                          <div><strong>{{ t('dashboardView.completedClasses') }}：</strong>{{ course.schedule_count }} {{ t('dashboardView.sessions') }}</div>
+                          <div><strong>{{ t('dashboardView.unpaidHours') }}：</strong>{{ course.unpaid_hours }} {{ t('dashboardView.hours') }}</div>
                         </div>
                       </template>
                       {{ course.course_name }}
@@ -409,10 +409,10 @@
                 <span v-else style="color: #909399;">-</span>
               </template>
             </el-table-column>
-            <el-table-column label="总欠缴课时" width="110" align="center">
+            <el-table-column :label="t('dashboardView.totalUnpaidHours')" width="110" align="center">
               <template #default="{ row }">
                 <el-tag type="danger" effect="dark">
-                  {{ row.total_unpaid_hours }} 小时
+                  {{ row.total_unpaid_hours }} {{ t('dashboardView.hours') }}
                 </el-tag>
               </template>
             </el-table-column>
@@ -427,39 +427,39 @@
         <el-card class="chart-card" shadow="hover" v-loading="loading">
           <template #header>
             <div class="card-header">
-              <span>未完训排课</span>
-              <el-tag type="warning" effect="dark">{{ incompleteSchedules.length }} 条</el-tag>
+              <span>{{ t('dashboardView.incompleteSchedules') }}</span>
+              <el-tag type="warning" effect="dark">{{ incompleteSchedules.length }} {{ t('dashboardView.entries') }}</el-tag>
             </div>
           </template>
           <el-table :data="incompleteSchedules" style="width: 100%" max-height="400">
-            <el-table-column prop="course_name" label="科目" width="120" />
-            <el-table-column prop="teacher_name" label="导师" width="100" />
-            <el-table-column prop="class_name" label="班级" width="120" />
-            <el-table-column prop="room_name" label="教室" width="100" />
-            <el-table-column label="上课时间" width="200">
+            <el-table-column prop="course_name" :label="t('dashboardView.course')" width="120" />
+            <el-table-column prop="teacher_name" :label="t('dashboardView.teacher')" width="100" />
+            <el-table-column prop="class_name" :label="t('dashboardView.class')" width="120" />
+            <el-table-column prop="room_name" :label="t('dashboardView.room')" width="100" />
+            <el-table-column :label="t('dashboardView.classTime')" width="200">
               <template #default="{ row }">
                 {{ row.start_date }} {{ row.start_time }}<br/>
                 {{ row.end_date }} {{ row.end_time }}
               </template>
             </el-table-column>
-            <el-table-column prop="execution_status" label="状态" width="100">
+            <el-table-column prop="execution_status" :label="t('dashboardView.status')" width="100">
               <template #default="{ row }">
                 <el-tag :type="row.execution_status === 'cancelled' ? 'danger' : row.execution_status === 'postponed' ? 'warning' : 'info'">
-                  {{ row.execution_status === 'pending' ? '待执行' : row.execution_status === 'postponed' ? '延期' : '取消' }}
+                  {{ row.execution_status === 'pending' ? t('dashboardView.pending') : row.execution_status === 'postponed' ? t('dashboardView.postponed') : t('dashboardView.cancelled') }}
                 </el-tag>
               </template>
             </el-table-column>
-            <el-table-column prop="student_count" label="在读学员数" width="80" />
-            <el-table-column prop="student_names" label="在读学员" min-width="200" show-overflow-tooltip />
-            <el-table-column label="原因" min-width="150" show-overflow-tooltip>
+            <el-table-column prop="student_count" :label="t('dashboardView.activeStudentCount')" width="80" />
+            <el-table-column prop="student_names" :label="t('dashboardView.activeStudents')" min-width="200" show-overflow-tooltip />
+            <el-table-column :label="t('dashboardView.reason')" min-width="150" show-overflow-tooltip>
               <template #default="{ row }">
                 {{ row.cancel_reason || row.postpone_reason || '-' }}
               </template>
             </el-table-column>
-            <el-table-column label="显示" width="100">
+            <el-table-column :label="t('dashboardView.show')" width="100">
               <template #default="{ row }">
                 <el-button type="primary" size="small" @click="goToScheduleDetail(row.schedule_id)">
-                  详情
+                  {{ t('dashboardView.details') }}
                 </el-button>
               </template>
             </el-table-column>
@@ -474,13 +474,13 @@
         <el-card class="chart-card" shadow="hover">
           <template #header>
             <div class="card-header">
-              <span>课程趋势</span>
+              <span>{{ t('dashboardView.courseTrend') }}</span>
               <el-select v-model="scheduleTrendDays" @change="handleScheduleTrendDaysChange" style="width: 120px">
-                <el-option label="近30天" :value="30" />
-                <el-option label="近90天" :value="90" />
-                <el-option label="近120天" :value="120" />
-                <el-option label="近半年" :value="180" />
-                <el-option label="近1年" :value="365" />
+                <el-option :label="`30 ${t('dashboardView.days')}`" :value="30" />
+                <el-option :label="`90 ${t('dashboardView.days')}`" :value="90" />
+                <el-option :label="`120 ${t('dashboardView.days')}`" :value="120" />
+                <el-option :label="t('dashboardView.lastHalfYear')" :value="180" />
+                <el-option :label="t('dashboardView.last1Year')" :value="365" />
               </el-select>
             </div>
           </template>
@@ -492,13 +492,13 @@
         <el-card class="chart-card" shadow="hover" v-loading="chartLoading.studentGrowth">
           <template #header>
             <div class="card-header">
-              <span>新学员增长率</span>
+              <span>{{ t('dashboardView.newStudentGrowth') }}</span>
               <el-select v-model="studentGrowthMonths" @change="handleStudentGrowthMonthsChange" style="width: 120px">
-                <el-option label="最近3月" :value="3" />
-                <el-option label="最近6月" :value="6" />
-                <el-option label="最近9月" :value="9" />
-                <el-option label="最近1年" :value="12" />
-                <el-option label="最近2年" :value="24" />
+                <el-option :label="t('dashboardView.last3Months')" :value="3" />
+                <el-option :label="t('dashboardView.last6Months')" :value="6" />
+                <el-option :label="t('dashboardView.last9Months')" :value="9" />
+                <el-option :label="t('dashboardView.last1Year')" :value="12" />
+                <el-option :label="t('dashboardView.last2Years')" :value="24" />
               </el-select>
             </div>
           </template>
@@ -510,7 +510,7 @@
         <el-card class="chart-card" shadow="hover" v-loading="chartLoading.popularCourses">
           <template #header>
             <div class="card-header">
-              <span>热门科目TopN榜</span>
+              <span>{{ t('dashboardView.topCourses') }}</span>
               <el-select v-model="popularCoursesLimit" @change="handlePopularCoursesLimitChange" style="width: 120px">
                 <el-option label="TOP5" :value="5" />
                 <el-option label="TOP10" :value="10" />
@@ -531,7 +531,7 @@
         <el-card class="chart-card" shadow="hover">
           <template #header>
             <div class="card-header">
-              <span>科目分布</span>
+              <span>{{ t('dashboardView.courseDistribution') }}</span>
             </div>
           </template>
           <div ref="courseDistChart" class="chart-container"></div>
@@ -542,7 +542,7 @@
         <el-card class="chart-card" shadow="hover">
           <template #header>
             <div class="card-header">
-              <span>长效学员榜TOPn榜</span>
+              <span>{{ t('dashboardView.longTermStudentRank') }}</span>
               <el-select v-model="longTermStudentsLimit" @change="handleLongTermStudentsLimitChange" style="width: 120px">
                 <el-option label="TOP10" :value="10" />
                 <el-option label="TOP15" :value="15" />
@@ -553,47 +553,47 @@
             </div>
           </template>
           <el-table :data="longTermStudents" style="width: 100%" max-height="350">
-            <el-table-column prop="student_name" label="学员姓名" width="100">
+            <el-table-column prop="student_name" :label="t('dashboardView.studentName')" width="100">
               <template #default="{ row }">
                 <el-tooltip placement="right" effect="light" popper-class="student-info-tooltip">
                   <template #content>
                     <div class="student-detail-info">
-                      <div class="info-item"><strong>学员代码：</strong>{{ row.student_code }}</div>
-                      <div class="info-item"><strong>学员姓名：</strong>{{ row.student_name }}</div>
-                      <div class="info-item"><strong>学校：</strong>{{ row.school }}</div>
-                      <div class="info-item"><strong>年级：</strong>{{ row.grade }}</div>
-                      <div class="info-item"><strong>进入机构日期：</strong>{{ row.enrollment_date }}</div>
-                      <div class="info-item"><strong>联系人：</strong>{{ row.contact_person }}</div>
-                      <div class="info-item"><strong>联系电话：</strong>{{ row.contact_phone }}</div>
-                      <div class="info-item"><strong>邮箱：</strong>{{ row.email }}</div>
-                      <div class="info-item"><strong>是否在读：</strong>{{ row.is_active ? '是' : '否' }}</div>
+                      <div class="info-item"><strong>{{ t('dashboardView.studentCode') }}：</strong>{{ row.student_code }}</div>
+                      <div class="info-item"><strong>{{ t('dashboardView.studentName') }}：</strong>{{ row.student_name }}</div>
+                      <div class="info-item"><strong>{{ t('dashboardView.school') }}：</strong>{{ row.school }}</div>
+                      <div class="info-item"><strong>{{ t('dashboardView.grade') }}：</strong>{{ row.grade }}</div>
+                      <div class="info-item"><strong>{{ t('dashboardView.enrollmentDate') }}：</strong>{{ row.enrollment_date }}</div>
+                      <div class="info-item"><strong>{{ t('dashboardView.contact') }}：</strong>{{ row.contact_person }}</div>
+                      <div class="info-item"><strong>{{ t('dashboardView.contactPhone') }}：</strong>{{ row.contact_phone }}</div>
+                      <div class="info-item"><strong>{{ t('dashboardView.email') }}：</strong>{{ row.email }}</div>
+                      <div class="info-item"><strong>{{ t('dashboardView.isActive') }}：</strong>{{ row.is_active ? t('dashboardView.yes') : t('dashboardView.no') }}</div>
                     </div>
                   </template>
                   <span style="cursor: pointer; color: #409eff;">{{ row.student_name }}</span>
                 </el-tooltip>
               </template>
             </el-table-column>
-            <el-table-column prop="enrollment_date" label="进入机构日期" width="120" />
-            <el-table-column prop="days_in_organization" label="在机构时长" width="100">
+            <el-table-column prop="enrollment_date" :label="t('dashboardView.enrollmentDate')" width="120" />
+            <el-table-column prop="days_in_organization" :label="t('dashboardView.durationInOrg')" width="100">
               <template #default="{ row }">
                 <span :style="{ color: row.days_in_organization > 365 ? '#67C23A' : row.days_in_organization > 180 ? '#E6A23C' : '#909399' }">
-                  {{ row.days_in_organization }}天
+                  {{ row.days_in_organization }}{{ t('dashboardView.days') }}
                 </span>
               </template>
             </el-table-column>
-            <el-table-column prop="total_completed_hours" label="累计完成课时" width="120">
+            <el-table-column prop="total_completed_hours" :label="t('dashboardView.totalCompletedHours')" width="120">
               <template #default="{ row }">
                 <span :style="{ color: row.total_completed_hours > 100 ? '#67C23A' : row.total_completed_hours > 50 ? '#E6A23C' : '#909399' }">
-                  {{ row.total_completed_hours }}课时
+                  {{ row.total_completed_hours }}{{ t('dashboardView.classHours') }}
                 </span>
               </template>
             </el-table-column>
-            <el-table-column prop="school" label="学校" width="120" />
-            <el-table-column prop="grade" label="年级" width="80" />
-            <el-table-column prop="is_active" label="状态" width="80">
+            <el-table-column prop="school" :label="t('dashboardView.school')" width="120" />
+            <el-table-column prop="grade" :label="t('dashboardView.grade')" width="80" />
+            <el-table-column prop="is_active" :label="t('dashboardView.status')" width="80">
               <template #default="{ row }">
                 <el-tag :type="row.is_active ? 'success' : 'info'" size="small">
-                  {{ row.is_active ? '在读' : '非在读' }}
+                  {{ row.is_active ? t('dashboardView.reading') : t('dashboardView.notReading') }}
                 </el-tag>
               </template>
             </el-table-column>
@@ -605,7 +605,7 @@
         <el-card class="chart-card" shadow="hover">
           <template #header>
             <div class="card-header">
-              <span>课时余量分布</span>
+              <span>{{ t('dashboardView.remainingHoursDistribution') }}</span>
             </div>
           </template>
           <div ref="balanceDistChart" class="chart-container"></div>
@@ -619,13 +619,13 @@
         <el-card class="chart-card" shadow="hover" v-loading="chartLoading.roomUtilization">
           <template #header>
             <div class="card-header">
-              <span>各教室利用率</span>
+              <span>{{ t('dashboardView.roomUtilization') }}</span>
               <el-select v-model="roomUtilizationDays" @change="handleRoomUtilizationDaysChange" style="width: 120px">
-                <el-option label="最近30天" :value="30" />
-                <el-option label="最近60天" :value="60" />
-                <el-option label="最近90天" :value="90" />
-                <el-option label="最近半年" :value="180" />
-                <el-option label="最近1年" :value="365" />
+                <el-option :label="`30 ${t('dashboardView.days')}`" :value="30" />
+                <el-option :label="`60 ${t('dashboardView.days')}`" :value="60" />
+                <el-option :label="`90 ${t('dashboardView.days')}`" :value="90" />
+                <el-option :label="t('dashboardView.lastHalfYear')" :value="180" />
+                <el-option :label="t('dashboardView.last1Year')" :value="365" />
               </el-select>
             </div>
           </template>
@@ -640,14 +640,14 @@
         <el-card class="chart-card" shadow="hover" v-loading="chartLoading.weeklyWorkload">
           <template #header>
             <div class="card-header">
-              <span>导师课时排行榜</span>
+              <span>{{ t('dashboardView.teacherHoursRank') }}</span>
               <el-select v-model="weeklyWorkloadDays" @change="handleWeeklyWorkloadDaysChange" style="width: 120px">
-                <el-option label="最近9天" :value="8" />
-                <el-option label="最近30天" :value="29" />
-                <el-option label="最近90天" :value="89" />
-                <el-option label="最近180天" :value="179" />
-                <el-option label="最近1年" :value="364" />
-                <el-option label="最近2年" :value="728" />
+                <el-option :label="`9 ${t('dashboardView.days')}`" :value="8" />
+                <el-option :label="`30 ${t('dashboardView.days')}`" :value="29" />
+                <el-option :label="`90 ${t('dashboardView.days')}`" :value="89" />
+                <el-option :label="`180 ${t('dashboardView.days')}`" :value="179" />
+                <el-option :label="t('dashboardView.last1Year')" :value="364" />
+                <el-option :label="t('dashboardView.last2Years')" :value="728" />
               </el-select>
             </div>
           </template>
@@ -662,7 +662,7 @@
         <el-card class="chart-card" shadow="hover">
           <template #header>
             <div class="card-header">
-              <span>收入构成</span>
+              <span>{{ t('dashboardView.incomeComposition') }}</span>
             </div>
           </template>
           <div ref="feeCompositionChart" class="chart-container"></div>
@@ -673,13 +673,13 @@
         <el-card class="chart-card" shadow="hover">
           <template #header>
             <div class="card-header">
-              <span>月度收入趋势</span>
+              <span>{{ t('dashboardView.monthlyIncomeTrend') }}</span>
               <el-select v-model="feeTrendMonths" @change="handleFeeTrendMonthsChange" style="width: 120px">
-                <el-option label="最近3月" :value="3" />
-                <el-option label="最近6月" :value="6" />
-                <el-option label="最近9月" :value="9" />
-                <el-option label="最近1年" :value="12" />
-                <el-option label="最近2年" :value="24" />
+                <el-option :label="t('dashboardView.last3Months')" :value="3" />
+                <el-option :label="t('dashboardView.last6Months')" :value="6" />
+                <el-option :label="t('dashboardView.last9Months')" :value="9" />
+                <el-option :label="t('dashboardView.last1Year')" :value="12" />
+                <el-option :label="t('dashboardView.last2Years')" :value="24" />
               </el-select>
             </div>
           </template>
@@ -691,13 +691,13 @@
         <el-card class="chart-card" shadow="hover" v-loading="chartLoading.refundRate">
           <template #header>
             <div class="card-header">
-              <span>月度退费率趋势</span>
+              <span>{{ t('dashboardView.monthlyRefundRateTrend') }}</span>
               <el-select v-model="refundRateMonths" @change="handleRefundRateMonthsChange" style="width: 120px">
-                <el-option label="最近3月" :value="3" />
-                <el-option label="最近6月" :value="6" />
-                <el-option label="最近9月" :value="9" />
-                <el-option label="最近1年" :value="12" />
-                <el-option label="最近2年" :value="24" />
+                <el-option :label="t('dashboardView.last3Months')" :value="3" />
+                <el-option :label="t('dashboardView.last6Months')" :value="6" />
+                <el-option :label="t('dashboardView.last9Months')" :value="9" />
+                <el-option :label="t('dashboardView.last1Year')" :value="12" />
+                <el-option :label="t('dashboardView.last2Years')" :value="24" />
               </el-select>
             </div>
           </template>
@@ -712,13 +712,13 @@
         <el-card class="chart-card" shadow="hover">
           <template #header>
             <div class="card-header">
-              <span>导师试听效能榜</span>
+              <span>{{ t('dashboardView.teacherTrialEfficiency') }}</span>
               <el-select v-model="trialEfficiencyDays" @change="handleTrialEfficiencyDaysChange" style="width: 120px">
-                <el-option label="最近30天" :value="30" />
-                <el-option label="最近60天" :value="60" />
-                <el-option label="最近90天" :value="90" />
-                <el-option label="最近半年" :value="180" />
-                <el-option label="最近1年" :value="365" />
+                <el-option :label="`30 ${t('dashboardView.days')}`" :value="30" />
+                <el-option :label="`60 ${t('dashboardView.days')}`" :value="60" />
+                <el-option :label="`90 ${t('dashboardView.days')}`" :value="90" />
+                <el-option :label="t('dashboardView.lastHalfYear')" :value="180" />
+                <el-option :label="t('dashboardView.last1Year')" :value="365" />
               </el-select>
             </div>
           </template>
@@ -730,13 +730,13 @@
         <el-card class="chart-card" shadow="hover">
           <template #header>
             <div class="card-header">
-              <span>试听转化漏斗</span>
+              <span>{{ t('dashboardView.trialConversionFunnel') }}</span>
               <el-select v-model="trialFunnelDays" @change="handleTrialFunnelDaysChange" style="width: 120px">
-                <el-option label="最近30天" :value="30" />
-                <el-option label="最近60天" :value="60" />
-                <el-option label="最近90天" :value="90" />
-                <el-option label="最近半年" :value="180" />
-                <el-option label="最近1年" :value="365" />
+                <el-option :label="`30 ${t('dashboardView.days')}`" :value="30" />
+                <el-option :label="`60 ${t('dashboardView.days')}`" :value="60" />
+                <el-option :label="`90 ${t('dashboardView.days')}`" :value="90" />
+                <el-option :label="t('dashboardView.lastHalfYear')" :value="180" />
+                <el-option :label="t('dashboardView.last1Year')" :value="365" />
               </el-select>
             </div>
           </template>
@@ -748,13 +748,13 @@
         <el-card class="chart-card" shadow="hover">
           <template #header>
             <div class="card-header">
-              <span>导师工作量排行</span>
+              <span>{{ t('dashboardView.teacherWorkloadRank') }}</span>
               <el-select v-model="teacherWorkloadDays" @change="handleTeacherWorkloadDaysChange" style="width: 120px">
-                <el-option label="最近30天" :value="30" />
-                <el-option label="最近60天" :value="60" />
-                <el-option label="最近90天" :value="90" />
-                <el-option label="最近半年" :value="180" />
-                <el-option label="最近1年" :value="365" />
+                <el-option :label="`30 ${t('dashboardView.days')}`" :value="30" />
+                <el-option :label="`60 ${t('dashboardView.days')}`" :value="60" />
+                <el-option :label="`90 ${t('dashboardView.days')}`" :value="90" />
+                <el-option :label="t('dashboardView.lastHalfYear')" :value="180" />
+                <el-option :label="t('dashboardView.last1Year')" :value="365" />
               </el-select>
             </div>
           </template>
@@ -764,15 +764,15 @@
     </el-row>
 
     <!-- 成绩曲线对话框 -->
-    <el-dialog v-model="gradeCurveDialogVisible" :title="`成绩比例曲线 - ${currentStudentName}`" width="90%" top="5vh">
+    <el-dialog v-model="gradeCurveDialogVisible" :title="`${t('dashboardView.gradeRatioCurve')} - ${currentStudentName}`" width="90%" top="5vh">
       <div v-loading="gradeCurveLoading">
         <div v-if="!gradeCurveLoading && (!gradeCurveData || !gradeCurveData.courses || gradeCurveData.courses.length === 0)" style="text-align: center; padding: 40px; color: #909399;">
-          <el-empty description="暂无成绩数据" />
+          <el-empty :description="t('dashboardView.noGradeData')" />
         </div>
         <div v-else>
           <div ref="gradeCurveChart" style="width: 100%; height: 600px;"></div>
           <div style="margin-top: 20px; padding: 15px; background: #f5f7fa; border-radius: 4px;">
-            <h4 style="margin-top: 0; margin-bottom: 10px;">图例说明：</h4>
+            <h4 style="margin-top: 0; margin-bottom: 10px;">{{ t('dashboardView.legendDescription') }}</h4>
             <div style="display: flex; flex-wrap: wrap; gap: 15px;">
               <div v-for="course in gradeCurveData?.courses" :key="course.course_name" style="display: flex; align-items: center; gap: 5px;">
                 <div :style="{ width: '20px', height: '3px', backgroundColor: course.color }"></div>
@@ -781,137 +781,137 @@
             </div>
             <div style="margin-top: 10px; font-size: 12px; color: #909399;">
               <el-icon><InfoFilled /></el-icon> 
-              说明：实线表示有成绩数据，虚线表示该考试阶段无成绩数据（过渡显示）
+              {{ t('dashboardView.legendExplanation') }}
             </div>
           </div>
         </div>
       </div>
       <template #footer>
-        <el-button @click="gradeCurveDialogVisible = false">关闭</el-button>
+        <el-button @click="gradeCurveDialogVisible = false">{{ t('dashboardView.close') }}</el-button>
       </template>
     </el-dialog>
 
     <!-- 密码验证对话框 -->
-    <el-dialog v-model="passwordDialogVisible" title="密码验证" width="400px" center>
+    <el-dialog v-model="passwordDialogVisible" :title="t('dashboardView.passwordVerification')" width="400px" center>
       <el-form>
-        <el-form-item label="请输入当前用户密码">
-          <el-input v-model="passwordInput" type="password" placeholder="请输入密码" show-password autocomplete="new-password" @keyup.enter="verifyPasswordAndShowRevenue" />
+        <el-form-item :label="t('dashboardView.enterPassword')">
+          <el-input v-model="passwordInput" type="password" :placeholder="t('dashboardView.enterPasswordPlaceholder')" show-password autocomplete="new-password" @keyup.enter="verifyPasswordAndShowRevenue" />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="passwordDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="verifyPasswordAndShowRevenue">确认</el-button>
+        <el-button @click="passwordDialogVisible = false">{{ t('dashboardView.cancel') }}</el-button>
+        <el-button type="primary" @click="verifyPasswordAndShowRevenue">{{ t('dashboardView.confirm') }}</el-button>
       </template>
     </el-dialog>
 
     <!-- KPI详细数据对话框 -->
-    <el-dialog v-model="kpiDetailDialogVisible" :title="`${currentKpiTitle} - 详细数据`" width="90%" top="5vh" draggable>
+    <el-dialog v-model="kpiDetailDialogVisible" :title="`${currentKpiTitle} - ${t('dashboardView.detailData')}`" width="90%" top="5vh" draggable>
       <div v-loading="kpiDetailData.loading">
-        <el-empty v-if="!kpiDetailData.loading && (!kpiDetailData.data || kpiDetailData.data.length === 0)" description="暂无数据" />
+        <el-empty v-if="!kpiDetailData.loading && (!kpiDetailData.data || kpiDetailData.data.length === 0)" :description="t('dashboardView.noData')" />
         
         <!-- 本月收入/当年收入 -->
-        <el-table v-else-if="['本月收入', '当年收入'].includes(currentKpiTitle)" :data="kpiDetailData.data" style="width: 100%" max-height="500">
-          <el-table-column prop="student_name" label="学员姓名" width="120" />
-          <el-table-column prop="course_name" label="科目" width="120" />
-          <el-table-column prop="amount" label="金额" width="120">
+        <el-table v-else-if="revenueLabels.includes(currentKpiTitle)" :data="kpiDetailData.data" style="width: 100%" max-height="500">
+          <el-table-column prop="student_name" :label="t('dashboardView.studentName')" width="120" />
+          <el-table-column prop="course_name" :label="t('dashboardView.course')" width="120" />
+          <el-table-column prop="amount" :label="t('dashboardView.amount')" width="120">
             <template #default="{ row }">
               ¥{{ (row.amount || 0).toFixed(2) }}
             </template>
           </el-table-column>
-          <el-table-column prop="payment_date" label="缴费日期" width="150" />
-          <el-table-column prop="status" label="状态" width="100">
+          <el-table-column prop="payment_date" :label="t('dashboardView.paymentDate')" width="150" />
+          <el-table-column prop="status" :label="t('dashboardView.status')" width="100">
             <template #default="{ row }">
-              <el-tag type="success">{{ row.status || '已缴费' }}</el-tag>
+              <el-tag type="success">{{ row.status || t('dashboardView.paid') }}</el-tag>
             </template>
           </el-table-column>
-          <el-table-column prop="remark" label="备注" min-width="200" show-overflow-tooltip />
+          <el-table-column prop="remark" :label="t('dashboardView.remark')" min-width="200" show-overflow-tooltip />
         </el-table>
         
         <!-- 退费总额 -->
-        <el-table v-else-if="currentKpiTitle === '退费总额'" :data="kpiDetailData.data" style="width: 100%" max-height="500">
-          <el-table-column prop="student_name" label="学员姓名" width="120" />
-          <el-table-column prop="course_name" label="科目" width="120" />
-          <el-table-column prop="amount" label="退费金额" width="120">
+        <el-table v-else-if="currentKpiTitle === 'dashboardViewKpi.totalRefund'" :data="kpiDetailData.data" style="width: 100%" max-height="500">
+          <el-table-column prop="student_name" :label="t('dashboardView.studentName')" width="120" />
+          <el-table-column prop="course_name" :label="t('dashboardView.course')" width="120" />
+          <el-table-column prop="amount" :label="t('dashboardView.refundAmount')" width="120">
             <template #default="{ row }">
               ¥{{ (row.amount || 0).toFixed(2) }}
             </template>
           </el-table-column>
-          <el-table-column prop="refund_date" label="退费日期" width="150" />
-          <el-table-column prop="status" label="状态" width="100">
+          <el-table-column prop="refund_date" :label="t('dashboardView.refundDate')" width="150" />
+          <el-table-column prop="status" :label="t('dashboardView.status')" width="100">
             <template #default="{ row }">
-              <el-tag type="danger">{{ row.status || '已退费' }}</el-tag>
+              <el-tag type="danger">{{ row.status || t('dashboardView.refunded') }}</el-tag>
             </template>
           </el-table-column>
-          <el-table-column prop="remark" label="备注" min-width="200" show-overflow-tooltip />
+          <el-table-column prop="remark" :label="t('dashboardView.remark')" min-width="200" show-overflow-tooltip />
         </el-table>
         
         <!-- 累计优惠额度 -->
-        <el-table v-else-if="currentKpiTitle === '累计优惠额度'" :data="kpiDetailData.data" style="width: 100%" max-height="500">
-          <el-table-column prop="student_name" label="学员姓名" width="120" />
-          <el-table-column prop="course_name" label="科目" width="120" />
-          <el-table-column prop="amount" label="优惠金额" width="120">
+        <el-table v-else-if="currentKpiTitle === 'dashboardViewKpi.totalDiscount'" :data="kpiDetailData.data" style="width: 100%" max-height="500">
+          <el-table-column prop="student_name" :label="t('dashboardView.studentName')" width="120" />
+          <el-table-column prop="course_name" :label="t('dashboardView.course')" width="120" />
+          <el-table-column prop="amount" :label="t('dashboardView.discountAmount')" width="120">
             <template #default="{ row }">
               ¥{{ (row.amount || 0).toFixed(2) }}
             </template>
           </el-table-column>
-          <el-table-column prop="receivable_amount" label="应收金额" width="120">
+          <el-table-column prop="receivable_amount" :label="t('dashboardView.receivableAmount')" width="120">
             <template #default="{ row }">
               ¥{{ (row.receivable_amount || 0).toFixed(2) }}
             </template>
           </el-table-column>
-          <el-table-column prop="actual_amount" label="实收金额" width="120">
+          <el-table-column prop="actual_amount" :label="t('dashboardView.actualAmount')" width="120">
             <template #default="{ row }">
               ¥{{ (row.actual_amount || 0).toFixed(2) }}
             </template>
           </el-table-column>
-          <el-table-column prop="status" label="状态" width="100">
+          <el-table-column prop="status" :label="t('dashboardView.status')" width="100">
             <template #default="{ row }">
-              <el-tag type="warning">{{ row.status || '优惠' }}</el-tag>
+              <el-tag type="warning">{{ row.status || t('dashboardView.discount') }}</el-tag>
             </template>
           </el-table-column>
-          <el-table-column prop="remark" label="备注" min-width="200" show-overflow-tooltip />
+          <el-table-column prop="remark" :label="t('dashboardView.remark')" min-width="200" show-overflow-tooltip />
         </el-table>
         
         <!-- 本月续费率 -->
-        <el-table v-else-if="currentKpiTitle === '本月续费率'" :data="kpiDetailData.data" style="width: 100%" max-height="500">
-          <el-table-column prop="student_name" label="学员姓名" width="120" />
-          <el-table-column prop="course_name" label="科目" width="120" />
-          <el-table-column prop="previous_amount" label="累计缴费金额" width="140">
+        <el-table v-else-if="currentKpiTitle === 'dashboardViewKpi.monthlyRenewal'" :data="kpiDetailData.data" style="width: 100%" max-height="500">
+          <el-table-column prop="student_name" :label="t('dashboardView.studentName')" width="120" />
+          <el-table-column prop="course_name" :label="t('dashboardView.course')" width="120" />
+          <el-table-column prop="previous_amount" :label="t('dashboardView.totalPaidAmount')" width="140">
             <template #default="{ row }">
               ¥{{ (row.previous_amount || 0).toFixed(2) }}
             </template>
           </el-table-column>
-          <el-table-column prop="renewal_amount" label="续费金额" width="120">
+          <el-table-column prop="renewal_amount" :label="t('dashboardView.renewalAmount')" width="120">
             <template #default="{ row }">
               ¥{{ (row.renewal_amount || 0).toFixed(2) }}
             </template>
           </el-table-column>
-          <el-table-column prop="renewal_date" label="续费日期" width="150" />
-          <el-table-column prop="renewal_type" label="续费类型" width="120">
+          <el-table-column prop="renewal_date" :label="t('dashboardView.renewalDate')" width="150" />
+          <el-table-column prop="renewal_type" :label="t('dashboardView.renewalType')" width="120">
             <template #default="{ row }">
-              <el-tag :type="row.renewal_type === '创建新记录' ? 'primary' : 'success'">{{ row.renewal_type }}</el-tag>
+              <el-tag :type="row.renewal_type === '创建新记录' ? 'primary' : 'success'">{{ row.renewal_type === '创建新记录' ? t('dashboardView.renewalTypeNewRecord') : t('dashboardView.renewalTypeRenewal') }}</el-tag>
             </template>
           </el-table-column>
-          <el-table-column prop="renewed" label="是否续费" width="100">
+          <el-table-column prop="renewed" :label="t('dashboardView.isRenewed')" width="100">
             <template #default="{ row }">
-              <el-tag :type="row.renewed === '是' ? 'success' : 'info'">{{ row.renewed }}</el-tag>
+              <el-tag :type="row.renewed === '是' ? 'success' : 'info'">{{ row.renewed === '是' ? t('dashboardView.yes') : t('dashboardView.no') }}</el-tag>
             </template>
           </el-table-column>
         </el-table>
         
         <!-- 本月转化率 -->
-        <el-table v-else-if="currentKpiTitle === '本月转化率'" :data="kpiDetailData.data" style="width: 100%" max-height="500">
-          <el-table-column prop="student_name" label="学员姓名" width="120" />
-          <el-table-column prop="course_name" label="科目" width="120" />
-          <el-table-column prop="teacher_name" label="导师" width="100" />
-          <el-table-column prop="trial_date" label="试听日期" width="150" />
-          <el-table-column prop="converted" label="是否转化" width="100">
+        <el-table v-else-if="currentKpiTitle === conversionLabel" :data="kpiDetailData.data" style="width: 100%" max-height="500">
+          <el-table-column prop="student_name" :label="t('dashboardView.studentName')" width="120" />
+          <el-table-column prop="course_name" :label="t('dashboardView.course')" width="120" />
+          <el-table-column prop="teacher_name" :label="t('dashboardView.teacher')" width="100" />
+          <el-table-column prop="trial_date" :label="t('dashboardView.trialDate')" width="150" />
+          <el-table-column prop="converted" :label="t('dashboardView.isConverted')" width="100">
             <template #default="{ row }">
-              <el-tag :type="row.converted === '是' ? 'success' : 'info'">{{ row.converted }}</el-tag>
+              <el-tag :type="row.converted === '是' ? 'success' : 'info'">{{ row.converted === '是' ? t('dashboardView.yes') : t('dashboardView.no') }}</el-tag>
             </template>
           </el-table-column>
-          <el-table-column prop="payment_date" label="缴费日期" width="150" />
-          <el-table-column prop="amount" label="缴费金额" width="120">
+          <el-table-column prop="payment_date" :label="t('dashboardView.paymentDate')" width="150" />
+          <el-table-column prop="amount" :label="t('dashboardView.amount')" width="120">
             <template #default="{ row }">
               ¥{{ (row.amount || 0).toFixed(2) }}
             </template>
@@ -920,26 +920,26 @@
         
         <!-- 默认表格 -->
         <el-table v-else :data="kpiDetailData.data" style="width: 100%" max-height="500">
-          <el-table-column prop="student_name" label="学员姓名" width="120" />
-          <el-table-column prop="course_name" label="科目" width="120" />
-          <el-table-column prop="amount" label="金额" width="120">
+          <el-table-column prop="student_name" :label="t('dashboardView.studentName')" width="120" />
+          <el-table-column prop="course_name" :label="t('dashboardView.course')" width="120" />
+          <el-table-column prop="amount" :label="t('dashboardView.amount')" width="120">
             <template #default="{ row }">
               ¥{{ (row.amount || 0).toFixed(2) }}
             </template>
           </el-table-column>
-          <el-table-column prop="payment_date" label="缴费日期" width="150" />
-          <el-table-column prop="status" label="状态" width="100">
+          <el-table-column prop="payment_date" :label="t('dashboardView.paymentDate')" width="150" />
+          <el-table-column prop="status" :label="t('dashboardView.status')" width="100">
             <template #default="{ row }">
               <el-tag :type="row.status === 'paid' ? 'success' : row.status === 'refunded' ? 'danger' : 'warning'">
-                {{ row.status === 'paid' ? '已缴费' : row.status === 'refunded' ? '已退费' : '其他' }}
+                {{ row.status === 'paid' ? t('dashboardView.paid') : row.status === 'refunded' ? t('dashboardView.refunded') : t('dashboardView.other') }}
               </el-tag>
             </template>
           </el-table-column>
-          <el-table-column prop="remark" label="备注" min-width="200" show-overflow-tooltip />
+          <el-table-column prop="remark" :label="t('dashboardView.remark')" min-width="200" show-overflow-tooltip />
         </el-table>
       </div>
       <template #footer>
-        <el-button @click="kpiDetailDialogVisible = false">关闭</el-button>
+        <el-button @click="kpiDetailDialogVisible = false">{{ t('dashboardView.close') }}</el-button>
       </template>
     </el-dialog>
 
@@ -959,7 +959,10 @@ import {
 } from '@element-plus/icons-vue'
 import api from '@/utils/api'
 import { hasFeature } from '@/utils/license'
+import { useI18n } from 'vue-i18n'
 
+
+const { t, locale } = useI18n()
 const router = useRouter()
 const loading = ref(false)
 const isFullscreen = ref(false)
@@ -981,31 +984,32 @@ const chartLoading = ref({
 })
 
 // KPI数据
+const revenueLabels = ['dashboardViewKpi.monthlyRevenue', 'dashboardViewKpi.yearlyRevenue']
+const feeExtraLabels = ['dashboardViewKpi.totalRefund', 'dashboardViewKpi.totalDiscount', 'dashboardViewKpi.monthlyRenewal']
+const feeAllLabels = [...revenueLabels, ...feeExtraLabels]
+const conversionLabel = 'dashboardViewKpi.monthlyConversion'
+const dbLabel = 'dashboardViewKpi.dbConnection'
+const detailLabels = [...revenueLabels, ...feeExtraLabels, conversionLabel]
+
 const kpiData = ref([
-  //'本月收入': '计算逻辑：统计本月所有已缴费记录的实际收入金额\n数据来源：fee_records表中本月所有status为"paid"的记录\n计算公式：SUM(amount) WHERE status="paid" AND payment_date在当前月份',
-  { label: '本月收入', value: '¥0', icon: Money, color: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)', route: '/admin/feemanagement' },
-  // '当年收入': '计算逻辑：统计当年所有已缴费记录的实际收入金额\n数据来源：fee_records表中当年所有status为"paid"的记录\n计算公式：SUM(amount) WHERE status="paid" AND payment_date在当前年份',
-  { label: '当年收入', value: '¥0', icon: Money, color: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)', route: '/admin/feemanagement' },
-  // '本月转化率': '计算逻辑：试听转化人数/试听总人数\n数据来源：schedules表中本月试听课记录\n计算公式：(完训并缴费的试听人数/本月试听总人数) × 100%'
-  { label: '本月转化率', value: '0%', icon: TrendCharts, color: 'linear-gradient(135deg, #66bb6a 0%, #43a047 100%)', route: '/admin/schedules', query: { schedule_type: 'trial' } },
-  { label: '今日试听课', value: 0, icon: Bell, color: 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)', route: '/admin/schedules', query: { schedule_type: 'trial', date: '今天' } },
-  { label: '今日正式课', value: 0, icon: Bell, color: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)', route: '/admin/schedules', query: { schedule_type: 'formal', date: '今天' } },
-  //'退费总额': '计算逻辑：统计所有退费记录的退费金额\n数据来源：fee_records表中所有status为"refunded"的记录\n计算公式：SUM(amount) WHERE status="refunded"',
-  { label: '退费总额', value: '¥0', icon: Money, color: 'linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%)', route: '/admin/feemanagement' },
-  //'累计优惠额度': '计算逻辑：统计所有学员的屡次优惠金额之和\n数据来源：学员账户余额为负数的记录\n计算公式：SUM(ABS(balance)) WHERE balance < 0',
-  { label: '累计优惠额度', value: '¥0', icon: Money, color: 'linear-gradient(135deg, #ffa726 0%, #fb8c00 100%)', route: '/admin/feemanagement' },
-  // '本月续费率': '计算逻辑：续费学员数/到期学员数\n数据来源：student_fee_records表\n计算公式：(续费学员数/到期学员数) × 100%',
-  { label: '本月续费率', value: '0%', icon: TrendCharts, color: 'linear-gradient(135deg, #42a5f5 0%, #1e88e5 100%)', route: '/admin/students' },
-  { label: '待补课学员数', value: 0, icon: Bell, color: 'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)', route: '/admin/schedules', query: { execution_status: 'completed', has_absent_students: true } },
-  { label: '未完训排课', value: 0, icon: Warning, color: 'linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%)', route: '/admin/schedules', query: { execution_status: 'pending,postponed,cancelled' } },
-  { label: '已完训排课', value: 0, icon: Warning, color: 'linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%)', route: '/admin/schedules', query: { execution_status: 'completed' } },
-  { label: '总排课数', value: 0, icon: Calendar, color: 'linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%)', route: '/admin/schedules' },
-  { label: '总科目数', value: 0, icon: Tickets, color: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', route: '/admin/courses' },
-  { label: '总班级数', value: 0, icon: OfficeBuilding, color: 'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)', route: '/admin/classes' },
-  { label: '在读学员', value: 0, icon: Reading, color: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)', route: '/admin/students', query: { is_active: true } },
-  { label: '在职导师', value: 0, icon: User, color: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', route: '/admin/teachers', query: { is_active: true } },
-  { label: '在用教室', value: 0, icon: OfficeBuilding, color: 'linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%)', route: '/admin/rooms' , query: { is_active: true } },
-  { label: '数据库连接', value: '正常', icon: Connection, color: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', route: null }
+  { label: 'dashboardViewKpi.monthlyRevenue', value: '¥0', icon: Money, color: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)', route: '/admin/feemanagement' },
+  { label: 'dashboardViewKpi.yearlyRevenue', value: '¥0', icon: Money, color: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)', route: '/admin/feemanagement' },
+  { label: 'dashboardViewKpi.monthlyConversion', value: '0%', icon: TrendCharts, color: 'linear-gradient(135deg, #66bb6a 0%, #43a047 100%)', route: '/admin/schedules', query: { schedule_type: 'trial' } },
+  { label: 'dashboardViewKpi.todayTrial', value: 0, icon: Bell, color: 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)', route: '/admin/schedules', query: { schedule_type: 'trial', date: 'today' } },
+  { label: 'dashboardViewKpi.todayFormal', value: 0, icon: Bell, color: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)', route: '/admin/schedules', query: { schedule_type: 'formal', date: 'today' } },
+  { label: 'dashboardViewKpi.totalRefund', value: '¥0', icon: Money, color: 'linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%)', route: '/admin/feemanagement' },
+  { label: 'dashboardViewKpi.totalDiscount', value: '¥0', icon: Money, color: 'linear-gradient(135deg, #ffa726 0%, #fb8c00 100%)', route: '/admin/feemanagement' },
+  { label: 'dashboardViewKpi.monthlyRenewal', value: '0%', icon: TrendCharts, color: 'linear-gradient(135deg, #42a5f5 0%, #1e88e5 100%)', route: '/admin/students' },
+  { label: 'dashboardViewKpi.pendingMakeup', value: 0, icon: Bell, color: 'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)', route: '/admin/schedules', query: { execution_status: 'completed', has_absent_students: true } },
+  { label: 'dashboardViewKpi.incompleteSchedules', value: 0, icon: Warning, color: 'linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%)', route: '/admin/schedules', query: { execution_status: 'pending,postponed,cancelled' } },
+  { label: 'dashboardViewKpi.completedSchedules', value: 0, icon: Warning, color: 'linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%)', route: '/admin/schedules', query: { execution_status: 'completed' } },
+  { label: 'dashboardViewKpi.totalSchedules', value: 0, icon: Calendar, color: 'linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%)', route: '/admin/schedules' },
+  { label: 'dashboardViewKpi.totalCourses', value: 0, icon: Tickets, color: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', route: '/admin/courses' },
+  { label: 'dashboardViewKpi.totalClasses', value: 0, icon: OfficeBuilding, color: 'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)', route: '/admin/classes' },
+  { label: 'dashboardViewKpi.activeStudents', value: 0, icon: Reading, color: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)', route: '/admin/students', query: { is_active: true } },
+  { label: 'dashboardViewKpi.activeTeachers', value: 0, icon: User, color: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', route: '/admin/teachers', query: { is_active: true } },
+  { label: 'dashboardViewKpi.activeRooms', value: 0, icon: OfficeBuilding, color: 'linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%)', route: '/admin/rooms' , query: { is_active: true } },
+  { label: 'dashboardViewKpi.dbConnection', value: t('dashboardViewKpi.dbStatusNormal'), icon: Connection, color: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', route: null }
 ])
 
 // 图表引用
@@ -1093,44 +1097,44 @@ const fetchKPIData = async () => {
     }
     
     const feeKpis = hasFeature('fee_management') ? [
-      { label: '本月收入', value: `¥${data.monthly_revenue.toFixed(2)}`, icon: Money, color: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)', route: '/admin/feemanagement' },
-      { label: '当年收入', value: `¥${yearlyRevenue.toFixed(2)}`, icon: Money, color: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)', route: '/admin/feemanagement' },
+      { label: 'dashboardViewKpi.monthlyRevenue', value: `¥${data.monthly_revenue.toFixed(2)}`, icon: Money, color: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)', route: '/admin/feemanagement' },
+      { label: 'dashboardViewKpi.yearlyRevenue', value: `¥${yearlyRevenue.toFixed(2)}`, icon: Money, color: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)', route: '/admin/feemanagement' },
     ] : [
-      { label: '本月收入', value: '--', icon: Money, color: 'linear-gradient(135deg, #909399 0%, #b1b3b8 100%)', route: null },
-      { label: '当年收入', value: '--', icon: Money, color: 'linear-gradient(135deg, #909399 0%, #b1b3b8 100%)', route: null },
+      { label: 'dashboardViewKpi.monthlyRevenue', value: '--', icon: Money, color: 'linear-gradient(135deg, #909399 0%, #b1b3b8 100%)', route: null },
+      { label: 'dashboardViewKpi.yearlyRevenue', value: '--', icon: Money, color: 'linear-gradient(135deg, #909399 0%, #b1b3b8 100%)', route: null },
     ]
     
     const feeExtraKpis = hasFeature('fee_management') ? [
-      { label: '退费总额', value: `¥${(data.total_refund_amount || 0).toFixed(2)}`, icon: Money, color: 'linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%)', route: '/admin/feemanagement' },
-      { label: '累计优惠额度', value: `¥${(data.total_owed_amount || 0).toFixed(2)}`, icon: Money, color: 'linear-gradient(135deg, #ffa726 0%, #fb8c00 100%)', route: '/admin/feemanagement' },
-      { label: '本月续费率', value: `${data.renewal_rate || 0}%`, icon: TrendCharts, color: 'linear-gradient(135deg, #42a5f5 0%, #1e88e5 100%)', route: '/admin/students' },
+      { label: 'dashboardViewKpi.totalRefund', value: `¥${(data.total_refund_amount || 0).toFixed(2)}`, icon: Money, color: 'linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%)', route: '/admin/feemanagement' },
+      { label: 'dashboardViewKpi.totalDiscount', value: `¥${(data.total_owed_amount || 0).toFixed(2)}`, icon: Money, color: 'linear-gradient(135deg, #ffa726 0%, #fb8c00 100%)', route: '/admin/feemanagement' },
+      { label: 'dashboardViewKpi.monthlyRenewal', value: `${data.renewal_rate || 0}%`, icon: TrendCharts, color: 'linear-gradient(135deg, #42a5f5 0%, #1e88e5 100%)', route: '/admin/students' },
     ] : [
-      { label: '退费总额', value: '--', icon: Money, color: 'linear-gradient(135deg, #909399 0%, #b1b3b8 100%)', route: null },
-      { label: '累计优惠额度', value: '--', icon: Money, color: 'linear-gradient(135deg, #909399 0%, #b1b3b8 100%)', route: null },
-      { label: '本月续费率', value: '--', icon: TrendCharts, color: 'linear-gradient(135deg, #909399 0%, #b1b3b8 100%)', route: null },
+      { label: 'dashboardViewKpi.totalRefund', value: '--', icon: Money, color: 'linear-gradient(135deg, #909399 0%, #b1b3b8 100%)', route: null },
+      { label: 'dashboardViewKpi.totalDiscount', value: '--', icon: Money, color: 'linear-gradient(135deg, #909399 0%, #b1b3b8 100%)', route: null },
+      { label: 'dashboardViewKpi.monthlyRenewal', value: '--', icon: TrendCharts, color: 'linear-gradient(135deg, #909399 0%, #b1b3b8 100%)', route: null },
     ]
     
     kpiData.value = [
       ...feeKpis,
-      { label: '本月转化率', value: `${data.conversion_rate || 0}%`, icon: TrendCharts, color: 'linear-gradient(135deg, #66bb6a 0%, #43a047 100%)', route: '/admin/schedules', query: { schedule_type: 'trial' } },
-      { label: '今日试听课', value: data.today_trial_schedules, icon: Bell, color: 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)', route: '/admin/schedules', query: { schedule_type: 'trial', date: '今天' } },
-      { label: '今日正式课', value: data.today_schedules - data.today_trial_schedules, icon: Bell, color: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)', route: '/admin/schedules', query: { schedule_type: 'formal', date: '今天' } },
+      { label: 'dashboardViewKpi.monthlyConversion', value: `${data.conversion_rate || 0}%`, icon: TrendCharts, color: 'linear-gradient(135deg, #66bb6a 0%, #43a047 100%)', route: '/admin/schedules', query: { schedule_type: 'trial' } },
+      { label: 'dashboardViewKpi.todayTrial', value: data.today_trial_schedules, icon: Bell, color: 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)', route: '/admin/schedules', query: { schedule_type: 'trial', date: 'today' } },
+      { label: 'dashboardViewKpi.todayFormal', value: data.today_schedules - data.today_trial_schedules, icon: Bell, color: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)', route: '/admin/schedules', query: { schedule_type: 'formal', date: 'today' } },
       ...feeExtraKpis,
-      { label: '待补课学员数', value: data.pending_makeup_students || 0, icon: Bell, color: 'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)', route: '/admin/schedules', query: { execution_status: 'completed', has_absent_students: true } },
-      { label: '未完训排课', value: data.incomplete_schedules || 0, icon: Warning, color: 'linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%)', route: '/admin/schedules', query: { execution_status: 'pending,postponed,cancelled' } },
-      { label: '已完训排课', value: data.completed_schedules || 0, icon: Warning, color: 'linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%)', route: '/admin/schedules', query: { execution_status: 'completed' } },
-      { label: '总排课数', value: data.total_schedules, icon: Calendar, color: 'linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%)', route: '/admin/schedules' },
-      { label: '总科目数', value: data.total_courses, icon: Tickets, color: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', route: '/admin/courses' },
-      { label: '总班级数', value: data.active_classes, icon: OfficeBuilding, color: 'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)', route: '/admin/classes' },
-      { label: '在读学员', value: data.active_students, icon: Reading, color: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)', route: '/admin/students', query: { is_active: true } },
-      { label: '在职导师', value: data.active_teachers, icon: User, color: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', route: '/admin/teachers', query: { is_active: true } },
-      { label: '数据库连接', value: '正常', icon: Connection, color: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', route: null }
+      { label: 'dashboardViewKpi.pendingMakeup', value: data.pending_makeup_students || 0, icon: Bell, color: 'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)', route: '/admin/schedules', query: { execution_status: 'completed', has_absent_students: true } },
+      { label: 'dashboardViewKpi.incompleteSchedules', value: data.incomplete_schedules || 0, icon: Warning, color: 'linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%)', route: '/admin/schedules', query: { execution_status: 'pending,postponed,cancelled' } },
+      { label: 'dashboardViewKpi.completedSchedules', value: data.completed_schedules || 0, icon: Warning, color: 'linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%)', route: '/admin/schedules', query: { execution_status: 'completed' } },
+      { label: 'dashboardViewKpi.totalSchedules', value: data.total_schedules, icon: Calendar, color: 'linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%)', route: '/admin/schedules' },
+      { label: 'dashboardViewKpi.totalCourses', value: data.total_courses, icon: Tickets, color: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', route: '/admin/courses' },
+      { label: 'dashboardViewKpi.totalClasses', value: data.active_classes, icon: OfficeBuilding, color: 'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)', route: '/admin/classes' },
+      { label: 'dashboardViewKpi.activeStudents', value: data.active_students, icon: Reading, color: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)', route: '/admin/students', query: { is_active: true } },
+      { label: 'dashboardViewKpi.activeTeachers', value: data.active_teachers, icon: User, color: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', route: '/admin/teachers', query: { is_active: true } },
+      { label: 'dashboardViewKpi.dbConnection', value: t('dashboardViewKpi.dbStatusNormal'), icon: Connection, color: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', route: null }
     ]
     
     lastUpdateTime.value = new Date().toLocaleString('zh-CN')
   } catch (error) {
     window.logger.error('获取KPI数据失败:', error)
-    ElMessage.error('获取KPI数据失败')
+    ElMessage.error(t('dashboardViewKpi.fetchKpiFailed'))
   }
 }
 
@@ -1141,26 +1145,26 @@ const fetchDBPoolStatus = async () => {
     dbPoolStatus.value = response.data
     
     // 更新KPI卡片中的数据库连接状态
-    const dbCard = kpiData.value.find(kpi => kpi.label === '数据库连接')
+    const dbCard = kpiData.value.find(kpi => kpi.label === dbLabel)
     if (dbCard) {
       const usageRate = Math.round((dbPoolStatus.value.checked_out / dbPoolStatus.value.pool_size) * 100)
       
       if (usageRate > 80) {
-        dbCard.value = `繁忙(${usageRate}%)`
+        dbCard.value = `${t('dashboardViewKpi.dbStatusBusy')}(${usageRate}%)`
         dbCard.color = 'linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%)'
       } else if (usageRate > 50) {
-        dbCard.value = `正常(${usageRate}%)`
+        dbCard.value = `${t('dashboardViewKpi.dbStatusNormal')}(${usageRate}%)`
         dbCard.color = 'linear-gradient(135deg, #ffa726 0%, #fb8c00 100%)'
       } else {
-        dbCard.value = '空闲'
+        dbCard.value = t('dashboardViewKpi.dbStatusIdle')
         dbCard.color = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
       }
     }
   } catch (error) {
     window.logger.error('获取数据库连接状态失败:', error)
-    const dbCard = kpiData.value.find(kpi => kpi.label === '数据库连接')
+    const dbCard = kpiData.value.find(kpi => kpi.label === dbLabel)
     if (dbCard) {
-      dbCard.value = '异常'
+      dbCard.value = t('dashboardViewKpi.dbStatusError')
       dbCard.color = 'linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%)'
     }
   }
@@ -1182,7 +1186,7 @@ const fetchCourseDistribution = async () => {
       legend: { orient: 'vertical', left: 'left', top: 'middle' },
       series: [
         {
-          name: '学员人数',
+          name: t('dashboardView.studentCount'),
           type: 'pie',
           radius: ['40%', '70%'],
           avoidLabelOverlap: false,
@@ -1218,7 +1222,7 @@ const fetchScheduleTrend = async () => {
     
     const option = {
       tooltip: { trigger: 'axis' },
-      legend: { data: ['正式课', '试听课'] },
+      legend: { data: [t('dashboardView.chartFormalClass'), t('dashboardView.chartTrialClass')] },
       grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
       xAxis: {
         type: 'category',
@@ -1228,7 +1232,7 @@ const fetchScheduleTrend = async () => {
       yAxis: { type: 'value' },
       series: [
         {
-          name: '正式课',
+          name: t('dashboardView.chartFormalClass'),
           type: 'line',
           smooth: true,
           stack: 'Total',
@@ -1237,7 +1241,7 @@ const fetchScheduleTrend = async () => {
           itemStyle: { color: '#667eea' }
         },
         {
-          name: '试听课',
+          name: t('dashboardView.chartTrialClass'),
           type: 'line',
           smooth: true,
           stack: 'Total',
@@ -1272,7 +1276,7 @@ const fetchFeeComposition = async () => {
       tooltip: { trigger: 'item', formatter: '{b}: ¥{c}' },
       series: [
         {
-          name: '收入',
+          name: t('dashboardView.chartIncome'),
           type: 'pie',
           radius: '50%',
           roseType: 'area',
@@ -1307,7 +1311,7 @@ const fetchFeeTrend = async () => {
     
     const option = {
       tooltip: { trigger: 'axis' },
-      legend: { data: ['实收金额', '退费金额'] },
+      legend: { data: [t('dashboardView.chartActualAmount'), t('dashboardView.chartRefundAmount')] },
       grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
       xAxis: {
         type: 'category',
@@ -1317,7 +1321,7 @@ const fetchFeeTrend = async () => {
       yAxis: { type: 'value' },
       series: [
         {
-          name: '实收金额',
+          name: t('dashboardView.chartActualAmount'),
           type: 'line',
           smooth: true,
           data: data.map(item => item.actual_income),
@@ -1325,7 +1329,7 @@ const fetchFeeTrend = async () => {
           areaStyle: { opacity: 0.3 }
         },
         {
-          name: '退费金额',
+          name: t('dashboardView.chartRefundAmount'),
           type: 'line',
           smooth: true,
           data: data.map(item => item.refund_amount),
@@ -1375,13 +1379,13 @@ const fetchTeacherWorkload = async () => {
           const item = params[0];
           const d = data[data.length - 1 - item.dataIndex];
           return `${d.teacher_name}<br/>
-                  课程数: ${d.schedule_count}节<br/>
-                  总时长: ${d.total_hours}小时<br/>
-                  完训率: ${d.completion_rate}%`;
+                  ${t('dashboardView.chartCourseCount')}: ${d.schedule_count}${t('dashboardView.sessions')}<br/>
+                  ${t('dashboardView.chartTotalHours')}: ${d.total_hours}${t('dashboardView.hours')}<br/>
+                  ${t('dashboardView.chartCompletionRate')}: ${d.completion_rate}%`;
         }
       },
       grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
-      xAxis: { type: 'value', name: '课时' },
+      xAxis: { type: 'value', name: t('dashboardView.classHours') },
       yAxis: {
         type: 'category',
         data: data.map(item => item.teacher_name).reverse(),
@@ -1389,7 +1393,7 @@ const fetchTeacherWorkload = async () => {
       },
       series: [
         {
-          name: '授课时长(小时)',
+          name: t('dashboardView.teachingHoursLong'),
           type: 'bar',
           label: { show: true, position: 'right' },
           emphasis: { focus: 'series' },
@@ -1444,14 +1448,14 @@ const fetchTrialEfficiency = async () => {
           const item = params[0];
           const d = data[data.length - 1 - item.dataIndex];
           return `${d.teacher_name}<br/>
-                  试听课数: ${d.trial_count}节<br/>
-                  完训数: ${d.completed_count}节<br/>
-                  转化学生: ${d.converted_students}人<br/>
-                  转化率: ${d.conversion_rate}%`;
+                  ${t('dashboardView.chartTrialCount')}: ${d.trial_count}${t('dashboardView.sessions')}<br/>
+                  ${t('dashboardView.chartCompletedCount')}: ${d.completed_count}${t('dashboardView.sessions')}<br/>
+                  ${t('dashboardView.chartConvertedStudents')}: ${d.converted_students}${t('dashboardView.person')}<br/>
+                  ${t('dashboardView.conversionRate')}: ${d.conversion_rate}%`;
         }
       },
       legend: {
-        data: ['试听课时数', '转化率'],
+        data: [t('dashboardView.trialClassHours'), t('dashboardView.conversionRate')],
         top: 10
       },
       grid: { 
@@ -1463,18 +1467,18 @@ const fetchTrialEfficiency = async () => {
       xAxis: [
         {
           type: 'value',
-          name: '试听课时数',
+          name: t('dashboardView.trialClassHours'),
           position: 'left',
           axisLine: {
             lineStyle: { color: '#409EFF' }
           },
           axisLabel: {
-            formatter: '{value} 节'
+            formatter: `{value}${t('dashboardView.sessions')}`
           }
         },
         {
           type: 'value',
-          name: '转化率',
+          name: t('dashboardView.conversionRate'),
           position: 'right',
           axisLine: {
             lineStyle: { color: '#67C23A' }
@@ -1491,7 +1495,7 @@ const fetchTrialEfficiency = async () => {
       },
       series: [
         {
-          name: '试听课时数',
+          name: t('dashboardView.trialClassHours'),
           type: 'bar',
           xAxisIndex: 0,
           label: { show: true, position: 'right' },
@@ -1500,7 +1504,7 @@ const fetchTrialEfficiency = async () => {
           itemStyle: { color: '#409EFF' }
         },
         {
-          name: '转化率',
+          name: t('dashboardView.conversionRate'),
           type: 'line',
           xAxisIndex: 1,
           smooth: true,
@@ -1547,9 +1551,9 @@ const fetchTrialFunnel = async () => {
     
     // 固定三层数据的顺序：试听课总数 > 完训试听课 > 成功转化
     let funnelData = [
-      { value: data.find(item => item.name === '试听课总数')?.value || 0, name: '试听课总数' },
-      { value: data.find(item => item.name === '完训试听课')?.value || 0, name: '完训试听课' },
-      { value: data.find(item => item.name === '成功转化(缴费)')?.value || 0, name: '成功转化(缴费)' }
+      { value: data.find(item => item.name === '试听课总数')?.value || 0, name: t('dashboardView.chartTrialTotal') },
+      { value: data.find(item => item.name === '完训试听课')?.value || 0, name: t('dashboardView.chartCompletedTrial') },
+      { value: data.find(item => item.name === '成功转化(缴费)')?.value || 0, name: t('dashboardView.chartConvertedPaid') }
     ]
     
     window.logger.log('漏斗排序后数据:', funnelData)
@@ -1559,9 +1563,9 @@ const fetchTrialFunnel = async () => {
     // 如果所有数据都是0，使用示例数据展示漏斗形状
     const isNoData = maxValue === 0
     const displayData = isNoData ? [
-      { value: 100, name: '试听课总数' },
-      { value: 60, name: '完训试听课' },
-      { value: 30, name: '成功转化(缴费)' }
+      { value: 100, name: t('dashboardView.chartTrialTotal') },
+      { value: 60, name: t('dashboardView.chartCompletedTrial') },
+      { value: 30, name: t('dashboardView.chartConvertedPaid') }
     ] : funnelData
     
     const displayMaxValue = isNoData ? 100 : maxValue
@@ -1571,14 +1575,14 @@ const fetchTrialFunnel = async () => {
         trigger: 'item', 
         formatter: function(params) {
           if (isNoData) {
-            return `${params.name}<br/>暂无数据（示意图）`
+            return `${params.name}<br/>${t('dashboardViewKpi.noDataDemo')}`
           }
           const percent = displayMaxValue > 0 ? ((params.value / displayMaxValue) * 100).toFixed(1) : 0
-          return `${params.name}<br/>数量: ${params.value}<br/>占比: ${percent}%`
+          return `${params.name}<br/>${t('dashboardViewKpi.count')}: ${params.value}<br/>${t('dashboardViewKpi.proportion')}: ${percent}%`
         }
       },
       title: isNoData ? {
-        text: '暂无数据',
+        text: t('dashboardViewKpi.noData'),
         left: 'center',
         bottom: 10,
         textStyle: {
@@ -1588,7 +1592,7 @@ const fetchTrialFunnel = async () => {
       } : undefined,
       series: [
         {
-          name: '转化漏斗',
+          name: t('dashboardViewKpi.funnelSeries'),
           type: 'funnel',
           left: '10%',
           top: 30,
@@ -1717,7 +1721,7 @@ const fetchBalanceDistribution = async () => {
       yAxis: { type: 'value' },
       series: [
         {
-          name: '学员数',
+          name: t('dashboardView.chartStudentCount'),
           type: 'bar',
           data: data.map(item => item.count),
           itemStyle: {
@@ -1749,7 +1753,7 @@ const fetchGradeDistribution = async () => {
     
     const option = {
       tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
-      legend: { data: ['优秀(≥90%)', '良好(75-90%)', '及格(60-75%)', '不及格(<60%)'] },
+      legend: { data: [t('dashboardView.chartExcellent'), t('dashboardView.chartGood'), t('dashboardView.chartPass'), t('dashboardView.chartFail')] },
       grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
       xAxis: {
         type: 'category',
@@ -1758,28 +1762,28 @@ const fetchGradeDistribution = async () => {
       yAxis: { type: 'value' },
       series: [
         {
-          name: '优秀(≥90%)',
+          name: t('dashboardView.chartExcellent'),
           type: 'bar',
           stack: 'total',
           data: data.map(item => item.excellent),
           itemStyle: { color: '#67C23A' }
         },
         {
-          name: '良好(75-90%)',
+          name: t('dashboardView.chartGood'),
           type: 'bar',
           stack: 'total',
           data: data.map(item => item.good),
           itemStyle: { color: '#409EFF' }
         },
         {
-          name: '及格(60-75%)',
+          name: t('dashboardView.chartPass'),
           type: 'bar',
           stack: 'total',
           data: data.map(item => item.pass),
           itemStyle: { color: '#E6A23C' }
         },
         {
-          name: '不及格(<60%)',
+          name: t('dashboardView.chartFail'),
           type: 'bar',
           stack: 'total',
           data: data.map(item => item.fail),
@@ -1837,7 +1841,7 @@ const fetchUnpaidStudents = async () => {
     unpaidStudents.value = response.data
   } catch (error) {
     window.logger.error('获取待缴费学员列表失败:', error)
-    ElMessage.error(`获取待缴费学员列表失败: ${error.response?.data?.detail || error.message}`)
+    ElMessage.error(`${t('dashboardViewKpi.fetchUnpaidStudentsFailed')}: ${error.response?.data?.detail || error.message}`)
   }
 }
 
@@ -1874,12 +1878,12 @@ const fetchWeeklyWorkload = async () => {
           const item = params[0];
           const d = data[data.length - 1 - item.dataIndex];
           return `${d.teacher_name}<br/>
-                  课程数: ${d.schedule_count}节<br/>
-                  总时长: ${d.total_hours}小时`;
+                  ${t('dashboardView.chartCourseCount')}: ${d.schedule_count}${t('dashboardView.sessions')}<br/>
+                  ${t('dashboardView.chartTotalHours')}: ${d.total_hours}${t('dashboardView.hours')}`;
         }
       },
       grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
-      xAxis: { type: 'value', name: '课时' },
+      xAxis: { type: 'value', name: t('dashboardView.classHours') },
       yAxis: {
         type: 'category',
         data: data.map(item => item.teacher_name).reverse(),
@@ -1887,7 +1891,7 @@ const fetchWeeklyWorkload = async () => {
       },
       series: [
         {
-          name: '授课时长(小时)',
+          name: t('dashboardView.teachingHoursLong'),
           type: 'bar',
           label: { show: true, position: 'right' },
           emphasis: { focus: 'series' },
@@ -1900,7 +1904,7 @@ const fetchWeeklyWorkload = async () => {
     chart.setOption(option)
   } catch (error) {
     window.logger.error('[Dashboard] 获取导师课时失败:', error)
-    ElMessage.error(`获取导师课时失败: ${error.response?.data?.detail || error.message}`)
+    ElMessage.error(`${t('dashboardViewKpi.fetchWeeklyWorkloadFailed')}: ${error.response?.data?.detail || error.message}`)
   } finally {
     chartLoading.value.weeklyWorkload = false
   }
@@ -1916,7 +1920,7 @@ const fetchIncompleteSchedules = async () => {
     incompleteSchedules.value = response.data
   } catch (error) {
     window.logger.error('获取未完训排课失败:', error)
-    ElMessage.error(`获取未完训排课失败: ${error.response?.data?.detail || error.message}`)
+    ElMessage.error(`${t('dashboardViewKpi.fetchIncompleteSchedulesFailed')}: ${error.response?.data?.detail || error.message}`)
   }
 }
 
@@ -1934,7 +1938,7 @@ const fetchRefundRate = async () => {
     
     const option = {
       tooltip: { trigger: 'axis' },
-      legend: { data: ['退费率'] },
+      legend: { data: [t('dashboardView.chartRefundRate')] },
       grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
       xAxis: {
         type: 'category',
@@ -1943,12 +1947,12 @@ const fetchRefundRate = async () => {
       },
       yAxis: { 
         type: 'value',
-        name: '退费率(%)',
+        name: t('dashboardView.chartRefundRatePercent'),
         axisLabel: { formatter: '{value}%' }
       },
       series: [
         {
-          name: '退费率',
+          name: t('dashboardView.chartRefundRate'),
           type: 'line',
           smooth: true,
           data: data.map(item => item.refund_rate),
@@ -1961,7 +1965,7 @@ const fetchRefundRate = async () => {
     chart.setOption(option)
   } catch (error) {
     window.logger.error('获取退费率趋势失败:', error)
-    ElMessage.error(`获取退费率趋势失败: ${error.response?.data?.detail || error.message}`)
+    ElMessage.error(`${t('dashboardViewKpi.fetchRefundRateFailed')}: ${error.response?.data?.detail || error.message}`)
   } finally {
     chartLoading.value.refundRate = false
   }
@@ -1984,7 +1988,7 @@ const fetchStudentGrowth = async () => {
     
     const option = {
       tooltip: { trigger: 'axis' },
-      legend: { data: ['新增学员数', '增长率'] },
+      legend: { data: [t('dashboardView.chartNewStudents'), t('dashboardView.chartGrowthRate')] },
       grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
       xAxis: {
         type: 'category',
@@ -1994,25 +1998,25 @@ const fetchStudentGrowth = async () => {
       yAxis: [
         {
           type: 'value',
-          name: '学员数',
+          name: t('dashboardView.chartStudentCount'),
           position: 'left'
         },
         {
           type: 'value',
-          name: '增长率(%)',
+          name: t('dashboardView.chartGrowthRatePercent'),
           position: 'right',
           axisLabel: { formatter: '{value}%' }
         }
       ],
       series: [
         {
-          name: '新增学员数',
+          name: t('dashboardView.chartNewStudents'),
           type: 'bar',
           data: data.map(item => item.new_students),
           itemStyle: { color: '#409EFF' }
         },
         {
-          name: '增长率',
+          name: t('dashboardView.chartGrowthRate'),
           type: 'line',
           yAxisIndex: 1,
           smooth: true,
@@ -2025,7 +2029,7 @@ const fetchStudentGrowth = async () => {
     chart.setOption(option)
   } catch (error) {
     window.logger.error('获取学员增长率失败:', error)
-    ElMessage.error(`获取学员增长率失败: ${error.response?.data?.detail || error.message}`)
+    ElMessage.error(`${t('dashboardViewKpi.fetchStudentGrowthFailed')}: ${error.response?.data?.detail || error.message}`)
   } finally {
     chartLoading.value.studentGrowth = false
   }
@@ -2054,10 +2058,10 @@ const fetchPopularCourses = async () => {
         data: data.map(item => item.course_name),
         axisLabel: { interval: 0, rotate: 30 }
       },
-      yAxis: { type: 'value', name: '学员数' },
+      yAxis: { type: 'value', name: t('dashboardView.chartStudentCount') },
       series: [
         {
-          name: '学员数',
+          name: t('dashboardView.chartStudentCount'),
           type: 'bar',
           data: data.map(item => item.student_count),
           itemStyle: {
@@ -2074,7 +2078,7 @@ const fetchPopularCourses = async () => {
     chart.setOption(option)
   } catch (error) {
     window.logger.error('获取热门科目失败:', error)
-    ElMessage.error(`获取热门科目失败: ${error.response?.data?.detail || error.message}`)
+    ElMessage.error(`${t('dashboardViewKpi.fetchHotCoursesFailed')}: ${error.response?.data?.detail || error.message}`)
   } finally {
     chartLoading.value.popularCourses = false
   }
@@ -2103,13 +2107,13 @@ const fetchRoomUtilization = async () => {
           const item = params[0];
           const d = data[data.length - 1 - item.dataIndex];
           return `${d.room_name}<br/>
-                  容量: ${d.capacity}人<br/>
-                  课程数: ${d.schedule_count}节<br/>
-                  平均利用率: ${d.avg_utilization}%`;
+                  ${t('dashboardView.chartCapacity')}: ${d.capacity}${t('dashboardView.person')}<br/>
+                  ${t('dashboardView.chartCourseCount')}: ${d.schedule_count}${t('dashboardView.sessions')}<br/>
+                  ${t('dashboardView.chartAvgUtilizationRate')}: ${d.avg_utilization}%`;
         }
       },
       grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
-      xAxis: { type: 'value', name: '利用率(%)', axisLabel: { formatter: '{value}%' } },
+      xAxis: { type: 'value', name: t('dashboardView.chartUtilizationPercent'), axisLabel: { formatter: '{value}%' } },
       yAxis: {
         type: 'category',
         data: data.map(item => item.room_name).reverse(),
@@ -2117,7 +2121,7 @@ const fetchRoomUtilization = async () => {
       },
       series: [
         {
-          name: '平均利用率',
+          name: t('dashboardView.chartAvgUtilization'),
           type: 'bar',
           label: { show: true, position: 'right', formatter: '{c}%' },
           emphasis: { focus: 'series' },
@@ -2130,7 +2134,7 @@ const fetchRoomUtilization = async () => {
     chart.setOption(option)
   } catch (error) {
     window.logger.error('获取教室利用率失败:', error)
-    ElMessage.error(`获取教室利用率失败: ${error.response?.data?.detail || error.message}`)
+    ElMessage.error(`${t('dashboardViewKpi.fetchRoomUtilFailed')}: ${error.response?.data?.detail || error.message}`)
   } finally {
     chartLoading.value.roomUtilization = false
   }
@@ -2230,7 +2234,7 @@ const showGradeCurve = async (row) => {
     renderGradeCurveChart(response.data)
   } catch (error) {
     window.logger.error('获取成绩曲线数据失败:', error)
-    ElMessage.error('获取成绩曲线数据失败')
+    ElMessage.error(t('dashboardViewKpi.fetchGradeCurveFailed'))
   } finally {
     gradeCurveLoading.value = false
   }
@@ -2253,7 +2257,7 @@ const renderGradeCurveChart = (data) => {
   if (!data.exam_stages || data.exam_stages.length === 0) {
     const option = {
       title: {
-        text: `${data.student_name} 成绩趋势图`,
+        text: `${data.student_name} ${t('dashboardView.chartScoreTrend')}`,
         left: 'center',
         textStyle: {
           fontSize: 18,
@@ -2265,7 +2269,7 @@ const renderGradeCurveChart = (data) => {
         left: 'center',
         top: 'middle',
         style: {
-          text: '暂无成绩数据',
+          text: t('dashboardView.noGradeData'),
           fill: '#999',
           fontSize: 16
         }
@@ -2327,7 +2331,7 @@ const renderGradeCurveChart = (data) => {
   
   const option = {
     title: {
-      text: `${data.student_name} 成绩比例趋势图`,
+      text: `${data.student_name} ${t('dashboardView.chartScoreRatioTrend')}`,
       left: 'center',
       textStyle: {
         fontSize: 18,
@@ -2345,16 +2349,16 @@ const renderGradeCurveChart = (data) => {
             const ratio = param.data.ratio !== null && param.data.ratio !== undefined ? param.data.ratio : 0
             
             html += `${param.marker} ${param.seriesName}:<br/>`
-            html += `&nbsp;&nbsp;当次考试成绩: ${Number(score).toFixed(1)}分<br/>`
-            html += `&nbsp;&nbsp;当次科目总分: ${Number(totalScore).toFixed(1)}分<br/>`
+            html += `&nbsp;&nbsp;${t('dashboardView.chartExamScore')}: ${Number(score).toFixed(1)}<br/>`
+            html += `&nbsp;&nbsp;${t('dashboardView.chartExamTotalScore')}: ${Number(totalScore).toFixed(1)}<br/>`
             
             if (ratio !== null && ratio !== undefined) {
-              html += `&nbsp;&nbsp;成绩比例: ${Number(ratio).toFixed(1)}%<br/>`
+              html += `&nbsp;&nbsp;${t('dashboardView.chartScoreRatio')}: ${Number(ratio).toFixed(1)}%<br/>`
             } else {
-              html += `&nbsp;&nbsp;成绩比例: 未计算（总分可能为0）<br/>`
+              html += `&nbsp;&nbsp;${t('dashboardView.chartScoreRatioUncalculated')}<br/>`
             }
           } else {
-            html += `${param.marker} ${param.seriesName}: 无数据<br/>`
+            html += `${param.marker} ${param.seriesName}: ${t('dashboardView.chartNoData')}<br/>`
           }
         })
         return html
@@ -2388,7 +2392,7 @@ const renderGradeCurveChart = (data) => {
       type: 'value',
       min: 0,
       max: 100,
-      name: '比例(%)',
+      name: t('dashboardView.chartRatioPercent'),
       axisLabel: {
         formatter: '{value}%'
       }
@@ -2456,9 +2460,9 @@ const refreshData = async () => {
       promises.push(fetchGradeDistribution(), fetchImprovementRanking())
     }
     await Promise.all(promises)
-    ElMessage.success('数据刷新成功')
+    ElMessage.success(t('dashboardViewKpi.refreshSuccess'))
   } catch (error) {
-    ElMessage.error('数据刷新失败')
+    ElMessage.error(t('dashboardViewKpi.refreshFailed'))
   } finally {
     loading.value = false
   }
@@ -2473,26 +2477,26 @@ const showKpiDetail = async (label) => {
   try {
     let response
     switch (label) {
-      case '本月收入':
+      case 'dashboardViewKpi.monthlyRevenue':
         const now = new Date()
         const year = now.getFullYear()
         const month = String(now.getMonth() + 1).padStart(2, '0')
         response = await api.get(`/statistics/fees/monthly-details?year=${year}&month=${month}`)
         break
-      case '当年收入':
+      case 'dashboardViewKpi.yearlyRevenue':
         const currentYear = new Date().getFullYear()
         response = await api.get(`/statistics/fees/yearly-details?year=${currentYear}`)
         break
-      case '退费总额':
+      case 'dashboardViewKpi.totalRefund':
         response = await api.get('/statistics/fees/refund-details')
         break
-      case '累计优惠额度':
+      case 'dashboardViewKpi.totalDiscount':
         response = await api.get('/statistics/fees/owed-details')
         break
-      case '本月续费率':
+      case 'dashboardViewKpi.monthlyRenewal':
         response = await api.get('/statistics/students/renewal-details')
         break
-      case '本月转化率':
+      case 'dashboardViewKpi.monthlyConversion':
         response = await api.get('/statistics/schedules/conversion-details?days=30')
         break
       default:
@@ -2502,7 +2506,7 @@ const showKpiDetail = async (label) => {
     
     kpiDetailData.value = { loading: false, data: response.data || [] }
   } catch (error) {
-    window.logger.error(`获取${label}详细数据失败:`, error)
+    window.logger.error(`获取${t(label)}详细数据失败:`, error)
     kpiDetailData.value = { loading: false, data: [], error: error.message }
   }
 }
@@ -2515,14 +2519,14 @@ const toggleRevenueVisibility = () => {
   } else {
     hideRevenue.value = true
     localStorage.setItem('hideRevenue', 'true')
-    ElMessage.success('营收信息已隐藏')
+    ElMessage.success(t('dashboardViewKpi.revenueHidden'))
   }
 }
 
 // 验证密码并显示营收
 const verifyPasswordAndShowRevenue = async () => {
   if (!passwordInput.value) {
-    ElMessage.warning('请输入密码')
+    ElMessage.warning(t('dashboardViewKpi.inputPassword'))
     return
   }
   
@@ -2536,7 +2540,7 @@ const verifyPasswordAndShowRevenue = async () => {
       hideRevenue.value = false // 显示营收信息
       localStorage.setItem('hideRevenue', 'false')
       passwordInput.value = ''
-      ElMessage.success('营收信息已恢复显示')
+      ElMessage.success(t('dashboardViewKpi.revenueRestored'))
       
       setTimeout(() => {
         refreshData()
@@ -2544,7 +2548,7 @@ const verifyPasswordAndShowRevenue = async () => {
     }
   } catch (error) {
     window.logger.error('密码验证失败:', error)
-    ElMessage.error('密码验证失败')
+    ElMessage.error(t('dashboardViewKpi.passwordVerifyFailed'))
   }
 }
 
@@ -2562,7 +2566,7 @@ const toggleFullscreen = () => {
 // 导出图片
 const exportDashboard = async () => {
   try {
-    ElMessage.info('正在生成图片...')
+    ElMessage.info(t('dashboardViewKpi.generatingImage'))
     const element = document.querySelector('.dashboard-container')
     const canvas = await html2canvas(element, {
       scale: 2,
@@ -2571,27 +2575,26 @@ const exportDashboard = async () => {
     })
     
     const link = document.createElement('a')
-    link.download = `运营大屏_${new Date().getTime()}.png`
+    link.download = `${t('dashboardView.title')}_${new Date().getTime()}.png`
     link.href = canvas.toDataURL('image/png')
     link.click()
     
-    ElMessage.success('导出成功')
+    ElMessage.success(t('dashboardViewKpi.exportSuccess'))
   } catch (error) {
     window.logger.error('导出失败:', error)
-    ElMessage.error('导出失败')
+    ElMessage.error(t('dashboardViewKpi.exportFailed'))
   }
 }
 
 // KPI卡片点击跳转
 const handleKpiClick = (kpi) => {
-  const detailLabels = ['本月收入', '当年收入', '退费总额', '累计优惠额度', '本月续费率', '本月转化率']
   if (detailLabels.includes(kpi.label)) {
     showKpiDetail(kpi.label)
     return
   }
   
   if (!kpi.route) {
-    if (kpi.label === '数据库连接') {
+    if (kpi.label === dbLabel) {
       showDBPoolDetail()
     }
     return
@@ -2615,22 +2618,22 @@ const showDBPoolDetail = () => {
   const status = dbPoolStatus.value
   const usageRate = Math.round((status.checked_out / status.pool_size) * 100)
   
-  let message = `数据库连接池状态：\n`
+  let message = `${t('dashboardView.dbPoolStatus')}\n`
   message += `━━━━━━━━━━━━━━━━━━━━\n`
-  message += `连接池大小：${status.pool_size}\n`
-  message += `已使用连接：${status.checked_out}\n`
-  message += `空闲连接：${status.checked_in}\n`
-  message += `溢出连接：${status.overflow}\n`
-  message += `总连接数：${status.total_connections}\n`
+  message += `${t('dashboardView.dbPoolSize')}：${status.pool_size}\n`
+  message += `${t('dashboardView.dbPoolUsed')}：${status.checked_out}\n`
+  message += `${t('dashboardView.dbPoolIdle')}：${status.checked_in}\n`
+  message += `${t('dashboardView.dbPoolOverflow')}：${status.overflow}\n`
+  message += `${t('dashboardView.dbPoolTotal')}：${status.total_connections}\n`
   message += `━━━━━━━━━━━━━━━━━━━━\n`
-  message += `使用率：${usageRate}%\n`
+  message += `${t('dashboardView.dbPoolUsageRate')}：${usageRate}%\n`
   
   if (usageRate > 80) {
-    message += `\n⚠️ 警告：连接池使用率过高！`
+    message += `\n${t('dashboardView.dbPoolWarning')}`
   } else if (usageRate > 50) {
-    message += `\n✅ 状态：正常使用中`
+    message += `\n${t('dashboardView.dbPoolNormal')}`
   } else {
-    message += `\n✅ 状态：连接充足`
+    message += `\n${t('dashboardView.dbPoolSufficient')}`
   }
   
   ElMessage({
@@ -2665,6 +2668,11 @@ const handleResize = () => {
     }
   })
 }
+
+// 监听语言变化，刷新图表以更新翻译
+watch(locale, () => {
+  refreshData()
+})
 
 // 初始化
 onMounted(async () => {

@@ -1,6 +1,7 @@
-// SPDX-License-Identifier: AGPL-3.0-only
-// Copyright (C) 2024-2026 courseManage Contributors
 import { createRouter, createWebHistory } from 'vue-router'
+import i18n from '@/locales'
+
+const { t } = i18n.global
 
 function isTokenExpired(token) {
   try {
@@ -38,7 +39,7 @@ const routes = [
     name: 'Users',
     component: () => import('@/views/admin/Users.vue'),
     meta: { requiresAuth: true }
-    },
+  },
   {
     path: '/admin/dashboard',
     name: 'Dashboard',
@@ -154,9 +155,9 @@ router.beforeEach((to, from, next) => {
   } else if (to.meta.requiresLicense) {
     import('@/utils/license.js').then(({ licenseState, FEATURE_NAMES }) => {
       if (!licenseState.activated || !licenseState.features[to.meta.licenseFeature]) {
-        const featureName = FEATURE_NAMES[to.meta.licenseFeature] || '该功能'
+        const featureName = FEATURE_NAMES[to.meta.licenseFeature] || t('common.licenseRequiredShort')
         import('element-plus').then(({ ElMessage }) => {
-          ElMessage.warning(`${featureName}为授权功能，请在系统授权管理中激活`)
+          ElMessage.warning(t('router.licenseFeatureRequired', { feature: featureName }))
         })
         next('/admin/dashboard')
       } else if (to.meta.requiresAdmin && (!user || !['super_admin', 'system_admin'].includes(user.role))) {
@@ -171,7 +172,7 @@ router.beforeEach((to, from, next) => {
               return
             }
           } catch (e) {
-            window.logger.error('解析费用管理导师列表失败:', e)
+            window.logger.error('Failed to parse fee managers:', e)
           }
         }
         next('/admin/dashboard')
@@ -185,7 +186,7 @@ router.beforeEach((to, from, next) => {
               return
             }
           } catch (e) {
-            window.logger.error('解析成绩管理导师列表失败:', e)
+            window.logger.error('Failed to parse grade managers:', e)
           }
         }
         next('/admin/dashboard')
@@ -199,7 +200,7 @@ router.beforeEach((to, from, next) => {
               return
             }
           } catch (e) {
-            window.logger.error('解析运营管理导师列表失败:', e)
+            window.logger.error('Failed to parse operation managers:', e)
           }
         }
         next('/admin/dashboard')

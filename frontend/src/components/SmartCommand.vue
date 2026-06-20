@@ -7,7 +7,7 @@
     :class="{ 'unlicensed': !props.licensed }"
   >
     <!-- 未授权状态：显示禁用的悬浮按钮 -->
-    <el-tooltip v-if="!props.licensed" content="智能指令管理为授权功能，请在系统授权管理中激活" placement="left" effect="light">
+    <el-tooltip v-if="!props.licensed" :content="t('smartCommand.licenseRequired')" placement="left" effect="light">
       <div class="smart-command-btn-wrapper unlicensed-btn-wrapper">
         <el-button
           type="info"
@@ -43,23 +43,23 @@
       <!-- 对话框 -->
       <el-dialog
       v-model="showDialog"
-      title="智能指令助手"
+      :title="t('smartCommand.title')"
       :width="dialogWidth"
       :close-on-click-modal="false"
       draggable
     >
       <!-- 步骤指示器 -->
       <el-steps :active="currentStep" finish-status="success" simple style="margin-bottom: 20px">
-        <el-step title="输入新指令" />
-        <el-step title="解析并预览" />
-        <el-step title="确认并调用" />
+        <el-step :title="t('smartCommand.stepInput')" />
+        <el-step :title="t('smartCommand.stepPreview')" />
+        <el-step :title="t('smartCommand.stepExecute')" />
       </el-steps>
 
       <!-- 步骤1：输入指令 -->
       <div v-if="currentStep === 0" class="input-section">
         <!-- 帮助信息（移至顶部，始终显示） -->
         <el-collapse v-model="activeHelpCollapse" class="help-section">
-          <el-collapse-item title="查看支持的指令" name="1">
+          <el-collapse-item :title="t('smartCommand.viewSupportedCommands')" name="1">
             <div v-for="(category, catIndex) in helpData.supported_commands" :key="catIndex" class="help-category">
               <h4>{{ category.category }}</h4>
               <div v-for="(cmd, cmdIndex) in category.commands" :key="cmdIndex" class="help-command">
@@ -74,7 +74,7 @@
                       :icon="DocumentCopy" 
                       @click="copyExample(example)"
                       class="copy-btn"
-                      title="复制到输入框"
+                      :title="t('smartCommand.copyToInput')"
                     />
                   </li>
                 </ul>
@@ -82,31 +82,31 @@
             </div>
           </el-collapse-item>
           <!-- 解析模式说明 -->
-          <el-collapse-item title="解析模式说明" name="2">
+          <el-collapse-item :title="t('smartCommand.parseModeDesc')" name="2">
             <div class="parse-mode-info">
-              <h4>🤖 AI解析模式（推荐）</h4>
+              <h4>{{ t('smartCommand.aiModeRecommended') }}</h4>
               <ul>
-                <li><strong>优势：</strong>理解能力强，支持自然语言表达，准确率高</li>
-                <li><strong>适用场景：</strong>复杂指令、多样化表达、模糊意图识别</li>
-                <li><strong>响应时间：</strong>约3-9秒（需调用AI服务）</li>
-                <li><strong>注意事项：</strong>需要在系统设置中配置AI API密钥</li>
+                <li><strong>{{ t('smartCommand.advantage') }}</strong>{{ t('smartCommand.aiAdvantage') }}</li>
+                <li><strong>{{ t('smartCommand.scenario') }}</strong>{{ t('smartCommand.aiScenario') }}</li>
+                <li><strong>{{ t('smartCommand.responseTime') }}</strong>{{ t('smartCommand.aiResponseTime') }}</li>
+                <li><strong>{{ t('smartCommand.note') }}</strong>{{ t('smartCommand.aiNote') }}</li>
               </ul>
               
-              <h4 style="margin-top: 15px;">⚙️ 规则解析模式</h4>
+              <h4 style="margin-top: 15px;">{{ t('smartCommand.ruleMode') }}</h4>
               <ul>
-                <li><strong>优势：</strong>响应速度快（毫秒级），无需外部依赖</li>
-                <li><strong>适用场景：</strong>标准格式指令、高频简单操作</li>
-                <li><strong>局限性：</strong>只能识别预设的固定格式，灵活性较低</li>
-                <li><strong>建议：</strong>作为AI解析失败时的备用方案</li>
+                <li><strong>{{ t('smartCommand.advantage') }}</strong>{{ t('smartCommand.ruleAdvantage') }}</li>
+                <li><strong>{{ t('smartCommand.scenario') }}</strong>{{ t('smartCommand.ruleScenario') }}</li>
+                <li><strong>{{ t('smartCommand.limitation') }}</strong>{{ t('smartCommand.ruleLimitation') }}</li>
+                <li><strong>{{ t('smartCommand.suggestion') }}</strong>{{ t('smartCommand.ruleSuggestion') }}</li>
               </ul>
               
               <el-alert
-                title="💡 使用建议"
+                :title="t('smartCommand.usageTip')"
                 type="info"
                 :closable="false"
                 style="margin-top: 10px"
               >
-                默认启用AI解析，当AI服务不可用或解析失败时，系统会自动切换到规则解析作为兜底方案。您可以根据实际需求随时切换解析模式。
+                {{ t('smartCommand.usageTipContent') }}
               </el-alert>
             </div>
           </el-collapse-item>
@@ -116,7 +116,7 @@
           v-model="commandText"
           type="textarea"
           :rows="4"
-          placeholder="请输入您的指令，例如：添加科目数学，导师张老师；也可参考上方支持的指令示例列表"
+          :placeholder="t('smartCommand.inputPlaceholder')"
           @keyup.enter.ctrl="previewCommand"
         />
         
@@ -130,17 +130,17 @@
           >
             <el-icon v-if="!isRecording"><Microphone /></el-icon>
             <el-icon v-else><VideoPause /></el-icon>
-            {{ isRecording ? '停止录音' : '语音输入' }}
+            {{ isRecording ? t('smartCommand.stopRecording') : t('smartCommand.voiceInput') }}
           </el-button>
           
-          <el-tooltip v-if="!speechRecognitionSupported" content="您的浏览器不支持语音识别，请使用Chrome或Edge浏览器" placement="top">
+          <el-tooltip v-if="!speechRecognitionSupported" :content="t('smartCommand.browserNotSupported')" placement="top">
             <el-icon style="margin-left: 5px; color: #E6A23C;"><WarningFilled /></el-icon>
           </el-tooltip>
           
           <el-switch
             v-model="useAI"
-            active-text="使用AI解析"
-            inactive-text="规则解析"
+            :active-text="t('smartCommand.useAI')"
+            :inactive-text="t('smartCommand.ruleMode')"
             style="margin-left: 20px"
           />
         </div>
@@ -153,7 +153,7 @@
         <!-- AI解析加载提示 -->
         <el-alert
           v-if="isProcessing && useAI"
-          title="正在使用AI解析您的指令..."
+          :title="t('smartCommand.parsingAITip')"
           type="info"
           :closable="false"
           show-icon
@@ -162,7 +162,7 @@
           <template #default>
             <div style="display: flex; align-items: center; gap: 10px;">
               <el-icon class="is-loading" style="font-size: 18px;"><Loading /></el-icon>
-              <span>AI正在理解您的意图，请稍候（预计5-9秒）</span>
+              <span>{{ t('smartCommand.aiUnderstanding') }}</span>
             </div>
           </template>
         </el-alert>
@@ -171,7 +171,7 @@
       <!-- 步骤2：预览确认 -->
       <div v-if="currentStep === 1" class="preview-section">
         <el-alert
-          title="请确认以下信息是否正确"
+          :title="t('smartCommand.confirmInfo')"
           type="info"
           :closable="false"
           show-icon
@@ -183,7 +183,7 @@
             <div class="card-header">
               <span>{{ previewData.action_name }}</span>
               <el-tag :type="previewData.has_warning ? 'warning' : 'success'">
-                {{ previewData.has_warning ? '需要注意' : '可以执行' }}
+                {{ previewData.has_warning ? t('smartCommand.needAttention') : t('smartCommand.canExecute') }}
               </el-tag>
             </div>
           </template>
@@ -205,15 +205,15 @@
         </el-card>
 
         <div v-if="previewData.recognized_text" class="recognized-text">
-          <el-divider content-position="left">识别文本</el-divider>
+          <el-divider content-position="left">{{ t('smartCommand.recognizedText') }}</el-divider>
           <p>{{ previewData.recognized_text }}</p>
         </div>
         
         <!-- 如果是排课操作，显示特殊提示 -->
         <el-alert
           v-if="previewData.needs_manual_confirmation"
-          title="后续操作将打开手动排课界面"
-          description="系统将自动填充已识别的信息，在后续界面您可以修改信息确认后再保存"
+          :title="t('smartCommand.scheduleAlertTitle')"
+          :description="t('smartCommand.scheduleAlertDesc')"
           type="warning"
           :closable="false"
           show-icon
@@ -224,7 +224,7 @@
       <!-- 步骤3：执行结果 -->
       <div v-if="currentStep === 2" class="result-section">
         <el-alert
-          :title="executionResult.success ? '执行成功' : '执行失败'"
+          :title="executionResult.success ? t('smartCommand.executeSuccess') : t('smartCommand.executeFailed')"
           :type="executionResult.success ? 'success' : 'error'"
           :closable="false"
           show-icon
@@ -234,15 +234,15 @@
         
         <!-- 解析详情 -->
         <div v-if="executionResult.parsed_intent" class="parsed-detail">
-          <el-divider content-position="left">解析详情</el-divider>
+          <el-divider content-position="left">{{ t('smartCommand.parseDetail') }}</el-divider>
           <pre>{{ JSON.stringify(executionResult.parsed_intent, null, 2) }}</pre>
         </div>
       </div>
 
       <!-- 底部按钮 -->
       <template #footer>
-        <el-button v-if="currentStep > 0" @click="prevStep">上一步</el-button>
-        <el-button @click="resetDialog">关闭</el-button>
+        <el-button v-if="currentStep > 0" @click="prevStep">{{ t('smartCommand.prevStep') }}</el-button>
+        <el-button @click="resetDialog">{{ t('smartCommand.close') }}</el-button>
         
         <el-button 
           v-if="currentStep === 0" 
@@ -250,7 +250,7 @@
           @click="previewCommand" 
           :loading="isProcessing"
         >
-          下一步：预览
+          {{ t('smartCommand.nextStepPreview') }}
         </el-button>
         
         <el-button 
@@ -259,7 +259,7 @@
           @click="confirmExecution" 
           :loading="isProcessing"
         >
-          打开页面
+          {{ t('smartCommand.openPage') }}
         </el-button>
         
         <el-button 
@@ -268,7 +268,7 @@
           @click="confirmExecution" 
           :loading="isProcessing"
         >
-          查看详情
+          {{ t('smartCommand.viewDetail') }}
         </el-button>
         
         <el-button 
@@ -277,7 +277,7 @@
           @click="confirmExecution" 
           :loading="isProcessing"
         >
-          确认执行
+          {{ t('smartCommand.confirmExecute') }}
         </el-button>
         
         <el-button 
@@ -286,7 +286,7 @@
           @click="openManualSchedule" 
           :loading="isProcessing"
         >
-          打开排课界面
+          {{ t('smartCommand.openSchedulePage') }}
         </el-button>
         
         <el-button 
@@ -294,7 +294,7 @@
           type="primary" 
           @click="resetToInput"
         >
-          新的指令
+          {{ t('smartCommand.newCommand') }}
         </el-button>
       </template>
     </el-dialog>
@@ -307,7 +307,10 @@ import { ref, onMounted, onUnmounted, watch, computed  } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Microphone, VideoPause, WarningFilled, Loading, DocumentCopy, Lock } from '@element-plus/icons-vue'
 import api from '@/utils/api'
+import { useI18n } from 'vue-i18n'
 
+
+const { t } = useI18n()
 const props = defineProps({
   licensed: {
     type: Boolean,
@@ -325,7 +328,7 @@ const previewData = ref(null)
 const executionResult = ref(null)
 const helpData = ref({})
 const speechRecognitionSupported = ref(false)
-const recognitionStatus = ref('正在聆听...')
+const recognitionStatus = ref('')
 const activeHelpCollapse = ref([])
 
 // 对话框宽度（响应式）
@@ -366,7 +369,7 @@ const checkSpeechRecognitionSupport = () => {
     
     recognition.onstart = () => {
       isRecording.value = true
-      recognitionStatus.value = '正在聆听...'
+      recognitionStatus.value = t('smartCommand.listening')
     }
     
     recognition.onresult = (event) => {
@@ -388,13 +391,13 @@ const checkSpeechRecognitionSupport = () => {
       
       // 显示临时结果
       if (interimTranscript) {
-        recognitionStatus.value = `识别中: ${interimTranscript}`
+        recognitionStatus.value = t('smartCommand.recognizing', { text: interimTranscript })
       }
       
       // 最终结果
       if (finalTranscript) {
         commandText.value = finalTranscript
-        recognitionStatus.value = '识别完成'
+        recognitionStatus.value = t('smartCommand.recognitionComplete')
         stopRecording()
         
         // 自动预览
@@ -406,23 +409,23 @@ const checkSpeechRecognitionSupport = () => {
     
     recognition.onerror = (event) => {
       window.logger.error('语音识别错误:', event.error)
-      let errorMessage = '语音识别失败'
+      let errorMessage = t('smartCommand.recognitionFailed')
       
       switch(event.error) {
         case 'no-speech':
-          errorMessage = '未检测到语音，请重试'
+          errorMessage = t('smartCommand.noSpeechDetected')
           break
         case 'audio-capture':
-          errorMessage = '无法访问麦克风'
+          errorMessage = t('smartCommand.micNotAccessible')
           break
         case 'not-allowed':
-          errorMessage = '麦克风权限被拒绝'
+          errorMessage = t('smartCommand.micPermissionDenied')
           break
         case 'network':
-          errorMessage = '网络连接错误'
+          errorMessage = t('smartCommand.networkError')
           break
         default:
-          errorMessage = `识别错误: ${event.error}`
+          errorMessage = t('smartCommand.recognitionError', { error: event.error })
       }
       
       ElMessage.error(errorMessage)
@@ -431,7 +434,7 @@ const checkSpeechRecognitionSupport = () => {
     
     recognition.onend = () => {
       if (isRecording.value) {
-        recognitionStatus.value = '识别结束'
+        recognitionStatus.value = t('smartCommand.recognitionEnded')
         isRecording.value = false
       }
     }
@@ -442,7 +445,7 @@ const checkSpeechRecognitionSupport = () => {
 
 const copyExample = (example) => {
   commandText.value = example
-  ElMessage.success('已复制到输入框')
+  ElMessage.success(t('smartCommand.copiedToInput'))
 }
 
 // 加载帮助信息
@@ -470,7 +473,7 @@ onMounted(async () => {
     window.logger.log('[DEBUG] supported_commands:', helpData.value.supported_commands)
   } catch (error) {
     window.logger.error('加载帮助信息失败:', error)
-    ElMessage.error('加载帮助信息失败')
+    ElMessage.error(t('smartCommand.loadHelpFailed'))
   }
   
   // 监听窗口大小变化
@@ -656,7 +659,7 @@ watch(spherePosition, (newVal) => {
 // 预览指令
 const previewCommand = async () => {
   if (!commandText.value.trim()) {
-    ElMessage.warning('请输入指令')
+    ElMessage.warning(t('smartCommand.noCommand'))
     return
   }
 
@@ -672,7 +675,7 @@ const previewCommand = async () => {
     timeoutTimer = setTimeout(() => {
       if (isProcessing.value) {
         ElMessage.info({
-          message: 'AI解析耗时较长，请耐心等待...',
+          message: t('smartCommand.aiParsingSlow'),
           duration: 5000 // 5秒后自动关闭
         })
       }
@@ -720,11 +723,11 @@ const previewCommand = async () => {
       timeoutTimer = null
     }
     
-    let errorMessage = '解析指令失败'
+    let errorMessage = t('smartCommand.parseCommandFailed')
     if (error.code === 'ECONNABORTED') {
-      errorMessage = '请求超时，请检查网络连接或尝试简化指令'
+      errorMessage = t('smartCommand.requestTimeout')
       if (useAI.value) {
-        errorMessage += '。如果AI服务响应较慢，可以尝试切换到规则解析模式'
+        errorMessage += t('smartCommand.tryRuleMode')
       }
     } else if (error.response?.data?.detail) {
       errorMessage = error.response.data.detail
@@ -756,11 +759,11 @@ const confirmExecution = async () => {
       // 执行导航
       handleNavigation(response.data.parsed_intent)
       currentStep.value = 2
-      ElMessage.success(response.data.message || '正在打开页面...')
+      ElMessage.success(response.data.message || t('smartCommand.openingPage'))
     } else if (response.data.success && response.data.parsed_intent?.action === 'error') {
       // 显示错误信息
       currentStep.value = 2
-      ElMessage.error(response.data.message || '解析失败')
+      ElMessage.error(response.data.message || t('smartCommand.parseFailed'))
     } else {
       // 传统执行方式（保留兼容性）
       currentStep.value = 2
@@ -771,9 +774,9 @@ const confirmExecution = async () => {
       }
     }
   } catch (error) {
-    let errorMessage = '执行指令失败'
+    let errorMessage = t('smartCommand.executeCommandFailed')
     if (error.code === 'ECONNABORTED') {
-      errorMessage = '请求超时，请检查网络连接'
+      errorMessage = t('smartCommand.requestTimeoutSimple')
     } else if (error.response?.data?.detail) {
       errorMessage = error.response.data.detail
     } else if (error.message) {
@@ -906,13 +909,13 @@ const openManualSchedule = () => {
   // 跳转到排课页面
   window.location.href = '/admin/schedules?action=add'
   
-  ElMessage.info('正在打开排课界面，已自动填充识别的信息')
+  ElMessage.info(t('smartCommand.openingSchedulePage'))
 }
 
 // 切换录音状态
 const toggleRecording = () => {
   if (!speechRecognitionSupported.value) {
-    ElMessage.warning('您的浏览器不支持语音识别功能，请使用Chrome或Edge浏览器')
+    ElMessage.warning(t('smartCommand.browserNotSupported'))
     return
   }
   
@@ -926,15 +929,15 @@ const toggleRecording = () => {
 // 开始录音
 const startRecording = () => {
   if (!recognition) {
-    ElMessage.error('语音识别未初始化')
+    ElMessage.error(t('smartCommand.recognitionNotInit'))
     return
   }
   
   try {
     recognition.start()
-    ElMessage.info('请开始说话...')
+    ElMessage.info(t('smartCommand.pleaseSpeak'))
   } catch (error) {
-    ElMessage.error('启动语音识别失败: ' + error.message)
+    ElMessage.error(t('smartCommand.startRecognitionFailed') + ': ' + error.message)
   }
 }
 

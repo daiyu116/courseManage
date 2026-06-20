@@ -6,6 +6,9 @@
  */
 import { reactive } from 'vue'
 import api from './api'
+import i18n from '@/locales'
+
+const { t } = i18n.global
 
 export const FEATURES = {
   GRADE_TREND: 'grade_trend',
@@ -20,15 +23,15 @@ export const FEATURES = {
 }
 
 export const FEATURE_NAMES = {
-  [FEATURES.GRADE_TREND]: '学员成绩管理',
-  [FEATURES.FEE_MANAGEMENT]: '费用管理',
-  [FEATURES.SMART_SCHEDULING]: '智能算法排课',
-  [FEATURES.WECHAT_NOTIFY]: '微信通知管理',
-  [FEATURES.SMART_COMMAND]: '智能指令管理',
-  [FEATURES.DASHBOARD_VIEW]: '运营大屏',
-  [FEATURES.FLOATING_SPHERE]: '全站快捷按钮',
-  [FEATURES.DATABASE_MANAGEMENT]: '数据库管理',
-  [FEATURES.STUDENT_EVALUATION]: '学员评价管理',
+  [FEATURES.GRADE_TREND]: () => t('license.featureGradeTrend'),
+  [FEATURES.FEE_MANAGEMENT]: () => t('license.featureFeeManagement'),
+  [FEATURES.SMART_SCHEDULING]: () => t('license.featureSmartScheduling'),
+  [FEATURES.WECHAT_NOTIFY]: () => t('license.featureWechatNotify'),
+  [FEATURES.SMART_COMMAND]: () => t('license.featureSmartCommand'),
+  [FEATURES.DASHBOARD_VIEW]: () => t('license.featureDashboardView'),
+  [FEATURES.FLOATING_SPHERE]: () => t('license.featureFloatingSphere'),
+  [FEATURES.DATABASE_MANAGEMENT]: () => t('license.featureDatabaseManagement'),
+  [FEATURES.STUDENT_EVALUATION]: () => t('license.featureStudentEvaluation'),
 }
 
 export const FEATURE_DESCRIPTIONS = {

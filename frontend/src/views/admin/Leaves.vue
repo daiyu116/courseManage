@@ -8,49 +8,49 @@
         <el-col :span="3">
           <el-button type="primary" @click="goToPage('/admin/dashboard')" style="width: 100%;height: 100%;">
             <el-icon><Reading /></el-icon>
-            面板
+            {{ t('nav.dashboard') }}
           </el-button>
         </el-col>
         <el-col :span="3">
           <el-button type="primary" @click="goToPage('/admin/courses')" style="width: 100%;height: 100%;">
             <el-icon><Reading /></el-icon>
-            科目管理
+            {{ t('nav.courses') }}
           </el-button>
         </el-col>
         <el-col :span="3">
           <el-button type="success" @click="goToPage('/admin/teachers')" style="width: 100%;height: 100%;">
             <el-icon><User /></el-icon>
-            导师管理
+            {{ t('nav.teachers') }}
           </el-button>
         </el-col>
         <el-col :span="3">
           <el-button type="success" @click="goToPage('/admin/classes')" style="width: 100%;height: 100%;">
             <el-icon><User /></el-icon>
-            班级管理
+            {{ t('nav.classes') }}
           </el-button>
         </el-col>
         <el-col :span="3">
           <el-button type="warning" @click="goToPage('/admin/students')" style="width: 100%;height: 100%;">
             <el-icon><UserFilled /></el-icon>
-            学员管理
+            {{ t('nav.students') }}
           </el-button>
         </el-col>
         <el-col :span="3">
           <el-button type="info" @click="goToPage('/admin/rooms')" style="width: 100%;height: 100%;">
             <el-icon><OfficeBuilding /></el-icon>
-            教室管理
+            {{ t('nav.rooms') }}
           </el-button>
         </el-col>
         <el-col :span="3">
           <el-button type="primary" @click="goToPage('/admin/schedules')" style="width: 100%;height: 100%;">
             <el-icon><Clock /></el-icon>
-            排课管理
+            {{ t('nav.schedules') }}
           </el-button>
         </el-col>
         <el-col :span="3">
           <el-button type="primary" @click="goToPage('/admin/conditions')" style="width: 100%;height: 100%;">
             <el-icon><Setting /></el-icon>
-            条件管理
+            {{ t('nav.conditions') }}
           </el-button>
         </el-col>
       </el-row>
@@ -59,30 +59,30 @@
     <el-card>
       <template #header>
         <div class="card-header">
-          <span>请假管理</span>
+          <span>{{ t('leaves.title') }}</span>
           <div class="header-actions">
             <el-button type="info" @click="goBack">
               <el-icon><ArrowLeft /></el-icon>
-              返回上一页
+              {{ t('common.back') }}
             </el-button>
             <el-button type="warning" @click="goToPage('/admin/holidays')">
               <el-icon><Calendar /></el-icon>
-              假期管理
+              {{ t('leaves.holidayManagement') }}
             </el-button>
             <el-button type="primary" @click="showAddDialog">
               <el-icon><Plus /></el-icon>
-              新增请假
+              {{ t('leaves.addLeave') }}
             </el-button>
           </div>
         </div>
       </template>
 
       <div class="search-bar">
-        <el-select v-model="leaveTypeFilter" placeholder="请假类型" clearable style="width: 150px" @change="handleFilterChange">
-          <el-option label="导师请假" value="teacher" />
-          <el-option label="学员请假" value="student" />
+        <el-select v-model="leaveTypeFilter" :placeholder="t('leaves.leaveType')" clearable style="width: 150px" @change="handleFilterChange">
+          <el-option :label="t('leaves.teacherLeave')" value="teacher" />
+          <el-option :label="t('leaves.studentLeave')" value="student" />
         </el-select>
-        <el-select v-model="teacherFilter" placeholder="选择导师" clearable style="width: 200px" @change="handleFilterChange">
+        <el-select v-model="teacherFilter" :placeholder="t('leaves.selectTeacher')" clearable style="width: 200px" @change="handleFilterChange">
           <el-option
             v-for="teacher in teachers"
             :key="teacher.id"
@@ -90,7 +90,7 @@
             :value="teacher.id"
           />
         </el-select>
-        <el-select v-model="studentFilter" placeholder="选择学员" clearable style="width: 200px" @change="handleFilterChange">
+        <el-select v-model="studentFilter" :placeholder="t('leaves.selectStudent')" clearable style="width: 200px" @change="handleFilterChange">
           <el-option
             v-for="student in students"
             :key="student.id"
@@ -100,40 +100,40 @@
         </el-select>
         <el-col :span="2">
           <el-form-item label-width="0">
-            <el-button @click="resetFilters" style="width: 50px">重置</el-button>
+            <el-button @click="resetFilters" style="width: 50px">{{ t('common.reset') }}</el-button>
           </el-form-item>
         </el-col>
       </div>
 
       <el-table :data="leaves" stripe v-loading="loading" style="margin-top: 20px">
         <el-table-column prop="id" label="ID" width="50" />
-        <el-table-column label="请假类型" width="150">
+        <el-table-column :label="t('leaves.leaveType')" width="150">
           <template #default="{ row }">
             <el-tag :type="row.leave_type === 'teacher' ? 'primary' : 'success'">
-              {{ row.leave_type === 'teacher' ? '导师请假' : '学员请假' }}
+              {{ row.leave_type === 'teacher' ? t('leaves.teacherLeave') : t('leaves.studentLeave') }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="导师/学员" width="150">
+        <el-table-column :label="t('leaves.teacherStudent')" width="150">
           <template #default="{ row }">
             {{ row.leave_type === 'teacher' ? getTeacherName(row.teacher_id) : getStudentName(row.student_id) }}
           </template>
         </el-table-column>
-        <el-table-column label="开始日期" width="150">
+        <el-table-column :label="t('leaves.startDate')" width="150">
           <template #default="{ row }">
             {{ formatDate(row.start_date) }}
           </template>
         </el-table-column>
-        <el-table-column label="结束日期" width="150">
+        <el-table-column :label="t('leaves.endDate')" width="150">
           <template #default="{ row }">
             {{ formatDate(row.end_date) }}
           </template>
         </el-table-column>
-        <el-table-column prop="reason" label="请假原因" min-width="200" />
-        <el-table-column label="操作" width="80" fixed="right">
+        <el-table-column prop="reason" :label="t('leaves.reason')" min-width="200" />
+        <el-table-column :label="t('common.operation')" width="80" fixed="right">
           <template #default="{ row }">
-            <el-button size="small" @click="showEditDialog(row)">编辑</el-button>
-            <el-button v-if="currentUser && (currentUser.role === 'super_admin' || currentUser.role === 'course_admin')" size="small" type="danger" @click="handleDelete(row)">删除</el-button>
+            <el-button size="small" @click="showEditDialog(row)">{{ t('common.edit') }}</el-button>
+            <el-button v-if="currentUser && (currentUser.role === 'super_admin' || currentUser.role === 'course_admin')" size="small" type="danger" @click="handleDelete(row)">{{ t('common.delete') }}</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -151,14 +151,14 @@
 
     <el-dialog v-model="dialogVisible" :title="dialogTitle" width="600px" draggable>
       <el-form :model="form" :rules="rules" ref="formRef" label-width="120px">
-        <el-form-item label="请假类型" prop="leave_type">
-          <el-select v-model="form.leave_type" placeholder="请选择请假类型" @change="handleLeaveTypeChange">
-            <el-option label="导师请假" value="teacher" />
-            <el-option label="学员请假" value="student" />
+        <el-form-item :label="t('leaves.leaveType')" prop="leave_type">
+          <el-select v-model="form.leave_type" :placeholder="t('leaves.leaveTypePlaceholder')" @change="handleLeaveTypeChange">
+            <el-option :label="t('leaves.teacherLeave')" value="teacher" />
+            <el-option :label="t('leaves.studentLeave')" value="student" />
           </el-select>
         </el-form-item>
-        <el-form-item label="导师" prop="teacher_id" v-if="form.leave_type === 'teacher'">
-          <el-select v-model="form.teacher_id" filterable placeholder="请选择导师">
+        <el-form-item :label="t('leaves.teacher')" prop="teacher_id" v-if="form.leave_type === 'teacher'">
+          <el-select v-model="form.teacher_id" filterable :placeholder="t('leaves.selectTeacherPlaceholder')">
             <el-option
               v-for="teacher in teachers"
               :key="teacher.id"
@@ -168,11 +168,11 @@
               <el-tooltip placement="right" :show-after="200">
                 <template #content>
                   <div style="min-width: 200px;">
-                    <div><strong>导师：</strong>{{ teacher.name }}</div>
-                    <div v-if="teacher.code"><strong>代码：</strong>{{ teacher.code }}</div>
-                    <div v-if="teacher.department"><strong>部门：</strong>{{ teacher.department }}</div>
-                    <div v-if="teacher.contact_phone"><strong>联系电话：</strong>{{ teacher.contact_phone }}</div>
-                    <div v-if="teacher.email"><strong>邮箱：</strong>{{ teacher.email }}</div>
+                    <div><strong>{{ t('leaves.teacher') }}：</strong>{{ teacher.name }}</div>
+                    <div v-if="teacher.code"><strong>{{ t('common.code') }}：</strong>{{ teacher.code }}</div>
+                    <div v-if="teacher.department"><strong>{{ t('leaves.department') }}：</strong>{{ teacher.department }}</div>
+                    <div v-if="teacher.contact_phone"><strong>{{ t('leaves.contactPhone') }}：</strong>{{ teacher.contact_phone }}</div>
+                    <div v-if="teacher.email"><strong>{{ t('leaves.email') }}：</strong>{{ teacher.email }}</div>
                   </div>
                 </template>
                 <span>{{ teacher.name }}</span>
@@ -180,8 +180,8 @@
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="学员" prop="student_id" v-if="form.leave_type === 'student'">
-          <el-select v-model="form.student_id" filterable placeholder="请选择学员">
+        <el-form-item :label="t('leaves.student')" prop="student_id" v-if="form.leave_type === 'student'">
+          <el-select v-model="form.student_id" filterable :placeholder="t('leaves.selectStudentPlaceholder')">
             <el-option
               v-for="student in students"
               :key="student.id"
@@ -191,13 +191,13 @@
               <el-tooltip placement="right" :show-after="200">
                 <template #content>
                   <div style="min-width: 200px;">
-                    <div><strong>学员：</strong>{{ student.name }}</div>
-                    <div v-if="student.code"><strong>代码：</strong>{{ student.code }}</div>
-                    <div v-if="student.school"><strong>学校：</strong>{{ student.school }}</div>
-                    <div v-if="student.grade"><strong>年级：</strong>{{ student.grade }}</div>
-                    <div v-if="student.contact_person"><strong>联系人：</strong>{{ student.contact_person }}</div>
-                    <div v-if="student.contact_phone"><strong>联系电话：</strong>{{ student.contact_phone }}</div>
-                    <div><strong>是否在读：</strong>{{ student.is_active ? '是' : '否' }}</div>
+                    <div><strong>{{ t('leaves.student') }}：</strong>{{ student.name }}</div>
+                    <div v-if="student.code"><strong>{{ t('common.code') }}：</strong>{{ student.code }}</div>
+                    <div v-if="student.school"><strong>{{ t('leaves.school') }}：</strong>{{ student.school }}</div>
+                    <div v-if="student.grade"><strong>{{ t('leaves.grade') }}：</strong>{{ student.grade }}</div>
+                    <div v-if="student.contact_person"><strong>{{ t('leaves.contactPerson') }}：</strong>{{ student.contact_person }}</div>
+                    <div v-if="student.contact_phone"><strong>{{ t('leaves.contactPhone') }}：</strong>{{ student.contact_phone }}</div>
+                    <div><strong>{{ t('leaves.isActive') }}：</strong>{{ student.is_active ? t('common.yes') : t('common.no') }}</div>
                   </div>
                 </template>
                 <span>{{ student.name }}</span>
@@ -205,31 +205,31 @@
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="开始日期" prop="start_date">
+        <el-form-item :label="t('leaves.startDate')" prop="start_date">
           <el-date-picker
             v-model="form.start_date"
             type="datetime"
-            placeholder="选择开始日期"
+            :placeholder="t('leaves.startDatePlaceholder')"
             value-format="YYYY-MM-DDTHH:mm:ss"
             style="width: 100%"
           />
         </el-form-item>
-        <el-form-item label="结束日期" prop="end_date">
+        <el-form-item :label="t('leaves.endDate')" prop="end_date">
           <el-date-picker
             v-model="form.end_date"
             type="datetime"
-            placeholder="选择结束日期"
+            :placeholder="t('leaves.endDatePlaceholder')"
             value-format="YYYY-MM-DDTHH:mm:ss"
             style="width: 100%"
           />
         </el-form-item>
-        <el-form-item label="请假原因" prop="reason">
-          <el-input v-model="form.reason" type="textarea" :rows="3" placeholder="请输入请假原因" />
+        <el-form-item :label="t('leaves.reason')" prop="reason">
+          <el-input v-model="form.reason" type="textarea" :rows="3" :placeholder="t('leaves.reasonPlaceholder')" />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleSubmit">确定</el-button>
+        <el-button @click="dialogVisible = false">{{ t('common.cancel') }}</el-button>
+        <el-button type="primary" @click="handleSubmit">{{ t('common.confirm') }}</el-button>
       </template>
     </el-dialog>
   </div>
@@ -242,7 +242,10 @@ import { ArrowLeft, Plus, Reading, User, UserFilled, OfficeBuilding, Calendar, C
 import { ElMessage, ElMessageBox } from 'element-plus'
 import api from '@/utils/api'
 import dayjs from 'dayjs'
+import { useI18n } from 'vue-i18n'
 
+
+const { t } = useI18n()
 const currentUser = ref(null)
 const router = useRouter()
 const route = useRoute()
@@ -304,11 +307,11 @@ const originalForm = ref({
 })
 
 const rules = {
-  leave_type: [{ required: true, message: '请选择请假类型', trigger: 'change' }],
-  teacher_id: [{ required: true, message: '请选择导师', trigger: 'change' }],
-  student_id: [{ required: true, message: '请选择学员', trigger: 'change' }],
-  start_date: [{ required: true, message: '请选择开始日期', trigger: 'change' }],
-  end_date: [{ required: true, message: '请选择结束日期', trigger: 'change' }]
+  leave_type: [{ required: true, message: () => t('leaves.leaveTypeRequired'), trigger: 'change' }],
+  teacher_id: [{ required: true, message: () => t('leaves.teacherRequired'), trigger: 'change' }],
+  student_id: [{ required: true, message: () => t('leaves.studentRequired'), trigger: 'change' }],
+  start_date: [{ required: true, message: () => t('leaves.startDateRequired'), trigger: 'change' }],
+  end_date: [{ required: true, message: () => t('leaves.endDateRequired'), trigger: 'change' }]
 }
 
 const fetchTeachers = async () => {
@@ -356,7 +359,7 @@ const fetchLeaves = async () => {
 }
 
 const showAddDialog = () => {
-  dialogTitle.value = '新增请假'
+  dialogTitle.value = t('leaves.addLeaveTitle')
   
   // 检查是否有预填充数据
   const storageData = sessionStorage.getItem('smartCommandData')
@@ -391,7 +394,7 @@ const resetFilters = () => {
 }
 
 const showEditDialog = (row) => {
-  dialogTitle.value = '编辑请假'
+  dialogTitle.value = t('leaves.editLeaveTitle')
   const formData = {
     id: row.id,
     leave_type: row.leave_type,
@@ -428,15 +431,15 @@ const handleSubmit = async () => {
             form.value.reason !== originalForm.value.reason
           
           if (!isChanged) {
-            ElMessage.warning('内容未发生改变，无需保存')
+            ElMessage.warning(t('common.noChange'))
             return
           }
           
           await api.put(`/leaves/${form.value.id}`, form.value)
-          ElMessage.success('更新成功')
+          ElMessage.success(t('common.updateSuccess'))
         } else {
           await api.post('/leaves', form.value)
-          ElMessage.success('创建成功')
+          ElMessage.success(t('common.createSuccess'))
         }
         dialogVisible.value = false
         fetchLeaves()
@@ -448,14 +451,14 @@ const handleSubmit = async () => {
 }
 
 const handleDelete = (row) => {
-  ElMessageBox.confirm('确定要删除该请假记录吗？', '提示', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
+  ElMessageBox.confirm(t('leaves.confirmDeleteLeave'), t('common.tip'), {
+    confirmButtonText: t('common.confirm'),
+    cancelButtonText: t('common.cancel'),
     type: 'warning'
   }).then(async () => {
     try {
       await api.delete(`/leaves/${row.id}`)
-      ElMessage.success('删除成功')
+      ElMessage.success(t('common.deleteSuccess'))
       fetchLeaves()
     } catch (error) {
       window.logger.error('删除失败:', error)
@@ -513,14 +516,14 @@ onMounted(() => {
         if (teacher) {
           filters.value.teacher_id = teacher.id
           fetchLeaves()
-          ElMessage.info(`已筛选导师"${filterValue}"的请假记录`)
+          ElMessage.info(t('leaves.filteredTeacherLeaves', { name: filterValue }))
         }
       } else if (filterBy === 'student') {
         const student = students.value.find(s => s.name === filterValue)
         if (student) {
           filters.value.student_id = student.id
           fetchLeaves()
-          ElMessage.info(`已筛学员"${filterValue}"的请假记录`)
+          ElMessage.info(t('leaves.filteredStudentLeaves', { name: filterValue }))
         }
       }
     }, 500)
