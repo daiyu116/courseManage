@@ -473,6 +473,7 @@
                         <li>{{ t('dashboard.featureEmailNotification') }}</li>
                         <li>{{ t('dashboard.featureSystemLogs') }}</li>
                         <li>{{ t('dashboard.featureSiteInfo') }}</li>
+                        <li>{{ t('dashboard.featureI18n') }}</li>
                       </ul>
                     </div>
                   </el-col>
@@ -2514,7 +2515,7 @@ const handleSiteSettingsSave = async () => {
         window.logger.log('[DEBUG] 完整的payload:', JSON.stringify(payload, null, 2))
         
         const response = await api.post('/settings', payload)
-        window.logger.log('[DEBUG] 保存成功，服务器返回的ai_config:', response.data.ai_config)
+        window.logger.log('[DEBUG] Save successful, server returned ai_config:', response.data.ai_config)
         
         ElMessage.success(t('dashboard.configSaved'))
         siteSettingsDialogVisible.value = false
@@ -2777,7 +2778,7 @@ const fetchExamplesList = async () => {
 
     // 确保items是数组
     if (!Array.isArray(items)) {
-      window.logger.warn('items不是数组，重置为空数组', items)
+      window.logger.warn('items is not an array, resetting to empty array', items)
       items = []
     }
     examplesList.value = items

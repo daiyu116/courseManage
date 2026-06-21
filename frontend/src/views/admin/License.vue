@@ -43,7 +43,7 @@
           <el-descriptions-item :label="t('license.thirdPartyDiscount')">{{ licenseState.discountPercent != null ? licenseState.discountPercent + '%' : '--' }}</el-descriptions-item>
           <el-descriptions-item :label="t('license.referrerReward')">{{ licenseState.rebatePercent != null ? licenseState.rebatePercent + '%' : '--' }}</el-descriptions-item>
           <el-descriptions-item :label="t('license.authorizedAdvancedFeatures')" :span="2">
-            <el-tag v-for="(enabled, key) in licenseState.features" :key="key" :type="enabled ? 'success' : 'info'" size="small" style="margin:2px">{{ FEATURE_NAMES[key] || key }}</el-tag>
+            <el-tag v-for="(enabled, key) in licenseState.features" :key="key" :type="enabled ? 'success' : 'info'" size="small" style="margin:2px">{{ FEATURE_NAMES[key] ? t(FEATURE_NAMES[key]) : key }}</el-tag>
             <span v-if="!Object.keys(licenseState.features).length">--</span>
           </el-descriptions-item>
         </el-descriptions>
@@ -80,11 +80,11 @@
             <el-tooltip effect="dark" placement="top" :show-after="300">
               <template #content>
                 <div style="max-width: 320px;">
-                  <div style="font-weight: bold; font-size: 14px; margin-bottom: 6px;">{{ feat.name }}</div>
+                  <div style="font-weight: bold; font-size: 14px; margin-bottom: 6px;">{{ t(feat.name) }}</div>
                   <div v-if="FEATURE_DESCRIPTIONS[feat.key]" style="margin-bottom: 4px;">
-                    <span style="color: #67c23a;">✦ {{ FEATURE_DESCRIPTIONS[feat.key].highlights }}</span>
+                    <span style="color: #67c23a;">✦ {{ t(FEATURE_DESCRIPTIONS[feat.key].highlights) }}</span>
                   </div>
-                  <div v-if="FEATURE_DESCRIPTIONS[feat.key]" style="color: #c0c4cc; line-height: 1.6; white-space: pre-line;">{{ FEATURE_DESCRIPTIONS[feat.key].details }}</div>
+                  <div v-if="FEATURE_DESCRIPTIONS[feat.key]" style="color: #c0c4cc; line-height: 1.6; white-space: pre-line;">{{ t(FEATURE_DESCRIPTIONS[feat.key].details) }}</div>
                 </div>
               </template>
               <el-card
@@ -92,7 +92,7 @@
                 shadow="hover"
               >
                 <el-icon :size="24"><component :is="feat.icon" /></el-icon>
-                <span>{{ feat.name }}</span>
+                <span>{{ t(feat.name) }}</span>
                 <el-tooltip v-if="feat.enabled" effect="dark" placement="top">
                   <template #content>
                     <div>{{ t('license.organization') }}: {{ licenseState.organizationName || '--' }}</div>
@@ -159,11 +159,11 @@
                       <el-tooltip effect="dark" placement="top" :show-after="300">
                         <template #content>
                           <div style="max-width: 320px;">
-                            <div style="font-weight: bold; font-size: 14px; margin-bottom: 6px;">{{ opt.name }}</div>
+                            <div style="font-weight: bold; font-size: 14px; margin-bottom: 6px;">{{ t(opt.name) }}</div>
                             <div v-if="FEATURE_DESCRIPTIONS[opt.key]" style="margin-bottom: 4px;">
-                              <span style="color: #67c23a;">✦ {{ FEATURE_DESCRIPTIONS[opt.key].highlights }}</span>
+                              <span style="color: #67c23a;">✦ {{ t(FEATURE_DESCRIPTIONS[opt.key].highlights) }}</span>
                             </div>
-                            <div v-if="FEATURE_DESCRIPTIONS[opt.key]" style="color: #c0c4cc; line-height: 1.6; white-space: pre-line;">{{ FEATURE_DESCRIPTIONS[opt.key].details }}</div>
+                            <div v-if="FEATURE_DESCRIPTIONS[opt.key]" style="color: #c0c4cc; line-height: 1.6; white-space: pre-line;">{{ t(FEATURE_DESCRIPTIONS[opt.key].details) }}</div>
                           </div>
                         </template>
                         <el-card
@@ -172,7 +172,7 @@
                           @click="toggleAddonFeature(opt.key)"
                         >
                           <el-icon :size="24"><component :is="opt.icon" /></el-icon>
-                          <span>{{ opt.name }}</span>
+                          <span>{{ t(opt.name) }}</span>
                           <el-tag v-if="addonSelectedFeatures.includes(opt.key)" type="success" size="small">{{ t('license.selected') }}</el-tag>
                           <el-tag v-else type="info" size="small">{{ t('license.clickToSelect') }}</el-tag>
                         </el-card>
@@ -205,13 +205,13 @@
                     <el-form-item :label="t('license.licenseTypeLabel')">
                       <el-radio-group v-model="addonLicenseType" style="line-height:32px">
                         <el-radio v-for="(info, key) in LICENSE_TYPES" :key="key" :value="key" border size="small" style="margin-right:8px;margin-bottom:6px">
-                          {{ info.name }}{{ info.days ? ' (' + t('license.daysType', { n: info.days }) + ')' : ' (' + t('license.permanentType') + ')' }}
+                          {{ t(info.name) }}{{ info.days ? ' (' + t('license.daysType', { n: info.days }) + ')' : ' (' + t('license.permanentType') + ')' }}
                         </el-radio>
                       </el-radio-group>
                       <div v-if="addonLicenseType && addonSelectedFeatures.length" style="margin-top:8px;padding:8px 12px;background:#f0f9eb;border-radius:4px;border:1px solid #e1f3d8">
-                        <div style="font-size:13px;color:#606266;margin-bottom:4px">{{ t('license.costDetail', { name: LICENSE_TYPES[addonLicenseType].name, period: LICENSE_TYPES[addonLicenseType].days ? ' / ' + t('license.daysType', { n: LICENSE_TYPES[addonLicenseType].days }) : ' / ' + t('license.permanentType') }) }}</div>
+                        <div style="font-size:13px;color:#606266;margin-bottom:4px">{{ t('license.costDetail', { name: t(LICENSE_TYPES[addonLicenseType].name), period: LICENSE_TYPES[addonLicenseType].days ? ' / ' + t('license.daysType', { n: LICENSE_TYPES[addonLicenseType].days }) : ' / ' + t('license.permanentType') }) }}</div>
                         <div v-for="feat in addonSelectedFeatures" :key="feat" style="display:flex;justify-content:space-between;font-size:12px;color:#909399;padding:2px 0">
-                          <span>{{ FEATURE_NAMES[feat] || feat }}</span>
+                          <span>{{ FEATURE_NAMES[feat] ? t(FEATURE_NAMES[feat]) : feat }}</span>
                           <span style="color:#409eff;font-weight:500">¥{{ (FEATURE_PRICES[feat] && FEATURE_PRICES[feat][addonLicenseType]) || 0 }}</span>
                         </div>
                         <el-divider style="margin:6px 0" />
@@ -401,7 +401,7 @@
                     <el-tag v-for="fn in row.feature_names" :key="fn" size="small" style="margin:2px">{{ fn }}</el-tag>
                   </template>
                   <template v-else-if="row.features && row.features.length">
-                    <el-tag v-for="f in row.features" :key="f" size="small" style="margin:2px">{{ FEATURE_NAMES[f] || f }}</el-tag>
+                    <el-tag v-for="f in row.features" :key="f" size="small" style="margin:2px">{{ FEATURE_NAMES[f] ? t(FEATURE_NAMES[f]) : f }}</el-tag>
                   </template>
                   <span v-else>--</span>
                 </template>
@@ -497,11 +497,11 @@
                   <el-tooltip effect="dark" placement="top" :show-after="300">
                     <template #content>
                       <div style="max-width: 320px;">
-                        <div style="font-weight: bold; font-size: 14px; margin-bottom: 6px;">{{ opt.name }}</div>
+                        <div style="font-weight: bold; font-size: 14px; margin-bottom: 6px;">{{ t(opt.name) }}</div>
                         <div v-if="FEATURE_DESCRIPTIONS[opt.key]" style="margin-bottom: 4px;">
-                          <span style="color: #67c23a;">✦ {{ FEATURE_DESCRIPTIONS[opt.key].highlights }}</span>
+                          <span style="color: #67c23a;">✦ {{ t(FEATURE_DESCRIPTIONS[opt.key].highlights) }}</span>
                         </div>
-                        <div v-if="FEATURE_DESCRIPTIONS[opt.key]" style="color: #c0c4cc; line-height: 1.6; white-space: pre-line;">{{ FEATURE_DESCRIPTIONS[opt.key].details }}</div>
+                        <div v-if="FEATURE_DESCRIPTIONS[opt.key]" style="color: #c0c4cc; line-height: 1.6; white-space: pre-line;">{{ t(FEATURE_DESCRIPTIONS[opt.key].details) }}</div>
                       </div>
                     </template>
                     <el-card
@@ -510,7 +510,7 @@
                       @click="toggleFeature(opt.key)"
                     >
                       <el-icon :size="24"><component :is="opt.icon" /></el-icon>
-                      <span>{{ opt.name }}</span>
+                      <span>{{ t(opt.name) }}</span>
                       <el-tag v-if="selectedFeatures.includes(opt.key)" type="success" size="small">{{ t('license.selected') }}</el-tag>
                       <el-tag v-else type="info" size="small">{{ t('license.clickToSelect') }}</el-tag>
                     </el-card>
@@ -543,14 +543,14 @@
                 <el-form-item :label="t('license.licenseTypeLabel')">
                   <el-radio-group v-model="selectedLicenseType" style="line-height:32px">
                     <el-radio v-for="(info, key) in LICENSE_TYPES" :key="key" :value="key" border size="small" style="margin-right:8px;margin-bottom:6px">
-                      {{ info.name }}{{ info.days ? ' (' + t('license.daysType', { n: info.days }) + ')' : ' (' + t('license.permanentType') + ')' }}
+                      {{ t(info.name) }}{{ info.days ? ' (' + t('license.daysType', { n: info.days }) + ')' : ' (' + t('license.permanentType') + ')' }}
                     </el-radio>
                   </el-radio-group>
                   <div v-if="selectedLicenseType && selectedFeatures.length" style="margin-top:8px;padding:8px 12px;background:#f0f9eb;border-radius:4px;border:1px solid #e1f3d8">
-                    <div style="font-size:13px;color:#606266;margin-bottom:4px">{{ t('license.costDetail', { name: LICENSE_TYPES[selectedLicenseType].name, period: LICENSE_TYPES[selectedLicenseType].days ? ' / ' + t('license.daysType', { n: LICENSE_TYPES[selectedLicenseType].days }) : ' / ' + t('license.permanentType') }) }}：</div>
+                    <div style="font-size:13px;color:#606266;margin-bottom:4px">{{ t('license.costDetail', { name: t(LICENSE_TYPES[selectedLicenseType].name), period: LICENSE_TYPES[selectedLicenseType].days ? ' / ' + t('license.daysType', { n: LICENSE_TYPES[selectedLicenseType].days }) : ' / ' + t('license.permanentType') }) }}：</div>
                     <div style="font-size:13px;color:#606266;margin-bottom:4px">{{ t('license.costNoteCny') }}</div>
                     <div v-for="feat in selectedFeatures" :key="feat" style="display:flex;justify-content:space-between;font-size:12px;color:#909399;padding:2px 0">
-                      <span>{{ FEATURE_NAMES[feat] || feat }}</span>
+                      <span>{{ FEATURE_NAMES[feat] ? t(FEATURE_NAMES[feat]) : feat }}</span>
                       <span style="color:#409eff;font-weight:500">¥{{ (FEATURE_PRICES[feat] && FEATURE_PRICES[feat][selectedLicenseType]) || 0 }}</span>
                     </div>
                     <el-divider style="margin:6px 0" />
@@ -730,7 +730,7 @@
                     <el-tag v-for="fn in row.feature_names" :key="fn" size="small" style="margin:2px">{{ fn }}</el-tag>
                   </template>
                   <template v-else-if="row.features && row.features.length">
-                    <el-tag v-for="f in row.features" :key="f" size="small" style="margin:2px">{{ FEATURE_NAMES[f] || f }}</el-tag>
+                    <el-tag v-for="f in row.features" :key="f" size="small" style="margin:2px">{{ FEATURE_NAMES[f] ? t(FEATURE_NAMES[f]) : f }}</el-tag>
                   </template>
                   <span v-else>--</span>
                 </template>
@@ -923,7 +923,7 @@ const allFeatureOptions = [
 const defaultModules = computed(() => [
   t('license.defaultModuleCourse'), t('license.defaultModuleTeacher'), t('license.defaultModuleStudent'), t('license.defaultModuleClass'), t('license.defaultModuleRoom'), t('license.defaultModuleHoliday'), t('license.defaultModuleCondition'), t('license.defaultModuleSchedule'), t('license.defaultModuleSearch'),
   t('license.defaultModuleBatchImport'), t('license.defaultModuleExport'), t('license.defaultModuleCalendarView'), t('license.defaultModuleListView'), t('license.defaultModuleUserMgmt'), t('license.defaultModuleLogMgmt'), t('license.defaultModulePromotion'), t('license.defaultModuleEmail'),
-  t('license.defaultModuleResponsive')
+  t('license.defaultModuleResponsive'), t('license.defaultModuleI18n')
 ])
 const addonFeatureOptions = computed(() =>
   allFeatureOptions.filter(opt => !licenseState.features[opt.key])
@@ -1266,9 +1266,9 @@ async function handleAddonActivate() {
 async function handleDeactivateFeature(feat) {
   try {
     const enabledCount = Object.values(licenseState.features).filter(Boolean).length
-    let confirmMsg = t('license.confirmDeactivateFeature', { name: feat.name })
+    let confirmMsg = t('license.confirmDeactivateFeature', { name: t(feat.name) })
     if (enabledCount > 1) {
-      confirmMsg = t('license.confirmDeactivateFeatureMulti', { count: enabledCount, name: feat.name, features: Object.entries(licenseState.features).filter(([,v]) => v).map(([k]) => FEATURE_NAMES[k] || k).join('、') })
+      confirmMsg = t('license.confirmDeactivateFeatureMulti', { count: enabledCount, name: t(feat.name), features: Object.entries(licenseState.features).filter(([,v]) => v).map(([k]) => FEATURE_NAMES[k] ? t(FEATURE_NAMES[k]) : k).join('、') })
     }
     await ElMessageBox.confirm(
       confirmMsg,
@@ -1327,7 +1327,7 @@ function openFeatureFeedbackDialog(feat) {
     organization_name: licenseState.organizationName || orgName.value || '',
     contact_person: contactPerson.value || '',
     contact_info: contactPhone.value || contactEmail.value || contactWechat.value || '',
-    feature_module: feat.name,
+    feature_module: t(feat.name),
     feedback_time: getCurrentTimeStr(),
     feedback: '',
     suggestion: '',
