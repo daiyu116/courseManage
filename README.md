@@ -6,7 +6,7 @@
 **演示地址**
 
     http://23gf6881kb66.vicp.fun:43393
-    初始用户名:admin 初始密码:admin123
+    初始用户名:admin 初始密码:Admin.123
     
 **项目功能介绍**
     

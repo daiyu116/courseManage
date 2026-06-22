@@ -7,42 +7,40 @@ WORKDIR /app
 
 COPY package*.json ./
 RUN npm install && npm install lunar-javascript terser
-
 COPY . .
-
-RUN cat > vite.config.js << 'VITEEOF'
-import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue'
-import path from 'path'
-
-export default defineConfig({
-  plugins: [vue()],
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src'),
-    },
-  },
-  build: {
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: true,
-        drop_debugger: true,
-      },
-      mangle: {
-        toplevel: true,
-      },
-    },
-    rollupOptions: {
-      output: {
-        chunkFileNames: 'assets/[hash].js',
-        entryFileNames: 'assets/[hash].js',
-        assetFileNames: 'assets/[hash][extname]',
-      },
-    },
-  },
-})
-VITEEOF
+RUN printf '%s\n' \
+  "import { defineConfig } from 'vite'" \
+  "import vue from '@vitejs/plugin-vue'" \
+  "import path from 'path'" \
+  "" \
+  "export default defineConfig({" \
+  "  plugins: [vue()]," \
+  "  resolve: {" \
+  "    alias: {" \
+  "      '@': path.resolve(__dirname, './src')," \
+  "    }," \
+  "  }," \
+  "  build: {" \
+  "    minify: 'terser'," \
+  "    terserOptions: {" \
+  "      compress: {" \
+  "        drop_console: true," \
+  "        drop_debugger: true," \
+  "      }," \
+  "      mangle: {" \
+  "        toplevel: true," \
+  "      }," \
+  "    }," \
+  "    rollupOptions: {" \
+  "      output: {" \
+  "        chunkFileNames: 'assets/[hash].js'," \
+  "        entryFileNames: 'assets/[hash].js'," \
+  "        assetFileNames: 'assets/[hash][extname]'," \
+  "      }," \
+  "    }," \
+  "  }," \
+  "})" \
+  > vite.config.js
 
 RUN npm run build
 

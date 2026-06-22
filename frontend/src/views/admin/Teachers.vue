@@ -837,9 +837,8 @@ const showEditDialog = (row) => {
   }
   let formattedEndDate = null
   if (row.end_date) {
-    // end_date是datetime类型，需要转换为ISO格式的datetime字符串
     const date = new Date(row.end_date)
-    formattedEndDate = date.toISOString()
+    formattedEndDate = date.toISOString().split('T')[0]
   }
 
   const formData = {

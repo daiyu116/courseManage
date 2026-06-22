@@ -9,11 +9,12 @@ RUN apt-get update && \
     apt-get install -y gcc python3-dev && \
     rm -rf /var/lib/apt/lists/*
 
+ARG PIP_INDEX_URL
+ARG PIP_TRUSTED_HOST
+
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt || \
-    pip install --no-cache-dir -i https://pypi.org/simple/ -r requirements.txt
-RUN pip install --no-cache-dir cython || \
-    pip install --no-cache-dir -i https://pypi.org/simple/ cython
+RUN pip install --no-cache-dir -i ${PIP_INDEX_URL} --trusted-host ${PIP_TRUSTED_HOST} -r requirements.txt
+RUN pip install --no-cache-dir -i ${PIP_INDEX_URL} --trusted-host ${PIP_TRUSTED_HOST} cython
 
 COPY . .
 
@@ -45,9 +46,11 @@ RUN apt-get update && \
     postgresql-client \
     && rm -rf /var/lib/apt/lists/*
 
+ARG PIP_INDEX_URL
+ARG PIP_TRUSTED_HOST
+
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt || \
-    pip install --no-cache-dir -i https://pypi.org/simple/ -r requirements.txt
+RUN pip install --no-cache-dir -i ${PIP_INDEX_URL} --trusted-host ${PIP_TRUSTED_HOST} -r requirements.txt
 
 COPY --from=builder /app/ .
 

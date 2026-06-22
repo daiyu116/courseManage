@@ -382,14 +382,14 @@ def create_default_admin():
         if not existing_admin:
             admin = User(
                 username="admin",
-                password_hash=pwd_context.hash("admin123"),
+                password_hash=pwd_context.hash("Admin.123"),
                 is_admin=True,
                 role='super_admin',
                 must_change_password=True
             )
             db.add(admin)
             db.commit()
-            print("✓ 默认管理员账户创建成功 (用户名: admin, 密码: admin123)")
+            print("✓ 默认管理员账户创建成功 (用户名: admin, 密码: Admin.123)")
         else:
             print("✓ 管理员账户已存在")
     except Exception as e:

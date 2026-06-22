@@ -59,7 +59,7 @@ class TeacherBase(BaseModel):
     allow_holiday_scheduling: bool = Field(False, description="节假日可排课")
     no_feedback_required: bool = Field(False, description="无需反馈")
     is_active: bool = Field(True, description="是否本机构在职")
-    end_date: Optional[datetime] = Field(None, description="离职日期")
+    end_date: Optional[date] = Field(None, description="离职日期")
 
 class TeacherCreate(TeacherBase):
     created_at: Optional[datetime] = Field(None, description="创建时间")
@@ -78,7 +78,7 @@ class TeacherUpdate(BaseModel):
     email: Optional[str] = None
     no_feedback_required: Optional[bool] = None
     is_active: Optional[bool] = None
-    end_date: Optional[datetime] = None
+    end_date: Optional[date] = None
 
 class Teacher(TeacherBase):
     id: int
@@ -88,7 +88,7 @@ class Teacher(TeacherBase):
     join_date: Optional[date] = None
     created_at: datetime
     updated_at: datetime
-    end_date: Optional[datetime] = None
+    end_date: Optional[date] = None
     no_feedback_required: Optional[bool] = None
 
     class Config:
@@ -135,7 +135,7 @@ class StudentBase(BaseModel):
     contact_phone: Optional[str] = Field(None, description="联系方式")
     email: Optional[str] = Field(None, description="电子邮箱")
     is_active: bool = Field(True, description="是否本机构在读")
-    end_date: Optional[datetime] = Field(None, description="结束日期")
+    end_date: Optional[date] = Field(None, description="结束日期")
 
 class StudentCreate(StudentBase):
     created_at: Optional[datetime] = Field(None, description="创建时间")
@@ -156,7 +156,7 @@ class StudentUpdate(BaseModel):
     contact_phone: Optional[str] = None
     email: Optional[str] = None
     is_active: Optional[bool] = None
-    end_date: Optional[datetime] = None
+    end_date: Optional[date] = None
 
 class Student(StudentBase):
     id: int
@@ -167,7 +167,7 @@ class Student(StudentBase):
     email: Optional[str] = None
     created_at: datetime
     updated_at: datetime
-    end_date: Optional[datetime] = None
+    end_date: Optional[date] = None
 
     class Config:
         from_attributes = True

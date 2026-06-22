@@ -41,7 +41,7 @@ def init_db():
         if not existing_admin:
             admin = User(
                 username="admin",
-                password_hash=pwd_context.hash("admin123"),
+                password_hash=pwd_context.hash("Admin.123"),
                 is_admin=True,
                 role='super_admin',
                 must_change_password=True
@@ -50,7 +50,7 @@ def init_db():
             db.commit()
             print("✓ 默认管理员账户创建成功")
             print("  用户名: admin")
-            print("  密码: admin123（首次登录后必须修改）")
+            print("  密码: Admin.123（首次登录后必须修改）")
         else:
             print("✓ 管理员账户已存在")
         

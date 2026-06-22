@@ -29,7 +29,7 @@
       </el-form>
       <div class="default-account-hint">
         <el-divider content-position="center">{{ t('login.firstLogin') }}</el-divider>
-        <p>{{ t('login.defaultAccount') }}<strong>admin</strong> / <strong>admin123</strong></p>
+        <p>{{ t('login.defaultAccount') }}<strong>admin</strong> / <strong>Admin.123</strong></p>
         <p>{{ t('login.changePasswordAfterLogin') }}</p>
       </div>
     </el-card>
@@ -82,6 +82,7 @@ import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import api from '@/utils/api'
+import { loadLicenseStatus } from '@/utils/license'
 
 const { t } = useI18n()
 const router = useRouter()
@@ -168,6 +169,8 @@ const handleLogin = async () => {
         } catch (error) {
           window.logger.error('Failed to load site settings:', error)
         }
+
+        await loadLicenseStatus()
 
         window.dispatchEvent(new CustomEvent('user-logged-in', { 
           detail: { 
