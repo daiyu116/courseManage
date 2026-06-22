@@ -126,6 +126,86 @@ def get_grades(
     }
 
 
+@router.get("/export")
+def export_grades(
+    student_id: Optional[int] = None,
+    course_id: Optional[int] = None,
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    lang: str = "zh-CN",
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    check_grade_manager_permission(db, current_user)
+
+    from openpyxl import Workbook
+    from io import BytesIO
+    from fastapi.responses import StreamingResponse
+
+    _t_map = {
+        "zh-CN": {
+            "sheet": "学员成绩",
+            "headers": ["学员", "科目", "年级", "考试阶段", "考试日期", "得分", "满分", "得分率", "备注"],
+        },
+        "en": {
+            "sheet": "Student Grades",
+            "headers": ["Student", "Course", "Grade Level", "Exam Stage", "Exam Date", "Score", "Total Score", "Score Rate", "Remark"],
+        },
+    }
+    t = _t_map.get(lang, _t_map["zh-CN"])
+
+    query = db.query(StudentGrade).options(
+        joinedload(StudentGrade.student),
+        joinedload(StudentGrade.course)
+    )
+
+    if student_id is not None:
+        query = query.filter(StudentGrade.student_id == student_id)
+    if course_id is not None:
+        query = query.filter(StudentGrade.course_id == course_id)
+    if start_date:
+        query = query.filter(StudentGrade.exam_date >= start_date)
+    if end_date:
+        query = query.filter(StudentGrade.exam_date <= end_date)
+
+    grades = query.order_by(StudentGrade.exam_date.desc().nullslast()).all()
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = t["sheet"]
+
+    headers = t["headers"]
+    ws.append(headers)
+
+    for grade in grades:
+        student_name = grade.student.name if grade.student else ""
+        course_name = grade.course.name if grade.course else ""
+        score_rate = f"{grade.score / grade.total_score * 100:.1f}%" if grade.total_score and grade.total_score > 0 else ""
+
+        ws.append([
+            student_name,
+            course_name,
+            grade.grade_level or "",
+            grade.exam_stage or "",
+            grade.exam_date.strftime("%Y-%m-%d") if grade.exam_date else "",
+            grade.score,
+            grade.total_score or "",
+            score_rate,
+            grade.description or ""
+        ])
+
+    output = BytesIO()
+    wb.save(output)
+    output.seek(0)
+    log_operation(db, "成绩管理", "导出", f"成功导出成绩记录，共 {len(grades)} 条", current_user.username)
+
+    return StreamingResponse(
+        output,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": "attachment; filename=grades.xlsx"}
+    )
+
+
 @router.get("/{grade_id}", response_model=StudentGradeSchema)
 def get_grade(
     grade_id: int,

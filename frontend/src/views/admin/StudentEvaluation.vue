@@ -124,6 +124,7 @@
             </el-button>
             <el-button @click="resetCompFilters">{{ t('evaluation.reset') }}</el-button>
             <el-button type="success" @click="showAddComprehensiveDialog">{{ t('evaluation.addComprehensive') }}</el-button>
+            <el-button type="warning" @click="exportComprehensiveEvals">{{ t('evaluation.exportComprehensive') }}</el-button>
           </div>
 
           <el-row :gutter="20" v-if="compEvals.length > 0">
@@ -202,6 +203,7 @@
             </el-button>
             <el-button @click="resetSubjFilters">{{ t('evaluation.reset') }}</el-button>
             <el-button type="success" @click="showAddSubjectDialog">{{ t('evaluation.addSubject') }}</el-button>
+            <el-button type="warning" @click="exportSubjectEvals">{{ t('evaluation.exportSubject') }}</el-button>
           </div>
 
           <el-row :gutter="20" v-if="subjEvals.length > 0">
@@ -733,6 +735,56 @@ const resetSubjFilters = () => {
   subjFilters.eval_period = ''
   subjPagination.currentPage = 1
   fetchSubjectEvals()
+}
+
+const exportComprehensiveEvals = async () => {
+  try {
+    const params = { lang: locale.value }
+    if (compFilters.student_id) params.student_id = compFilters.student_id
+    if (compFilters.profile_type) params.profile_type = compFilters.profile_type
+    if (compFilters.eval_period) params.eval_period = compFilters.eval_period
+    const response = await api.get('/evaluations/export/comprehensive', {
+      params,
+      responseType: 'blob'
+    })
+    const url = window.URL.createObjectURL(new Blob([response.data]))
+    const link = document.createElement('a')
+    link.href = url
+    link.setAttribute('download', `${t('evaluation.exportComprehensive')}_${new Date().toLocaleDateString('zh-CN')}.xlsx`)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    window.URL.revokeObjectURL(url)
+    ElMessage.success(t('evaluation.exportSuccessMsg'))
+  } catch (error) {
+    window.logger.error('导出失败:', error)
+    ElMessage.error(t('evaluation.exportFailed'))
+  }
+}
+
+const exportSubjectEvals = async () => {
+  try {
+    const params = { lang: locale.value }
+    if (subjFilters.student_id) params.student_id = subjFilters.student_id
+    if (subjFilters.course_id) params.course_id = subjFilters.course_id
+    if (subjFilters.eval_period) params.eval_period = subjFilters.eval_period
+    const response = await api.get('/evaluations/export/subject', {
+      params,
+      responseType: 'blob'
+    })
+    const url = window.URL.createObjectURL(new Blob([response.data]))
+    const link = document.createElement('a')
+    link.href = url
+    link.setAttribute('download', `${t('evaluation.exportSubject')}_${new Date().toLocaleDateString('zh-CN')}.xlsx`)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    window.URL.revokeObjectURL(url)
+    ElMessage.success(t('evaluation.exportSuccessMsg'))
+  } catch (error) {
+    window.logger.error('导出失败:', error)
+    ElMessage.error(t('evaluation.exportFailed'))
+  }
 }
 
 const onSubjStudentChange = () => {

@@ -2465,6 +2465,7 @@ async def export_schedules(
     days_of_week: Optional[str] = None,
     has_conflict: Optional[bool] = None,
     execution_status: Optional[str] = None,
+    lang: str = "zh-CN",
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_course_admin_user)
 ):
@@ -2549,42 +2550,64 @@ async def export_schedules(
     
     if format == 'excel':
         log_operation(db, "课程安排", "导出", f"导出课程安排:格式 {format}, 共 {len(schedules)} 条记录", current_user.username,"Info")
-        return export_to_excel(schedules, db)
+        return export_to_excel(schedules, db, lang)
     elif format == 'csv':
         log_operation(db, "课程安排", "导出", f"导出课程安排:格式 {format}, 共 {len(schedules)} 条记录", current_user.username,"Info")
-        return export_to_csv(schedules, db)
+        return export_to_csv(schedules, db, lang)
     elif format == 'pdf':
         log_operation(db, "课程安排", "导出", f"导出课程安排:格式 {format}, 共 {len(schedules)} 条记录", current_user.username,"Info")
-        return export_to_pdf(schedules, db)
+        return export_to_pdf(schedules, db, lang)
     else:
         log_operation(db, "课程安排", "导出", f"导出课程安排失败: 不支持的格式 {format}", current_user.username,"Error")
         raise HTTPException(status_code=400, detail="不支持的导出格式")
 
-def export_to_excel(schedules: List[Schedule], db: Session):
+def export_to_excel(schedules: List[Schedule], db: Session, lang: str = "zh-CN"):
     """导出为Excel格式"""
+    _t_map = {
+        "zh-CN": {
+            "sheet": "课程安排",
+            "headers": ['ID', '科目', '导师', '班级', '课程类型', '教室类型', '教室', '会议室链接', '星期', '开始时间', '结束时间', '开始日期', '结束日期', '冲突状态', '执行状态', '课程反馈', '延期原因', '取消原因'],
+            "trial": "试听课", "formal": "正式课",
+            "offline": "线下物理", "online": "线上虚拟",
+            "conflict": "冲突", "no_conflict": "无冲突",
+            "completed": "完训", "postponed": "延期", "cancelled": "取消", "pending": "待执行",
+        },
+        "en": {
+            "sheet": "Course Schedules",
+            "headers": ['ID', 'Course', 'Teacher', 'Class', 'Schedule Type', 'Room Type', 'Room', 'Meeting Link', 'Day of Week', 'Start Time', 'End Time', 'Start Date', 'End Date', 'Conflict', 'Status', 'Feedback', 'Postpone Reason', 'Cancel Reason'],
+            "trial": "Trial", "formal": "Formal",
+            "offline": "Offline", "online": "Online",
+            "conflict": "Conflict", "no_conflict": "No Conflict",
+            "completed": "Completed", "postponed": "Postponed", "cancelled": "Cancelled", "pending": "Pending",
+        },
+    }
+    t = _t_map.get(lang, _t_map["zh-CN"])
+
     wb = Workbook()
     ws = wb.active
-    ws.title = "课程安排"
+    ws.title = t["sheet"]
     
-    headers = ['ID', '科目', '导师', '班级', '课程类型', '教室类型', '教室', '会议室链接', '星期', '开始时间', '结束时间', '开始日期', '结束日期', '冲突状态', '执行状态', '课程反馈', '延期原因', '取消原因']
+    headers = t["headers"]
     ws.append(headers)
     
     courses = {c.id: c.name for c in db.query(Course).all()}
-    teachers = {t.id: t.name for t in db.query(Teacher).all()}
-    classes = {c.id: c.name for c in db.query(Class).all()}
+    teacher_names = {tc.id: tc.name for tc in db.query(Teacher).all()}
+    class_names = {cl.id: cl.name for cl in db.query(Class).all()}
     rooms = {r.id: r.name for r in db.query(Room).all()}
     
     for schedule in schedules:
-        room_type_text = '线下物理' if schedule.room_type == 'offline_physical' else '线上虚拟'
-        schedule_type_text = '试听课' if schedule.schedule_type == 'trial' else '正式课'
+        room_type_text = t['offline'] if schedule.room_type == 'offline_physical' else t['online']
+        schedule_type_text = t['trial'] if schedule.schedule_type == 'trial' else t['formal']
         room_name = rooms.get(schedule.room_id, '') if schedule.room_type == 'offline_physical' else ''
         meeting_link = schedule.meeting_link or ''
+        
+        exec_status = t.get(schedule.execution_status, t['pending'])
         
         row = [
             schedule.id,
             courses.get(schedule.course_id, ''),
-            teachers.get(schedule.teacher_id, ''),
-            classes.get(schedule.class_id, ''),
+            teacher_names.get(schedule.teacher_id, ''),
+            class_names.get(schedule.class_id, ''),
             schedule_type_text,
             room_type_text,
             room_name,
@@ -2594,8 +2617,8 @@ def export_to_excel(schedules: List[Schedule], db: Session):
             schedule.end_time,
             schedule.start_date.strftime('%Y-%m-%d'),
             schedule.end_date.strftime('%Y-%m-%d'),
-            '冲突' if schedule.has_conflict else '无冲突',
-            '完训' if schedule.execution_status == 'completed' else '延期' if schedule.execution_status == 'postponed' else '取消' if schedule.execution_status == 'cancelled' else '待执行',
+            t['conflict'] if schedule.has_conflict else t['no_conflict'],
+            exec_status,
             schedule.content_feedback or '',
             schedule.postpone_reason or '',
             schedule.cancel_reason or ''
@@ -2612,36 +2635,51 @@ def export_to_excel(schedules: List[Schedule], db: Session):
         headers={'Content-Disposition': f'attachment; filename=course_schedules_{datetime.now().strftime("%Y%m%d_%H%M%S")}.xlsx'}
     )
 
-def export_to_csv(schedules: List[Schedule], db: Session):
+def export_to_csv(schedules: List[Schedule], db: Session, lang: str = "zh-CN"):
     """导出为CSV格式"""
     import io
     
-    # 使用 StringIO 替代 BytesIO
+    _t_map = {
+        "zh-CN": {
+            "headers": ['ID', '科目', '导师', '班级', '课程类型', '教室类型', '教室', '会议室链接', '星期', '开始时间', '结束时间', '开始日期', '结束日期', '冲突状态', '执行状态', '课程反馈', '延期原因', '取消原因'],
+            "trial": "试听课", "formal": "正式课",
+            "offline": "线下物理", "online": "线上虚拟",
+            "conflict": "冲突", "no_conflict": "无冲突",
+            "completed": "完训", "postponed": "延期", "cancelled": "取消", "pending": "待执行",
+        },
+        "en": {
+            "headers": ['ID', 'Course', 'Teacher', 'Class', 'Schedule Type', 'Room Type', 'Room', 'Meeting Link', 'Day of Week', 'Start Time', 'End Time', 'Start Date', 'End Date', 'Conflict', 'Status', 'Feedback', 'Postpone Reason', 'Cancel Reason'],
+            "trial": "Trial", "formal": "Formal",
+            "offline": "Offline", "online": "Online",
+            "conflict": "Conflict", "no_conflict": "No Conflict",
+            "completed": "Completed", "postponed": "Postponed", "cancelled": "Cancelled", "pending": "Pending",
+        },
+    }
+    t = _t_map.get(lang, _t_map["zh-CN"])
+
     output = io.StringIO()
     writer = csv.writer(output)
     
-    # 获取所有相关数据
     courses = {c.id: c.name for c in db.query(Course).all()}
-    teachers = {t.id: t.name for t in db.query(Teacher).all()}
-    classes = {c.id: c.name for c in db.query(Class).all()}
+    teacher_names = {tc.id: tc.name for tc in db.query(Teacher).all()}
+    class_names = {cl.id: cl.name for cl in db.query(Class).all()}
     rooms = {r.id: r.name for r in db.query(Room).all()}
     
-    # 设置表头
-    headers = ['ID', '科目', '导师', '班级', '课程类型', '教室类型', '教室', '会议室链接', '星期', '开始时间', '结束时间', '开始日期', '结束日期', '冲突状态', '执行状态', '课程反馈', '延期原因', '取消原因']
+    headers = t["headers"]
     writer.writerow(headers)
     
-    # 添加数据行
     for schedule in schedules:
-        room_type_text = '线下物理' if schedule.room_type == 'offline_physical' else '线上虚拟'
-        schedule_type_text = '试听课' if schedule.schedule_type == 'trial' else '正式课'
+        room_type_text = t['offline'] if schedule.room_type == 'offline_physical' else t['online']
+        schedule_type_text = t['trial'] if schedule.schedule_type == 'trial' else t['formal']
         room_name = rooms.get(schedule.room_id, '') if schedule.room_type == 'offline_physical' else ''
         meeting_link = schedule.meeting_link or ''
+        exec_status = t.get(schedule.execution_status, t['pending'])
         
         row = [
             schedule.id,
             courses.get(schedule.course_id, ''),
-            teachers.get(schedule.teacher_id, ''),
-            classes.get(schedule.class_id, ''),
+            teacher_names.get(schedule.teacher_id, ''),
+            class_names.get(schedule.class_id, ''),
             schedule_type_text,
             room_type_text,
             room_name,
@@ -2651,8 +2689,8 @@ def export_to_csv(schedules: List[Schedule], db: Session):
             schedule.end_time,
             schedule.start_date.strftime('%Y-%m-%d'),
             schedule.end_date.strftime('%Y-%m-%d'),
-            '冲突' if schedule.has_conflict else '无冲突',
-            '完训' if schedule.execution_status == 'completed' else '延期' if schedule.execution_status == 'postponed' else '取消' if schedule.execution_status == 'cancelled' else '待执行',
+            t['conflict'] if schedule.has_conflict else t['no_conflict'],
+            exec_status,
             schedule.content_feedback or '',
             schedule.postpone_reason or '',
             schedule.cancel_reason or ''
@@ -2669,7 +2707,7 @@ def export_to_csv(schedules: List[Schedule], db: Session):
         headers={'Content-Disposition': f'attachment; filename=course_schedules_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'}
     )
 
-def export_to_pdf(schedules: List[Schedule], db: Session):
+def export_to_pdf(schedules: List[Schedule], db: Session, lang: str = "zh-CN"):
     """导出为PDF格式"""
     from reportlab.lib.pagesizes import landscape, A4
     from reportlab.lib.units import inch, mm
@@ -2683,6 +2721,26 @@ def export_to_pdf(schedules: List[Schedule], db: Session):
     import os
     import math
     
+    _t_map = {
+        "zh-CN": {
+            "title": "课程安排表",
+            "headers": ['ID', '科目', '导师', '班级', '教室类型', '教室', '会议室链接', '星期', '开始时间', '结束时间', '开始日期', '结束日期', '冲突状态', '执行状态', '课程类型', '课程反馈', '延期原因', '取消原因'],
+            "trial": "试听课", "formal": "正式课",
+            "offline": "线下物理", "online": "线上虚拟",
+            "conflict": "冲突", "no_conflict": "无",
+            "completed": "完训", "postponed": "延期", "cancelled": "取消", "pending": "待执行",
+        },
+        "en": {
+            "title": "Course Schedule",
+            "headers": ['ID', 'Course', 'Teacher', 'Class', 'Room Type', 'Room', 'Meeting Link', 'Day', 'Start', 'End', 'Start Date', 'End Date', 'Conflict', 'Status', 'Type', 'Feedback', 'Postpone Reason', 'Cancel Reason'],
+            "trial": "Trial", "formal": "Formal",
+            "offline": "Offline", "online": "Online",
+            "conflict": "Conflict", "no_conflict": "No",
+            "completed": "Completed", "postponed": "Postponed", "cancelled": "Cancelled", "pending": "Pending",
+        },
+    }
+    t = _t_map.get(lang, _t_map["zh-CN"])
+
     output = BytesIO()
     c = canvas.Canvas(output, pagesize=landscape(A4))
     
@@ -2695,7 +2753,6 @@ def export_to_pdf(schedules: List[Schedule], db: Session):
     usable_width = page_width - margin_left - margin_right
     usable_height = page_height - margin_top - margin_bottom
     
-    # 1. 修复汉字显示为方块的问题：正确注册中文字体
     use_chinese = False
     data_font = 'Helvetica'
     title_font = 'Helvetica'
@@ -2723,18 +2780,16 @@ def export_to_pdf(schedules: List[Schedule], db: Session):
         except Exception as e:
             log_operation(db, "导出", "WARNING", f"字体加载失败 {font_path}: {e}")
     
-    # 设置标题
     c.setFont(title_font, 14)
-    title_text = "课程安排表"
+    title_text = t["title"]
     title_width = c.stringWidth(title_text, title_font, 14)
     c.drawString((page_width - title_width) / 2, page_height - margin_top - 20, title_text)
     
-    headers = ['ID', '科目', '导师', '班级', '教室类型', '教室', '会议室链接', '星期', '开始时间', '结束时间', '开始日期', '结束日期', '冲突状态', '执行状态', '课程类型', '课程反馈', '延期原因', '取消原因']
+    headers = t["headers"]
     
-    # 获取所有相关数据
     courses = {c.id: c.name for c in db.query(Course).all()}
-    teachers = {t.id: t.name for t in db.query(Teacher).all()}
-    classes = {c.id: c.name for c in db.query(Class).all()}
+    teacher_names = {tc.id: tc.name for tc in db.query(Teacher).all()}
+    class_names = {cl.id: cl.name for cl in db.query(Class).all()}
     rooms = {r.id: r.name for r in db.query(Room).all()}
     
     # 2. & 4. 优化列宽和位置，防止“班级”盖住“教室”，并为长文本留出空间
@@ -2808,16 +2863,17 @@ def export_to_pdf(schedules: List[Schedule], db: Session):
         header_style = styles['Normal']
     
     for schedule in schedules:
-        room_type_text = '线下物理' if schedule.room_type == 'offline_physical' else '线上虚拟'
+        room_type_text = t['offline'] if schedule.room_type == 'offline_physical' else t['online']
         room_name = rooms.get(schedule.room_id, '') if schedule.room_type == 'offline_physical' else ''
         meeting_link = schedule.meeting_link or ''
-        schedule_type_text = '正式课' if schedule.schedule_type == 'formal' else '试听课'
+        schedule_type_text = t['formal'] if schedule.schedule_type == 'formal' else t['trial']
+        exec_status = t.get(schedule.execution_status, t['pending'])
         
         row_data = [
             str(schedule.id),
             courses.get(schedule.course_id, ''),
-            teachers.get(schedule.teacher_id, ''),
-            classes.get(schedule.class_id, ''),
+            teacher_names.get(schedule.teacher_id, ''),
+            class_names.get(schedule.class_id, ''),
             room_type_text,
             room_name,
             meeting_link,
@@ -2826,8 +2882,8 @@ def export_to_pdf(schedules: List[Schedule], db: Session):
             schedule.end_time,
             schedule.start_date.strftime('%Y-%m-%d') if hasattr(schedule.start_date, 'strftime') else str(schedule.start_date),
             schedule.end_date.strftime('%Y-%m-%d') if hasattr(schedule.end_date, 'strftime') else str(schedule.end_date),
-            '冲突' if schedule.has_conflict else '无',
-            '完训' if schedule.execution_status == 'completed' else '延期' if schedule.execution_status == 'postponed' else '取消' if schedule.execution_status == 'cancelled' else '待执行',
+            t['conflict'] if schedule.has_conflict else t['no_conflict'],
+            exec_status,
             schedule_type_text,
             schedule.content_feedback or '',
             schedule.postpone_reason or '',

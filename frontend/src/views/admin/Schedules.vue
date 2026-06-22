@@ -1648,7 +1648,7 @@ import dayjs from 'dayjs'
 import { useI18n } from 'vue-i18n'
 
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const mainTableRef = ref(null)
 const topScrollbarRef = ref(null)
 const scrollbarWidth = ref(0)
@@ -3335,6 +3335,7 @@ const handleExport = async (format) => {
     // 导出所有数据，不分页
     params.skip = 0
     params.limit = 100000
+    params.lang = locale.value
     
     const response = await api.get(`/schedules/export/${format}`, {
       params,

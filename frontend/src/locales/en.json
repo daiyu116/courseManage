@@ -2214,6 +2214,9 @@
     "goBack": "Go Back",
     "addGradeButton": "Add Grade",
     "batchAddButtonShort": "Batch Add",
+    "exportGrades": "Export Grades",
+    "exportSuccessMsg": "Export successful",
+    "exportFailed": "Export failed",
     "studentLabel": "Student",
     "schoolLabel": "School",
     "gradeLabel": "Grade",
@@ -2363,6 +2366,8 @@
     "subjectComment": "Subject Comment",
     "subjectCommentPlaceholder": "Enter subject comment",
     "relatedCourseOptional": "Related Course (Optional)",
+    "relatedCourse": "Related Course",
+    "templateNameRequired": "Template name is required",
     "dimensionDescription": "Dimension Description",
     "addDimension": "Add Dimension",
     "profileTypeRequired": "Please select profile type",
@@ -2382,7 +2387,11 @@
     "confirmDeleteSubject": "Are you sure to delete this subject evaluation?",
     "editTemplateTitle": "Edit Template",
     "atLeastOneDimension": "Please add at least one dimension",
-    "confirmDeleteTemplate": "Are you sure to delete this template?"
+    "confirmDeleteTemplate": "Are you sure to delete this template?",
+    "exportComprehensive": "Export Comprehensive",
+    "exportSubject": "Export Subject",
+    "exportSuccessMsg": "Export successful",
+    "exportFailed": "Export failed"
   },
   "scheduleView": {
     "calendarView": "Calendar View",

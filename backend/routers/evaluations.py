@@ -715,3 +715,160 @@ def get_student_evaluation_profile(
         comprehensive_evaluations=comp_result,
         subject_evaluations=subj_result,
     )
+
+
+@router.get("/export/comprehensive")
+def export_comprehensive_evaluations(
+    student_id: Optional[int] = None,
+    profile_type: Optional[str] = None,
+    eval_period: Optional[str] = None,
+    lang: str = "zh-CN",
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_course_admin_user),
+):
+    _check_evaluation_permission(db, current_user)
+
+    from openpyxl import Workbook
+    from io import BytesIO
+    from fastapi.responses import StreamingResponse
+
+    _t_map = {
+        "zh-CN": {
+            "sheet": "综合评价",
+            "headers": ["学员", "评价周期", "画像类型", "学习态度", "知识掌握", "实践能力", "创新思维", "协作素养", "德", "智", "体", "美", "劳", "总体评语", "评价人", "评价日期"],
+            "academic": "学术维度", "virtue": "德智体美劳",
+        },
+        "en": {
+            "sheet": "Comprehensive Evaluation",
+            "headers": ["Student", "Period", "Profile Type", "Attitude", "Knowledge", "Practice", "Innovation", "Collaboration", "Morality", "Intelligence", "Physical", "Aesthetics", "Labor", "Overall Comment", "Evaluator", "Eval Date"],
+            "academic": "Academic", "virtue": "Virtue",
+        },
+    }
+    t = _t_map.get(lang, _t_map["zh-CN"])
+
+    query = db.query(StudentComprehensiveEvaluation).options(
+        joinedload(StudentComprehensiveEvaluation.student),
+        joinedload(StudentComprehensiveEvaluation.evaluator),
+    )
+
+    if student_id is not None:
+        query = query.filter(StudentComprehensiveEvaluation.student_id == student_id)
+    if profile_type:
+        query = query.filter(StudentComprehensiveEvaluation.profile_type == profile_type)
+    if eval_period:
+        query = query.filter(StudentComprehensiveEvaluation.eval_period == eval_period)
+
+    evals = query.order_by(desc(StudentComprehensiveEvaluation.eval_date).nullslast()).all()
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = t["sheet"]
+
+    headers = t["headers"]
+    ws.append(headers)
+
+    for e in evals:
+        profile_type_text = t.get(e.profile_type, e.profile_type or "")
+        ws.append([
+            e.student.name if e.student else "",
+            e.eval_period or "",
+            profile_type_text,
+            e.attitude_score or "",
+            e.knowledge_score or "",
+            e.practice_score or "",
+            e.innovation_score or "",
+            e.collaboration_score or "",
+            e.morality_score or "",
+            e.intelligence_score or "",
+            e.physical_score or "",
+            e.aesthetics_score or "",
+            e.labor_score or "",
+            e.overall_comment or "",
+            e.evaluator.name if e.evaluator else "",
+            e.eval_date.strftime("%Y-%m-%d") if e.eval_date else "",
+        ])
+
+    output = BytesIO()
+    wb.save(output)
+    output.seek(0)
+    log_operation(db, "学员评价管理", "导出综合评价", f"成功导出 {len(evals)} 条", current_user.username)
+
+    return StreamingResponse(
+        output,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": "attachment; filename=comprehensive_evaluations.xlsx"}
+    )
+
+
+@router.get("/export/subject")
+def export_subject_evaluations(
+    student_id: Optional[int] = None,
+    course_id: Optional[int] = None,
+    eval_period: Optional[str] = None,
+    lang: str = "zh-CN",
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_course_admin_user),
+):
+    _check_evaluation_permission(db, current_user)
+
+    from openpyxl import Workbook
+    from io import BytesIO
+    from fastapi.responses import StreamingResponse
+
+    _t_map = {
+        "zh-CN": {
+            "sheet": "单科评价",
+            "headers": ["学员", "科目", "评价周期", "平均分", "优势方面", "待提升方面", "单科评语", "评价人", "评价日期"],
+        },
+        "en": {
+            "sheet": "Subject Evaluation",
+            "headers": ["Student", "Course", "Period", "Average Score", "Strengths", "Improvements", "Comment", "Evaluator", "Eval Date"],
+        },
+    }
+    t = _t_map.get(lang, _t_map["zh-CN"])
+
+    query = db.query(StudentSubjectEvaluation).options(
+        joinedload(StudentSubjectEvaluation.student),
+        joinedload(StudentSubjectEvaluation.course),
+        joinedload(StudentSubjectEvaluation.evaluator),
+    )
+
+    if student_id is not None:
+        query = query.filter(StudentSubjectEvaluation.student_id == student_id)
+    if course_id is not None:
+        query = query.filter(StudentSubjectEvaluation.course_id == course_id)
+    if eval_period:
+        query = query.filter(StudentSubjectEvaluation.eval_period == eval_period)
+
+    evals = query.order_by(desc(StudentSubjectEvaluation.eval_date).nullslast()).all()
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = t["sheet"]
+
+    headers = t["headers"]
+    ws.append(headers)
+
+    for e in evals:
+        ws.append([
+            e.student.name if e.student else "",
+            e.course.name if e.course else "",
+            e.eval_period or "",
+            e.average_score or "",
+            e.strengths or "",
+            e.improvements or "",
+            e.comment or "",
+            e.evaluator.name if e.evaluator else "",
+            e.eval_date.strftime("%Y-%m-%d") if e.eval_date else "",
+        ])
+
+    output = BytesIO()
+    wb.save(output)
+    output.seek(0)
+    log_operation(db, "学员评价管理", "导出单科评价", f"成功导出 {len(evals)} 条", current_user.username)
+
+    return StreamingResponse(
+        output,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": "attachment; filename=subject_evaluations.xlsx"}
+    )

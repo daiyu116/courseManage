@@ -1113,13 +1113,26 @@ def get_fee_logs(
 def export_fees(
     student_id: Optional[int] = None,
     course_id: Optional[int] = None,
+    lang: str = "zh-CN",
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     if not check_fee_manager_permission(db, current_user):
         raise HTTPException(status_code=403, detail="权限不足，需要管理员或费用管理导师权限")
- 
-    """导出课时费记录为Excel"""
+
+    _t_map = {
+        "zh-CN": {
+            "sheet": "课时费记录",
+            "headers": ["学生", "科目", "起算日期", "课时费/小时", "总应收金额", "总实收金额", "总退费金额", "累计课节数", "已消耗课时", "剩余课时", "预警阈值", "状态"],
+            "enabled": "启用", "disabled": "禁用",
+        },
+        "en": {
+            "sheet": "Fee Records",
+            "headers": ["Student", "Course", "Start Date", "Hourly Fee", "Total Receivable", "Total Actual", "Total Refund", "Lessons", "Consumed Hours", "Remaining Hours", "Alert Threshold", "Status"],
+            "enabled": "Enabled", "disabled": "Disabled",
+        },
+    }
+    t = _t_map.get(lang, _t_map["zh-CN"])
     query = db.query(StudentFee)
     
     if student_id is not None:
@@ -1131,9 +1144,9 @@ def export_fees(
     
     wb = Workbook()
     ws = wb.active
-    ws.title = "课时费记录"
-    
-    headers = ["学生", "科目", "起算日期", "课时费/小时", "总应收金额", "总实收金额", "总退费金额", "累计课节数", "已消耗课时", "剩余课时", "预警阈值", "状态"]
+    ws.title = t["sheet"]
+
+    headers = t["headers"]
     ws.append(headers)
     
     for fee in fees:
@@ -1175,7 +1188,7 @@ def export_fees(
             consumed_hours,
             fee.remaining_hours,
             fee.alert_threshold,
-            "启用" if fee.is_active else "禁用"
+            t["enabled"] if fee.is_active else t["disabled"]
         ])
     
     output = BytesIO()
@@ -1312,13 +1325,26 @@ def export_payment_records(
     student_id: Optional[int] = None,
     course_id: Optional[int] = None,
     search: Optional[str] = None,
+    lang: str = "zh-CN",
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     if not check_fee_manager_permission(db, current_user):
         raise HTTPException(status_code=403, detail="权限不足，需要管理员或费用管理导师权限")
     
-    """导出学员收费记录"""
+    _t_map = {
+        "zh-CN": {
+            "sheet": "课费管理",
+            "headers": ["学员", "科目", "起算日期", "课时费/小时", "累计应收金额", "累计实收金额", "累计退费金额", "当前累计收入", "累计已消耗课时", "当前剩余课时数", "预警阈值(小时)", "状态"],
+            "enabled": "启用", "disabled": "禁用",
+        },
+        "en": {
+            "sheet": "Fee Management",
+            "headers": ["Student", "Course", "Start Date", "Hourly Fee", "Total Receivable", "Total Actual", "Total Refund", "Current Revenue", "Consumed Hours", "Remaining Hours", "Alert Threshold (hrs)", "Status"],
+            "enabled": "Enabled", "disabled": "Disabled",
+        },
+    }
+    t = _t_map.get(lang, _t_map["zh-CN"])
     from sqlalchemy.orm import joinedload
     
     query = db.query(StudentFee).options(
@@ -1339,9 +1365,9 @@ def export_payment_records(
     
     wb = Workbook()
     ws = wb.active
-    ws.title = "课费管理"
-    
-    headers = ["学员", "科目", "起算日期", "课时费/小时", "累计应收金额", "累计实收金额", "累计退费金额", "当前累计收入", "累计已消耗课时", "当前剩余课时数", "预警阈值(小时)", "状态"]
+    ws.title = t["sheet"]
+
+    headers = t["headers"]
     ws.append(headers)
     
     for fee in fees:
@@ -1387,7 +1413,7 @@ def export_payment_records(
             consumed_hours,
             fee.remaining_hours,
             fee.alert_threshold,
-            "启用" if fee.is_active else "禁用"
+            t["enabled"] if fee.is_active else t["disabled"]
         ])
     
     output = BytesIO()
@@ -1406,13 +1432,28 @@ def export_fee_logs(
     student_id: Optional[int] = None,
     course_id: Optional[int] = None,
     search: Optional[str] = None,
+    lang: str = "zh-CN",
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     if not check_fee_manager_permission(db, current_user):
         raise HTTPException(status_code=403, detail="权限不足，需要管理员或费用管理导师权限")
     
-    """导出课时费记录"""
+    _t_map = {
+        "zh-CN": {
+            "sheet": "课时费记录",
+            "headers": ["日期", "学员", "科目", "类型", "金额变化", "课时", "学员账户余额", "剩余课时", "描述"],
+            "payment": "缴费", "refund": "退费", "consume": "消耗",
+            "hours": "小时",
+        },
+        "en": {
+            "sheet": "Fee Logs",
+            "headers": ["Date", "Student", "Course", "Type", "Amount Change", "Hours", "Account Balance", "Remaining Hours", "Description"],
+            "payment": "Payment", "refund": "Refund", "consume": "Consume",
+            "hours": "hrs",
+        },
+    }
+    t = _t_map.get(lang, _t_map["zh-CN"])
     from sqlalchemy.orm import joinedload
     
     query = db.query(FeeLog).options(
@@ -1477,9 +1518,9 @@ def export_fee_logs(
     
     wb = Workbook()
     ws = wb.active
-    ws.title = "课时费记录"
-    
-    headers = ["日期", "学员", "科目", "类型", "金额变化", "课时", "学员账户余额", "剩余课时", "描述"]
+    ws.title = t["sheet"]
+
+    headers = t["headers"]
     ws.append(headers)
     
     for log in logs_desc:
@@ -1490,13 +1531,7 @@ def export_fee_logs(
         student_balance = log_balance_map.get(log.id, 0.0)
         
         # 获取类型文本
-        log_type_text = ""
-        if log.log_type == 'payment':
-            log_type_text = "缴费"
-        elif log.log_type == 'refund':
-            log_type_text = "退费"
-        elif log.log_type == 'consume':
-            log_type_text = "消耗"
+        log_type_text = t.get(log.log_type, log.log_type)
         
         # 获取课程安排信息
         schedule_date = None
@@ -1534,9 +1569,9 @@ def export_fee_logs(
             course.name if course else "",
             log_type_text,
             f"{'+' if log.amount > 0 else ''}¥{log.amount:.2f}",
-            f"{log.hours:.2f} 小时" if log.hours > 0 else '-',
+            f"{log.hours:.2f} {t['hours']}" if log.hours > 0 else '-',
             f"¥{student_balance:.2f}",
-            f"{log.remaining_hours:.2f} 小时",
+            f"{log.remaining_hours:.2f} {t['hours']}",
             log.description or ""
         ])
     

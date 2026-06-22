@@ -2214,6 +2214,9 @@
     "goBack": "返回上一页",
     "addGradeButton": "新增成绩",
     "batchAddButtonShort": "批量添加",
+    "exportGrades": "导出成绩",
+    "exportSuccessMsg": "导出成功",
+    "exportFailed": "导出失败",
     "studentLabel": "学员",
     "schoolLabel": "学校",
     "gradeLabel": "年级",
@@ -2363,6 +2366,8 @@
     "subjectComment": "单科评语",
     "subjectCommentPlaceholder": "请输入单科评语",
     "relatedCourseOptional": "关联科目（可选）",
+    "relatedCourse": "关联科目",
+    "templateNameRequired": "请输入模板名称",
     "dimensionDescription": "维度描述",
     "addDimension": "添加维度",
     "profileTypeRequired": "请选择画像类型",
@@ -2382,7 +2387,11 @@
     "confirmDeleteSubject": "确定要删除该单科评价记录吗？",
     "editTemplateTitle": "编辑评价模板",
     "atLeastOneDimension": "请至少添加一个维度",
-    "confirmDeleteTemplate": "确定要删除该评价模板吗？"
+    "confirmDeleteTemplate": "确定要删除该评价模板吗？",
+    "exportComprehensive": "导出综合评价",
+    "exportSubject": "导出单科评价",
+    "exportSuccessMsg": "导出成功",
+    "exportFailed": "导出失败"
   },
   "scheduleView": {
     "calendarView": "日历视图",

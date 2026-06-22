@@ -13,6 +13,7 @@
             </el-button>
             <el-button type="primary" @click="showAddDialog">{{ t('grade.addGradeButton') }}</el-button>
             <el-button type="success" @click="showBatchAddDialog">{{ t('grade.batchAddButtonShort') }}</el-button>
+            <el-button type="warning" @click="exportGrades">{{ t('grade.exportGrades') }}</el-button>
           </div>
         </div>
       </template>
@@ -979,6 +980,38 @@ const resetFilters = () => {
   }
   pagination.value.currentPage = 1
   fetchGrades()
+}
+
+const exportGrades = async () => {
+  try {
+    const params = { lang: locale.value }
+    if (filters.value.student_id) {
+      params.student_id = filters.value.student_id
+    }
+    if (filters.value.course_id) {
+      params.course_id = filters.value.course_id
+    }
+    if (filters.value.date_range && filters.value.date_range.length === 2) {
+      params.start_date = filters.value.date_range[0]
+      params.end_date = filters.value.date_range[1]
+    }
+    const response = await api.get('/grades/export', {
+      params,
+      responseType: 'blob'
+    })
+    const url = window.URL.createObjectURL(new Blob([response.data]))
+    const link = document.createElement('a')
+    link.href = url
+    link.setAttribute('download', `${t('grade.exportGrades')}_${new Date().toLocaleDateString('zh-CN')}.xlsx`)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    window.URL.revokeObjectURL(url)
+    ElMessage.success(t('grade.exportSuccessMsg'))
+  } catch (error) {
+    window.logger.error('导出失败:', error)
+    ElMessage.error(t('grade.exportFailed'))
+  }
 }
 
 const formatDate = (dateString) => {

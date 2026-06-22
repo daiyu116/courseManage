@@ -1017,7 +1017,8 @@ const exportStudentFeeLogs = async () => {
   try {
     const params = {
       student_id: currentRow.value.student_id,
-      course_id: currentRow.value.course_id
+      course_id: currentRow.value.course_id,
+      lang: locale.value
     }
     const response = await api.get('/fees/export-fee-logs', {
       params,
@@ -1415,7 +1416,7 @@ const handleUpdateThreshold = async () => {
 
 const exportPaymentRecords = async () => {
   try {
-    const params = {}
+    const params = { lang: locale.value }
     if (searchKeyword.value) {
       params.search = searchKeyword.value
     }
@@ -1442,7 +1443,7 @@ const exportPaymentRecords = async () => {
 
 const exportFeeLogs = async () => {
   try {
-    const params = {}
+    const params = { lang: locale.value }
     if (searchKeyword.value) {
       params.search = searchKeyword.value
     }
