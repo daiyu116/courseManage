@@ -235,6 +235,12 @@ def create_holidays_table():
         print("已创建 holidays 表")
     else:
         print("holidays 表已存在")
+        columns = [col['name'] for col in inspector.get_columns('holidays')]
+        if 'updated_at' not in columns:
+            with engine.connect() as conn:
+                conn.execute(text("ALTER TABLE holidays ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP"))
+                conn.commit()
+            print("已添加字段 updated_at 到表 holidays")
 
 # 检查并添加 execution_status 字段到 schedules 表
 def add_execution_status_column():

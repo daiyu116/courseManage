@@ -9,7 +9,7 @@
           <div class="header-actions">
             <el-button type="info" @click="goBack">
               <el-icon><ArrowLeft /></el-icon>
-              {{ t('common.goBack') }}
+              {{ t('common.back') }}
             </el-button>
             <el-button type="primary" @click="showAddDialog">
               <el-icon><Plus /></el-icon>

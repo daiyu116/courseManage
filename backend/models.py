@@ -347,6 +347,7 @@ class Holiday(Base):
     name = Column(String(100), nullable=False, comment="节假日名称")
     description = Column(Text, comment="节假日描述")
     created_at = Column(DateTime, default=datetime.now)
+    updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
 
 class CourseEvaluationTemplate(Base):
     """科目评价模板表"""
