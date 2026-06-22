@@ -9,8 +9,8 @@ RUN apt-get update && \
     apt-get install -y gcc python3-dev && \
     rm -rf /var/lib/apt/lists/*
 
-ARG PIP_INDEX_URL
-ARG PIP_TRUSTED_HOST
+ARG PIP_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple
+ARG PIP_TRUSTED_HOST=pypi.tuna.tsinghua.edu.cn
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -i ${PIP_INDEX_URL} --trusted-host ${PIP_TRUSTED_HOST} -r requirements.txt
@@ -46,8 +46,8 @@ RUN apt-get update && \
     postgresql-client \
     && rm -rf /var/lib/apt/lists/*
 
-ARG PIP_INDEX_URL
-ARG PIP_TRUSTED_HOST
+ARG PIP_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple
+ARG PIP_TRUSTED_HOST=pypi.tuna.tsinghua.edu.cn
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -i ${PIP_INDEX_URL} --trusted-host ${PIP_TRUSTED_HOST} -r requirements.txt
