@@ -2673,7 +2673,11 @@ const fetchSiteSettings = async () => {
           const parsed = JSON.parse(response.data.wechat_webhook_config)
           // 只有当解析出的对象确实有我们需要的键时才覆盖，否则保持默认结构
           if (parsed.fee_alert || parsed.schedule_create || parsed.schedule_change) {
-            wechatConfig.value = parsed
+            wechatConfig.value = {
+              fee_alert: parsed.fee_alert || [''],
+              schedule_create: parsed.schedule_create || { default: [''] },
+              schedule_change: parsed.schedule_change || { default: [''] }
+            }
           } else {
             window.logger.log('数据库中配置为空或不完整，使用默认结构')
           }
