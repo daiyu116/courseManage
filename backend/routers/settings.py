@@ -721,7 +721,9 @@ def test_wechat_notification(
         test_url = None
         if isinstance(config.get('fee_alert'), list) and len(config['fee_alert']) > 0:
             test_url = config['fee_alert'][0]
-        elif isinstance(config.get('schedule_change'), dict) and isinstance(config['schedule_change'].get('default'), list) and len(config['schedule_change']['default']) > 0:
+        elif isinstance(config.get('schedule_create'), dict) and isinstance(config.get('schedule_create').get('default'), list) and len(config['schedule_create']['default']) > 0:
+            test_url = config['schedule_create']['default'][0]
+        elif isinstance(config.get('schedule_change'), dict) and isinstance(config.get('schedule_change').get('default'), list) and len(config['schedule_change']['default']) > 0:
             test_url = config['schedule_change']['default'][0]
             
         if not test_url:

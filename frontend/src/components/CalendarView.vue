@@ -289,6 +289,7 @@
             <el-button v-if="currentSchedule && currentSchedule.execution_status === 'completed' && currentUser && (currentUser.role === 'super_admin' || currentUser.role === 'course_admin') && hasStudentsNeedingMakeup(currentSchedule)" type="warning" @click="showMakeupDialog">{{ t('calendar.studentMakeup') }}</el-button>
             <el-button v-if="currentSchedule && currentSchedule.execution_status === 'pending' && currentUser && (currentUser.role === 'super_admin' || currentUser.role === 'course_admin')" @click="showEditDialog">{{ t('calendar.edit') }}</el-button>
             <el-button v-if="currentSchedule && currentSchedule.execution_status === 'pending' && currentUser && (currentUser.role === 'super_admin' || currentUser.role === 'course_admin')" type="primary" @click="showCopyDialog">{{ t('calendar.copy') }}</el-button>
+            <el-button v-if="currentUser && (currentUser.role === 'super_admin' || currentUser.role === 'course_admin')" type="warning" @click="handleNotifyNow">{{ t('calendar.notifyNow') }}</el-button>
           </div>
           <div>
             <el-button v-if="canEditCompletedSchedule" type="danger" @click="handleDeleteSchedule">{{ t('calendar.delete') }}</el-button>
@@ -2490,6 +2491,23 @@ const handleDeleteSchedule = () => {
     } catch (error) {
       window.logger.error('删除失败:', error)
       ElMessage.error(t('calendar.deleteFailed'))
+    }
+  }).catch(() => {})
+}
+
+const handleNotifyNow = () => {
+  if (!currentSchedule.value) return
+  ElMessageBox.confirm(t('calendar.notifyNowConfirm'), t('calendar.notifyNow'), {
+    confirmButtonText: t('common.confirm'),
+    cancelButtonText: t('common.cancel'),
+    type: 'warning'
+  }).then(async () => {
+    try {
+      await api.post(`/schedules/${currentSchedule.value.id}/notify`)
+      ElMessage.success(t('calendar.notifyNowSuccess'))
+    } catch (error) {
+      window.logger.error('立即通知失败:', error)
+      ElMessage.error(t('calendar.notifyNowFail'))
     }
   }).catch(() => {})
 }

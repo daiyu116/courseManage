@@ -3119,7 +3119,7 @@ def send_schedule_status_notification(db: Session, schedule: Schedule, status: s
     发送课程状态变更通知（微信+邮件）
     :param db: 数据库会话
     :param schedule: 课程安排对象
-    :param status: 状态类型 'completed', 'postponed', 'cancelled'
+    :param status: 状态类型 'pending', 'completed', 'postponed', 'cancelled'
     """
     from models import Settings
     import json
@@ -3164,19 +3164,27 @@ def send_schedule_status_notification(db: Session, schedule: Schedule, status: s
         status_text = {
             "completed": "完训",
             "postponed": "延期",
-            "cancelled": "取消排课"
+            "cancelled": "取消排课",
+            "pending": "待执行"
         }.get(status, "状态变更")
         
         status_icon = {
             "completed": "✅",
             "postponed": "⏰",
-            "cancelled": "❌"
+            "cancelled": "❌",
+            "pending": "📅"
         }.get(status, "📢")
         
         # *** 1、 构建微信通知内容及发送微信通知 *** 
         # 根据状态类型构建不同的reason_text
+        pending_room = db.query(Room).filter(Room.id == schedule.room_id).first() if status == "pending" else None
         reason_text = ""
-        if status == "completed":
+        if status == "pending":
+            if schedule.room_type == "offline_physical":
+                reason_text = f"\n> **教室：** {pending_room.name}" if pending_room else ""
+            else:
+                reason_text = f"\n> **会议链接：** {schedule.meeting_link}" if schedule.meeting_link else ""
+        elif status == "completed":
             if schedule.content_feedback:
                 feedback_parts = schedule.content_feedback.split('|')
                 content_part = feedback_parts[0].replace('内容：', '') if len(feedback_parts) > 0 else ''
@@ -3313,6 +3321,21 @@ def send_schedule_status_notification(db: Session, schedule: Schedule, status: s
                         <div class="value">{schedule.cancel_reason or '无'}</div>
                     </div>
             """
+        elif status == "pending":
+            if schedule.room_type == "offline_physical" and pending_room:
+                email_html += f"""
+                    <div class="info-item">
+                        <div class="label">教室</div>
+                        <div class="value">{pending_room.name}</div>
+                    </div>
+                """
+            elif schedule.meeting_link:
+                email_html += f"""
+                    <div class="info-item">
+                        <div class="label">会议链接</div>
+                        <div class="value">{schedule.meeting_link}</div>
+                    </div>
+                """
         
         email_html += f"""
                 </div>
@@ -3354,7 +3377,8 @@ def send_schedule_status_notification(db: Session, schedule: Schedule, status: s
             from routers.license import _check_premium_feature
             wechat_authorized = _check_premium_feature('wechat_notify', db)
             if wechat_authorized:
-                class_result = wechat_notifier.send_message_by_type("schedule_change", wechat_content, class_id=schedule.class_id, class_webhook=class_.wechat_webhook, is_markdown=True, enabled_classes=enabled_classes)
+                wechat_msg_type = "schedule_create" if status == "pending" else "schedule_change"
+                class_result = wechat_notifier.send_message_by_type(wechat_msg_type, wechat_content, class_id=schedule.class_id, class_webhook=class_.wechat_webhook, is_markdown=True, enabled_classes=enabled_classes)
                 if class_result.get("success"):
                     log_operation(db, "课程安排", "通知", "微信通知发送成功", level="INFO")
                     wechat_success = True
@@ -3375,3 +3399,35 @@ def send_schedule_status_notification(db: Session, schedule: Schedule, status: s
     except Exception as e:
         import traceback
         log_operation(db, "课程安排", "通知", f"发送通知过程中出错: {str(e)}", level="ERROR")
+
+
+@router.post("/{schedule_id}/notify")
+def notify_schedule_status(
+    schedule_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_course_admin_user)
+):
+    """
+    立即发送课程当前状态通知（微信+邮件），不修改课程安排数据
+    """
+    db_schedule = db.query(Schedule).filter(Schedule.id == schedule_id).first()
+    if not db_schedule:
+        log_operation(db, "课程安排", "立即通知", f"课程安排不存在: ID{schedule_id}", current_user.username, "ERROR")
+        raise HTTPException(status_code=404, detail="课程安排不存在")
+
+    status = db_schedule.execution_status
+    status_map = {
+        "pending": "待执行",
+        "completed": "完训",
+        "postponed": "延期",
+        "cancelled": "取消排课"
+    }
+    status_text = status_map.get(status, "状态变更")
+
+    try:
+        send_schedule_status_notification(db, db_schedule, status)
+        log_operation(db, "课程安排", "立即通知", f"课程ID{schedule_id}当前状态【{status_text}】通知发送成功", current_user.username, "INFO")
+        return {"message": f"课程{status_text}通知发送成功", "status": status}
+    except Exception as e:
+        log_operation(db, "课程安排", "立即通知", f"课程ID{schedule_id}通知发送失败: {str(e)}", current_user.username, "ERROR")
+        raise HTTPException(status_code=500, detail=f"通知发送失败: {str(e)}")

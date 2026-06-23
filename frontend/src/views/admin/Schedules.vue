@@ -573,7 +573,7 @@
                     </template>
                 </el-table-column>
                 
-                <el-table-column :label="t('common.operation')" width="115" fixed="right">
+                <el-table-column :label="t('common.operation')" width="135" fixed="right">
                   <template #default="{ row }">
                     <div style="display: flex; gap: 3px; flex-wrap: wrap;">
                       <el-button v-if="canEditSchedule(row)" size="small" @click="showEditDialog(row)">{{ t('schedules.edit') }}</el-button>
@@ -583,6 +583,7 @@
                       <el-button size="small" type="success" @click="showHomeworkDialog(row)" :disabled="row.execution_status !== 'completed'">{{ t('schedules.homeworkNotify') }}</el-button>
                       <el-button size="small" type="primary" @click="showMakeupDialog(row)" :disabled="row.execution_status !== 'completed' || !hasStudentsNeedingMakeup(row)">{{ t('schedules.studentMakeup') }}</el-button>
                       <el-button size="small" type="info" @click="showCancelDialog(row)" :disabled="row.has_conflict || row.execution_status !== 'pending'">{{ t('schedules.cancelSchedule') }}</el-button>
+                      <el-button size="small" type="warning" @click="handleNotifyNow(row)">{{ t('schedules.notifyNow') }}</el-button>
                       <el-button v-if="canDeleteSchedule(row)" size="small" type="danger" @click="handleDelete(row)">{{ t('common.delete') }}</el-button>
                     </div>
                   </template>
@@ -3576,6 +3577,27 @@ const handleCancel = async (sendNotification = false) => {
     if (error !== 'cancel') {
       window.logger.error('取消失败:', error)
       ElMessage.error(t('schedules.message.operationFailed'))
+    }
+  }
+}
+
+const handleNotifyNow = async (row) => {
+  try {
+    await ElMessageBox.confirm(
+      t('schedules.notifyNowConfirm'),
+      t('schedules.notifyNow'),
+      {
+        confirmButtonText: t('common.confirm'),
+        cancelButtonText: t('common.cancel'),
+        type: 'warning'
+      }
+    )
+    await api.post(`/schedules/${row.id}/notify`)
+    ElMessage.success(t('schedules.notifyNowSuccess'))
+  } catch (error) {
+    if (error !== 'cancel') {
+      window.logger.error('立即通知失败:', error)
+      ElMessage.error(t('schedules.notifyNowFail'))
     }
   }
 }

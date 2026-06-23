@@ -440,6 +440,11 @@
             </el-popover>
           </template>
         </el-table-column>
+        <el-table-column :label="t('scheduleView.notifyNow')" width="110" fixed="right">
+          <template #default="{ row }">
+            <el-button size="small" type="warning" @click="handleNotifyNow(row)">{{ t('scheduleView.notifyNow') }}</el-button>
+          </template>
+        </el-table-column>
       </el-table>
       <el-pagination
         v-model:current-page="pagination.currentPage"
@@ -480,7 +485,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { Search } from '@element-plus/icons-vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import CalendarView from '@/components/CalendarView.vue'
 import api from '@/utils/api'
 import dayjs from 'dayjs'
@@ -855,6 +860,22 @@ onMounted(() => {
     fetchSchedules()
   }
 })
+
+const handleNotifyNow = (row) => {
+  ElMessageBox.confirm(t('scheduleView.notifyNowConfirm'), t('scheduleView.notifyNow'), {
+    confirmButtonText: t('common.confirm'),
+    cancelButtonText: t('common.cancel'),
+    type: 'warning'
+  }).then(async () => {
+    try {
+      await api.post(`/schedules/${row.id}/notify`)
+      ElMessage.success(t('scheduleView.notifyNowSuccess'))
+    } catch (error) {
+      window.logger.error('立即通知失败:', error)
+      ElMessage.error(t('scheduleView.notifyNowFail'))
+    }
+  }).catch(() => {})
+}
 </script>
 
 <style scoped>
