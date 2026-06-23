@@ -721,10 +721,8 @@ def test_wechat_notification(
         test_url = None
         if isinstance(config.get('fee_alert'), list) and len(config['fee_alert']) > 0:
             test_url = config['fee_alert'][0]
-        elif isinstance(config.get('schedule_create'), dict) and isinstance(config.get('schedule_create').get('default'), list) and len(config['schedule_create']['default']) > 0:
-            test_url = config['schedule_create']['default'][0]
-        elif isinstance(config.get('schedule_change'), dict) and isinstance(config.get('schedule_change').get('default'), list) and len(config['schedule_change']['default']) > 0:
-            test_url = config['schedule_change']['default'][0]
+        elif isinstance(config.get('schedule_arrange'), dict) and isinstance(config.get('schedule_arrange').get('default'), list) and len(config['schedule_arrange']['default']) > 0:
+            test_url = config['schedule_arrange']['default'][0]
             
         if not test_url:
             log_operation(db, "系统配置", "测试失败", "配置中没有有效的Webhook URL用于测试", current_user.username, "ERROR")

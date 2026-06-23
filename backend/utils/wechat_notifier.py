@@ -24,8 +24,7 @@ class WeChatNotifier:
         加载配置
         :param config_json: JSON字符串，格式如：
         {
-            "schedule_change": {"default": ["url1"], "class_1": ["url2"]},
-            "schedule_create": {"default": ["url1"], "class_1": ["url2"]},
+            "schedule_arrange": {"default": ["url1"], "class_1": ["url2"]},
             "fee_alert": ["url3"]
         }
         """
@@ -35,6 +34,9 @@ class WeChatNotifier:
         try:
             if config_json:
                 self.webhook_config = json.loads(config_json)
+                migrated = self._migrate_legacy_keys()
+                if migrated:
+                    self._persist_migrated_config()
                 log_operation(db, "系统配置", "load_config 调用", f"解析后的 webhook_config: {self.webhook_config}", "system", "DEBUG")
             else:
                 self.webhook_config = {}
@@ -42,6 +44,47 @@ class WeChatNotifier:
         except Exception as e:
             log_operation(db, "系统配置", "load_config 调用", f"解析微信配置失败: {e}", "system", "ERROR")
             self.webhook_config = {}
+
+    def _migrate_legacy_keys(self) -> bool:
+        """将旧key名 schedule_change/schedule_create 迁移为 schedule_arrange，返回是否有变更"""
+        migrated = False
+
+        if "schedule_change" in self.webhook_config:
+            self.webhook_config["schedule_arrange"] = self.webhook_config.pop("schedule_change")
+            migrated = True
+
+        if "schedule_create" in self.webhook_config:
+            create_config = self.webhook_config.pop("schedule_create")
+            if "schedule_arrange" not in self.webhook_config:
+                self.webhook_config["schedule_arrange"] = create_config
+            elif isinstance(create_config, dict) and isinstance(self.webhook_config["schedule_arrange"], dict):
+                for key, value in create_config.items():
+                    if key not in self.webhook_config["schedule_arrange"]:
+                        self.webhook_config["schedule_arrange"][key] = value
+                    elif key == "default":
+                        merged = list(dict.fromkeys(self.webhook_config["schedule_arrange"]["default"] + value))
+                        self.webhook_config["schedule_arrange"]["default"] = merged
+            migrated = True
+
+        return migrated
+
+    def _persist_migrated_config(self):
+        """将迁移后的配置回写到数据库"""
+        db = None
+        try:
+            db = SessionLocal()
+            from models import Settings
+            settings = db.query(Settings).first()
+            if settings:
+                settings.wechat_webhook_config = json.dumps(self.webhook_config, ensure_ascii=False)
+                db.commit()
+                log_operation(db, "系统配置", "自动迁移", "已将 schedule_change/schedule_create 迁移为 schedule_arrange 并回写数据库", "system", "INFO")
+        except Exception as e:
+            if db:
+                try:
+                    log_operation(db, "系统配置", "自动迁移", f"回写迁移配置失败: {e}", "system", "WARNING")
+                except:
+                    pass
 
     def load_promotion_info(self, website: str = "", wechat_qr: str = "", work_wechat_qr: str = ""):
         """加载机构宣传信息"""
@@ -71,7 +114,7 @@ class WeChatNotifier:
     def send_message_by_type(self, msg_type: str, content: str, class_id: int = None, class_webhook: str = None, is_markdown: bool = False, enabled_classes: list = None) -> Dict[str, bool]:
         """
         根据消息类型发送通知
-        :param msg_type: 消息类型 (e.g., 'schedule_create', 'schedule_change', 'fee_alert')
+        :param msg_type: 消息类型 (e.g., 'schedule_arrange', 'fee_alert')
         :param class_id: 班级ID，用于匹配特定班级的群
         :param class_webhook: 班级webhook地址（优先使用）
         :param content: 消息内容
@@ -120,11 +163,11 @@ class WeChatNotifier:
                 urls.extend(config_item["default"])
                 log_operation(db, "微信通知", "send_message_by_type 调用", f"使用全局配置中的默认webhook: default", "system", "DEBUG")
             else:
-                # 回退：如果当前消息类型没有default配置，尝试从schedule_change中获取教师群webhook
-                fallback_config = self.webhook_config.get("schedule_change", {})
+                # 回退：如果当前消息类型没有default配置，尝试从schedule_arrange中获取教师群webhook
+                fallback_config = self.webhook_config.get("schedule_arrange", {})
                 if isinstance(fallback_config, dict) and "default" in fallback_config:
                     urls.extend(fallback_config["default"])
-                    log_operation(db, "微信通知", "send_message_by_type 调用", f"当前消息类型 {msg_type} 无default配置，回退使用schedule_change的默认webhook", "system", "DEBUG")
+                    log_operation(db, "微信通知", "send_message_by_type 调用", f"当前消息类型 {msg_type} 无default配置，回退使用schedule_arrange的默认webhook", "system", "DEBUG")
         # 3. 如果是列表结构（针对通用提醒，如缴费）
         elif isinstance(config_item, list):
             urls.extend(config_item)
@@ -215,8 +258,8 @@ class WeChatNotifier:
 
         # === 第一步：向教师群（导师信息群）发送所有课程的汇总消息 ===
         teacher_urls = []
-        if isinstance(self.webhook_config.get('schedule_change'), dict):
-            teacher_urls = self.webhook_config['schedule_change'].get('default', [])
+        if isinstance(self.webhook_config.get('schedule_arrange'), dict):
+            teacher_urls = self.webhook_config['schedule_arrange'].get('default', [])
 
         if teacher_urls:
             teacher_content = self._build_course_content(schedule_list, title)
@@ -263,8 +306,8 @@ class WeChatNotifier:
                 log_operation(db, "微信通知", "send_course_reminder 调用", f"使用班级表中的webhook: {class_url}", "system", "DEBUG")
             else:
                 class_key = f"class_{class_id}"
-                if isinstance(self.webhook_config.get('schedule_change'), dict):
-                    fallback_urls = self.webhook_config['schedule_change'].get(class_key, [])
+                if isinstance(self.webhook_config.get('schedule_arrange'), dict):
+                    fallback_urls = self.webhook_config['schedule_arrange'].get(class_key, [])
                     if fallback_urls:
                         class_url = fallback_urls[0]
                         log_operation(db, "微信通知", "send_course_reminder 调用", f"使用全局配置中的班级webhook: {class_key}", "system", "DEBUG")

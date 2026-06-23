@@ -95,7 +95,7 @@ def send_wechat_message(
         if settings and settings.wechat_webhook_config:
             try:
                 wechat_notifier.load_config(settings.wechat_webhook_config or "{}")
-                config_item = wechat_notifier.webhook_config.get('schedule_change', {})
+                config_item = wechat_notifier.webhook_config.get('schedule_arrange', {})
                 if isinstance(config_item, dict) and "default" in config_item:
                     urls.extend(config_item["default"])
                     log_operation(db, "微信通知", "发送消息", f"添加导师信息群Webhook URL: {config_item['default']}", current_user.username, "DEBUG")

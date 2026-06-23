@@ -1191,7 +1191,7 @@ def create_schedule(
 
 敬请相关导师和学员知悉！"""
                     log_operation(db, "课程安排", "通知", f"准备发送微信通知，内容长度: {len(content)}", current_user.username, "DEBUG")
-                    wechat_result = wechat_notifier.send_message_by_type("schedule_create", content, class_id=schedule.class_id, class_webhook=class_.wechat_webhook, is_markdown=True, enabled_classes=enabled_classes)
+                    wechat_result = wechat_notifier.send_message_by_type("schedule_arrange", content, class_id=schedule.class_id, class_webhook=class_.wechat_webhook, is_markdown=True, enabled_classes=enabled_classes)
                     log_operation(db, "课程安排", "通知", f"微信发送结果: {wechat_result}", current_user.username, "DEBUG")
                     if not wechat_result.get("success"):
                         log_operation(db, "课程安排", "通知", wechat_result.get('message', '发送失败'), current_user.username, "WARNING")
@@ -1710,7 +1710,7 @@ def update_schedule(
                             log_operation(db, "课程安排", "通知", f"更新课程 - 获取enabled_classes时发生其他错误: {e}, 使用空列表", current_user.username, "WARNING")
                             enabled_classes = []
 
-                        wechat_result = wechat_notifier.send_message_by_type("schedule_change", content, class_id=db_schedule.class_id, class_webhook=class_.wechat_webhook, is_markdown=True, enabled_classes=enabled_classes)
+                        wechat_result = wechat_notifier.send_message_by_type("schedule_arrange", content, class_id=db_schedule.class_id, class_webhook=class_.wechat_webhook, is_markdown=True, enabled_classes=enabled_classes)
                         if not wechat_result.get("success"):
                             log_operation(db, "课程安排", "通知", wechat_result.get('message', '发送失败'), current_user.username, "WARNING")
                             log_operation(db, "课程安排", "编辑课程通知", wechat_result.get('message', '发送失败'), current_user.username, "WARNING")
@@ -1865,7 +1865,7 @@ def delete_schedule(
  
 敬请相关导师和学员知悉！"""
                     
-                    wechat_result = wechat_notifier.send_message_by_type("schedule_change", content, class_id=class_.id, class_webhook=class_.wechat_webhook, is_markdown=True, enabled_classes=enabled_classes)
+                    wechat_result = wechat_notifier.send_message_by_type("schedule_arrange", content, class_id=class_.id, class_webhook=class_.wechat_webhook, is_markdown=True, enabled_classes=enabled_classes)
                     if not wechat_result.get("success"):
                         log_operation(db, "课程安排", "通知", wechat_result.get('message', '发送失败'), current_user.username, "WARNING")
                     else:
@@ -3377,7 +3377,7 @@ def send_schedule_status_notification(db: Session, schedule: Schedule, status: s
             from routers.license import _check_premium_feature
             wechat_authorized = _check_premium_feature('wechat_notify', db)
             if wechat_authorized:
-                wechat_msg_type = "schedule_create" if status == "pending" else "schedule_change"
+                wechat_msg_type = "schedule_arrange"
                 class_result = wechat_notifier.send_message_by_type(wechat_msg_type, wechat_content, class_id=schedule.class_id, class_webhook=class_.wechat_webhook, is_markdown=True, enabled_classes=enabled_classes)
                 if class_result.get("success"):
                     log_operation(db, "课程安排", "通知", "微信通知发送成功", level="INFO")

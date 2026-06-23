@@ -981,27 +981,15 @@
               </el-form-item>
             </el-form>
 
-            <el-divider content-position="left">{{ t('dashboard.scheduleCreateGroup') }}</el-divider>
-            <el-form label-width="160px">
-              <el-form-item :label="t('dashboard.scheduleCreateGroupLabel')">
-                <div v-for="(url, index) in (wechatConfig.schedule_create.default || [])" :key="'sc_d'+index" style="display: flex; gap: 10px; margin-bottom: 5px;">
-                  <el-input v-model="wechatConfig.schedule_create.default[index]" :placeholder="t('dashboard.teacherWebhookPlaceholder')" />
-                  <el-button type="primary" :loading="testingUrl === `schedule_create_default_${index}`" @click="testSingleUrl('schedule_create', 'default', index)">{{ t('dashboard.testButton') }}</el-button>
-                  <el-button type="danger" size="small" @click="removeUrl('schedule_create', 'default', index)">{{ t('common.delete') }}</el-button>
-                </div>
-                <el-button size="small" @click="addUrl('schedule_create', 'default')">{{ t('dashboard.addScheduleCreateGroup') }}</el-button>
-              </el-form-item>
-            </el-form>
-
             <el-divider content-position="left">{{ t('dashboard.teacherInfoGroup') }}</el-divider>
             <el-form label-width="160px">
               <el-form-item :label="t('dashboard.teacherGroupLabel')">
-                <div v-for="(url, index) in (wechatConfig.schedule_change.default || [])" :key="'d'+index" style="display: flex; gap: 10px; margin-bottom: 5px;">
-                  <el-input v-model="wechatConfig.schedule_change.default[index]" :placeholder="t('dashboard.teacherWebhookPlaceholder')" />
-                  <el-button type="primary" :loading="testingUrl === `schedule_change_default_${index}`" @click="testSingleUrl('schedule_change', 'default', index)">{{ t('dashboard.testButton') }}</el-button>
-                  <el-button type="danger" size="small" @click="removeUrl('schedule_change', 'default', index)">{{ t('common.delete') }}</el-button>
+                <div v-for="(url, index) in (wechatConfig.schedule_arrange.default || [])" :key="'d'+index" style="display: flex; gap: 10px; margin-bottom: 5px;">
+                  <el-input v-model="wechatConfig.schedule_arrange.default[index]" :placeholder="t('dashboard.teacherWebhookPlaceholder')" />
+                  <el-button type="primary" :loading="testingUrl === `schedule_arrange_default_${index}`" @click="testSingleUrl('schedule_arrange', 'default', index)">{{ t('dashboard.testButton') }}</el-button>
+                  <el-button type="danger" size="small" @click="removeUrl('schedule_arrange', 'default', index)">{{ t('common.delete') }}</el-button>
                 </div>
-                <el-button size="small" @click="addUrl('schedule_change', 'default')">{{ t('dashboard.addTeacherGroup') }}</el-button>
+                <el-button size="small" @click="addUrl('schedule_arrange', 'default')">{{ t('dashboard.addTeacherGroup') }}</el-button>
               </el-form-item>
             </el-form>
 
@@ -2169,8 +2157,7 @@ const testingUrl = ref(null) // 用于控制测试按钮的加载状态
 
 const wechatConfig = ref({
   fee_alert: [''],
-  schedule_create: { default: [''] },
-  schedule_change: { default: [''] }
+  schedule_arrange: { default: [''] }
 })
 const emailConfig = ref({
   smtp_host: '',
@@ -2671,12 +2658,25 @@ const fetchSiteSettings = async () => {
       if (response.data.wechat_webhook_config) {
         try {
           const parsed = JSON.parse(response.data.wechat_webhook_config)
+          // 兼容旧key：将 schedule_change/schedule_create 迁移为 schedule_arrange
+          let scheduleArrange = parsed.schedule_arrange || parsed.schedule_change || parsed.schedule_create || null
+          if (parsed.schedule_change && parsed.schedule_create && !parsed.schedule_arrange) {
+            // 如果同时存在 schedule_change 和 schedule_create，合并到 schedule_arrange
+            const changeDefaults = parsed.schedule_change.default || []
+            const createDefaults = parsed.schedule_create.default || []
+            const mergedDefaults = [...new Set([...changeDefaults, ...createDefaults])]
+            scheduleArrange = { ...parsed.schedule_change, default: mergedDefaults }
+            for (const [key, value] of Object.entries(parsed.schedule_create)) {
+              if (key !== 'default' && !(key in scheduleArrange)) {
+                scheduleArrange[key] = value
+              }
+            }
+          }
           // 只有当解析出的对象确实有我们需要的键时才覆盖，否则保持默认结构
-          if (parsed.fee_alert || parsed.schedule_create || parsed.schedule_change) {
+          if (parsed.fee_alert || scheduleArrange) {
             wechatConfig.value = {
               fee_alert: parsed.fee_alert || [''],
-              schedule_create: parsed.schedule_create || { default: [''] },
-              schedule_change: parsed.schedule_change || { default: [''] }
+              schedule_arrange: scheduleArrange || { default: [''] }
             }
           } else {
             window.logger.log('数据库中配置为空或不完整，使用默认结构')
