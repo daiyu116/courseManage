@@ -769,6 +769,7 @@
     "systemAdmin": "System Admin",
     "courseAdmin": "Course Admin",
     "systemAudit": "System Auditor",
+    "teachingAssistant": "Teaching Assistant",
     "relatedTeacher": "Related Teacher",
     "relatedTeacherPlaceholder": "Select related teacher",
     "relatedTeacherTip": "Tip: Once bound, the user can only see courses, classes, and schedules related to the teacher's name.",

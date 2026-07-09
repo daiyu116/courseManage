@@ -95,11 +95,11 @@
                 {{ t('students.evaluationManagement') }}
               </el-button>
             </el-tooltip>
-            <el-button type="primary" @click="showAddDialog">
+            <el-button v-if="currentUser && currentUser.role !== 'teaching_assistant'" type="primary" @click="showAddDialog">
               <el-icon><Plus /></el-icon>
               {{ t('students.addStudent') }}
             </el-button>
-            <el-button type="success" @click="showBatchAddDialog">
+            <el-button v-if="currentUser && currentUser.role !== 'teaching_assistant'" type="success" @click="showBatchAddDialog">
               <el-icon><Upload /></el-icon>
               {{ t('common.batchAdd') }}
             </el-button>
@@ -208,7 +208,7 @@
           </el-table-column>
           <el-table-column :label="t('common.operation')" width="300" fixed="right">
             <template #default="{ row }">
-              <el-button size="small" @click="showEditDialog(row)">{{ t('common.edit') }}</el-button>
+              <el-button v-if="currentUser && currentUser.role !== 'teaching_assistant'" size="small" @click="showEditDialog(row)">{{ t('common.edit') }}</el-button>
               <el-button v-if="hasFeature('grade_trend')" size="small" type="primary" @click="showGradeCurve(row)">{{ t('students.gradeCurve') }}</el-button>
               <el-tooltip v-else :content="t('students.gradeCurveTip')" placement="top">
                 <el-button size="small" type="primary" disabled>

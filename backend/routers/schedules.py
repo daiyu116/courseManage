@@ -9,7 +9,7 @@ from datetime import date, datetime
 from database import get_db
 from models import Settings, Schedule, Course, Teacher, Class, Student, Room, Leave, schedule_student
 from schemas import ScheduleCreate, ScheduleUpdate, Schedule as ScheduleSchema, ScheduleFilter, ConflictInfo, ScheduleCompleteFeedback, SchedulePostpone, ScheduleMakeup, ScheduleDeclineMakeup, ScheduleCancel, PaginatedScheduleResponse, ScheduleAttendanceUpdate
-from routers.auth import get_teacher_visibility_filter, get_current_user, get_current_superadmin_user, get_current_course_admin_user, User
+from routers.auth import get_teacher_visibility_filter, get_current_user, get_current_superadmin_user, get_current_course_admin_user, get_current_teaching_assistant_user, User
 from optimizer import ScheduleOptimizer
 from openpyxl import Workbook
 from io import BytesIO
@@ -116,7 +116,7 @@ def check_conflicts(db: Session, schedule: Schedule, exclude_id: int = None, cla
 async def get_absent_students(
     schedule_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_course_admin_user)
+    current_user: User = Depends(get_current_user)
 ):
     """获取需要补课的学员列表（缺席或请假且未补课）"""
     db_schedule = db.query(Schedule).filter(Schedule.id == schedule_id).first()
@@ -1284,7 +1284,7 @@ def create_schedule(
     return schedule_dict
 
 @router.get("/{schedule_id}", response_model=ScheduleSchema)
-def get_schedule(schedule_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_course_admin_user)):
+def get_schedule(schedule_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     schedule = db.query(Schedule).options(
         joinedload(Schedule.course),
         joinedload(Schedule.teacher),
@@ -2404,7 +2404,7 @@ async def decline_makeup(
     return {"message": "不补课记录成功"}
 
 @router.get("/{schedule_id}/conflicts")
-async def get_schedule_conflicts(schedule_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_course_admin_user)):
+async def get_schedule_conflicts(schedule_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     """获取与指定课程冲突的课程列表"""
     schedule = db.query(Schedule).filter(Schedule.id == schedule_id).first()
     if not schedule:
@@ -2467,7 +2467,7 @@ async def export_schedules(
     execution_status: Optional[str] = None,
     lang: str = "zh-CN",
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_course_admin_user)
+    current_user: User = Depends(get_current_user)
 ):
     """导出课程安排"""
     query = db.query(Schedule)
@@ -3405,7 +3405,7 @@ def send_schedule_status_notification(db: Session, schedule: Schedule, status: s
 def notify_schedule_status(
     schedule_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_course_admin_user)
+    current_user: User = Depends(get_current_teaching_assistant_user)
 ):
     """
     立即发送课程当前状态通知（微信+邮件），不修改课程安排数据

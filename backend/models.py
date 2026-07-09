@@ -212,7 +212,7 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String(50), unique=True, index=True, nullable=False)
     password_hash = Column(String(255), nullable=False)
-    role = Column(String(20), default='course_admin', nullable=False)  # 'super_admin', 'system_admin', 'course_admin', 'system_audit'
+    role = Column(String(20), default='course_admin', nullable=False)  # 'super_admin', 'system_admin', 'course_admin', 'system_audit', 'teaching_assistant'
     teacher_id = Column(Integer, ForeignKey('teachers.id'), nullable=True)
     is_admin = Column(Boolean, default=False)  # 保留兼容性
     must_change_password = Column(Boolean, default=False)

@@ -65,17 +65,17 @@
               <el-icon><ArrowLeft /></el-icon>
               {{ t('schedules.goBack') }}
             </el-button>
-            <el-button v-if="hasFeature(licenseFeatures.SMART_SCHEDULING)" type="success" @click="showAutoScheduleDialog">
+            <el-button v-if="hasFeature(licenseFeatures.SMART_SCHEDULING) && currentUser && currentUser.role !== 'teaching_assistant'" type="success" @click="showAutoScheduleDialog">
               <el-icon><MagicStick /></el-icon>
               {{ t('schedules.smartScheduling') }}
             </el-button>
-            <el-tooltip v-else :content="t('schedules.smartSchedulingLicense')" placement="bottom">
+            <el-tooltip v-else-if="currentUser && currentUser.role !== 'teaching_assistant'" :content="t('schedules.smartSchedulingLicense')" placement="bottom">
               <el-button type="success" disabled>
                 <el-icon><Lock /></el-icon>
                 {{ t('schedules.smartScheduling') }}
               </el-button>
             </el-tooltip>
-            <el-button type="primary" @click="showAddDialog">
+            <el-button v-if="currentUser && currentUser.role !== 'teaching_assistant'" type="primary" @click="showAddDialog">
               <el-icon><Plus /></el-icon>
               {{ t('schedules.manualSchedule') }}
             </el-button>
@@ -87,11 +87,11 @@
               <el-icon><Delete /></el-icon>
               {{ t('schedules.clearAll') }}
             </el-button>
-            <el-button type="info" @click="downloadImportTemplate">
+            <el-button v-if="currentUser && currentUser.role !== 'teaching_assistant'" type="info" @click="downloadImportTemplate">
               <el-icon><Download /></el-icon>
               {{ t('schedules.downloadTemplate') }}
             </el-button>
-            <el-button type="primary" @click="showImportDialog">
+            <el-button v-if="currentUser && currentUser.role !== 'teaching_assistant'" type="primary" @click="showImportDialog">
               <el-icon><Upload /></el-icon>
               {{ t('schedules.import') }}
             </el-button>
@@ -298,7 +298,7 @@
             <div class="scrollbar-inner" :style="{ width: scrollbarWidth + 'px' }"></div>
           </div>
           <el-table :data="schedules" stripe v-loading="loading" style="margin-top: 0" @selection-change="handleSelectionChange" :default-sort="{ prop: 'id', order: 'descending' }" @sort-change="handleSortChange" ref="mainTableRef">
-                <el-table-column type="selection" width="55" />
+                <el-table-column v-if="currentUser && currentUser.role !== 'teaching_assistant'" type="selection" width="55" />
                 <el-table-column prop="id" label="ID" width="70" sortable />
                 <el-table-column :label="t('schedules.course')" width="135" sortable prop="course">
                   <template #default="{ row }">
@@ -577,12 +577,12 @@
                   <template #default="{ row }">
                     <div style="display: flex; gap: 3px; flex-wrap: wrap;">
                       <el-button v-if="canEditSchedule(row)" size="small" @click="showEditDialog(row)">{{ t('schedules.edit') }}</el-button>
-                      <el-button size="small" type="primary" @click="showCopyDialog(row)">{{ t('schedules.copy') }}</el-button>
-                      <el-button size="small" type="success" @click="showCompleteDialog(row)" :disabled="row.has_conflict || row.execution_status !== 'pending'">{{ t('schedules.completed') }}</el-button>
-                      <el-button size="small" type="warning" @click="showPostponeDialog(row)" :disabled="row.has_conflict || row.execution_status !== 'pending'">{{ t('schedules.postponed') }}</el-button>
+                      <el-button v-if="currentUser && currentUser.role !== 'teaching_assistant'" size="small" type="primary" @click="showCopyDialog(row)">{{ t('schedules.copy') }}</el-button>
+                      <el-button v-if="currentUser && currentUser.role !== 'teaching_assistant'" size="small" type="success" @click="showCompleteDialog(row)" :disabled="row.has_conflict || row.execution_status !== 'pending'">{{ t('schedules.completed') }}</el-button>
+                      <el-button v-if="currentUser && currentUser.role !== 'teaching_assistant'" size="small" type="warning" @click="showPostponeDialog(row)" :disabled="row.has_conflict || row.execution_status !== 'pending'">{{ t('schedules.postponed') }}</el-button>
                       <el-button size="small" type="success" @click="showHomeworkDialog(row)" :disabled="row.execution_status !== 'completed'">{{ t('schedules.homeworkNotify') }}</el-button>
-                      <el-button size="small" type="primary" @click="showMakeupDialog(row)" :disabled="row.execution_status !== 'completed' || !hasStudentsNeedingMakeup(row)">{{ t('schedules.studentMakeup') }}</el-button>
-                      <el-button size="small" type="info" @click="showCancelDialog(row)" :disabled="row.has_conflict || row.execution_status !== 'pending'">{{ t('schedules.cancelSchedule') }}</el-button>
+                      <el-button v-if="currentUser && currentUser.role !== 'teaching_assistant'" size="small" type="primary" @click="showMakeupDialog(row)" :disabled="row.execution_status !== 'completed' || !hasStudentsNeedingMakeup(row)">{{ t('schedules.studentMakeup') }}</el-button>
+                      <el-button v-if="currentUser && currentUser.role !== 'teaching_assistant'" size="small" type="info" @click="showCancelDialog(row)" :disabled="row.has_conflict || row.execution_status !== 'pending'">{{ t('schedules.cancelSchedule') }}</el-button>
                       <el-button size="small" type="warning" @click="handleNotifyNow(row)">{{ t('schedules.notifyNow') }}</el-button>
                       <el-button v-if="canDeleteSchedule(row)" size="small" type="danger" @click="handleDelete(row)">{{ t('common.delete') }}</el-button>
                     </div>
@@ -2761,7 +2761,7 @@ const canEditSchedule = (row) => {
   }
   
   // 系统管理员和系统审计员不能编辑课程
-  if (currentUser.value.role === 'system_admin' || currentUser.value.role === 'system_audit') return false
+  if (currentUser.value.role === 'system_admin' || currentUser.value.role === 'system_audit' || currentUser.value.role === 'teaching_assistant') return false
   
   // 普通导师（course_admin，非超级导师）
   if (currentUser.value.role === 'course_admin') {
@@ -2794,7 +2794,7 @@ const canDeleteSchedule = (row) => {
   }
   
   // 系统管理员和系统审计员不能删除课程
-  if (currentUser.value.role === 'system_admin' || currentUser.value.role === 'system_audit') return false
+  if (currentUser.value.role === 'system_admin' || currentUser.value.role === 'system_audit' || currentUser.value.role === 'teaching_assistant') return false
   
   // 普通导师（course_admin，非超级导师）
   if (currentUser.value.role === 'course_admin') {

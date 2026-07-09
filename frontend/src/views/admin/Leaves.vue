@@ -69,7 +69,7 @@
               <el-icon><Calendar /></el-icon>
               {{ t('leaves.holidayManagement') }}
             </el-button>
-            <el-button type="primary" @click="showAddDialog">
+            <el-button v-if="currentUser && currentUser.role !== 'teaching_assistant'" type="primary" @click="showAddDialog">
               <el-icon><Plus /></el-icon>
               {{ t('leaves.addLeave') }}
             </el-button>
@@ -132,7 +132,7 @@
         <el-table-column prop="reason" :label="t('leaves.reason')" min-width="200" />
         <el-table-column :label="t('common.operation')" width="80" fixed="right">
           <template #default="{ row }">
-            <el-button size="small" @click="showEditDialog(row)">{{ t('common.edit') }}</el-button>
+            <el-button v-if="currentUser && currentUser.role !== 'teaching_assistant'" size="small" @click="showEditDialog(row)">{{ t('common.edit') }}</el-button>
             <el-button v-if="currentUser && (currentUser.role === 'super_admin' || currentUser.role === 'course_admin')" size="small" type="danger" @click="handleDelete(row)">{{ t('common.delete') }}</el-button>
           </template>
         </el-table-column>

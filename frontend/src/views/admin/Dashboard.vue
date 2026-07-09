@@ -88,7 +88,7 @@
     <el-row :gutter="5">
       <el-col :span="6">
         <el-card class="stat-card">
-          <el-statistic :title="currentUser?.role === 'course_admin' ? t('dashboard.relatedCourses') : t('dashboard.totalCourses')" :value="stats.courses">
+          <el-statistic :title="(currentUser?.role === 'course_admin' || currentUser?.role === 'teaching_assistant') ? t('dashboard.relatedCourses') : t('dashboard.totalCourses')" :value="stats.courses">
             <template #prefix>
               <el-icon><Reading /></el-icon>
             </template>
@@ -97,7 +97,7 @@
       </el-col>
       <el-col :span="6">
         <el-card class="stat-card">
-          <el-statistic :title="currentUser?.role === 'course_admin' ? t('dashboard.relatedTeachers') : t('dashboard.totalTeachers')" :value="stats.teachers">
+          <el-statistic :title="(currentUser?.role === 'course_admin' || currentUser?.role === 'teaching_assistant') ? t('dashboard.relatedTeachers') : t('dashboard.totalTeachers')" :value="stats.teachers">
             <template #prefix>
               <el-icon><User /></el-icon>
             </template>
@@ -106,7 +106,7 @@
       </el-col>
       <el-col :span="6">
         <el-card class="stat-card">
-          <el-statistic :title="currentUser?.role === 'course_admin' ? t('dashboard.relatedStudents') : t('dashboard.totalStudents')" :value="stats.students">
+          <el-statistic :title="(currentUser?.role === 'course_admin' || currentUser?.role === 'teaching_assistant') ? t('dashboard.relatedStudents') : t('dashboard.totalStudents')" :value="stats.students">
             <template #prefix>
               <el-icon><UserFilled /></el-icon>
             </template>
@@ -115,7 +115,7 @@
       </el-col>
       <el-col :span="6">
         <el-card class="stat-card">
-          <el-statistic :title="currentUser?.role === 'course_admin' ? t('dashboard.relatedRooms') : t('dashboard.totalRooms')" :value="stats.rooms">
+          <el-statistic :title="(currentUser?.role === 'course_admin' || currentUser?.role === 'teaching_assistant') ? t('dashboard.relatedRooms') : t('dashboard.totalRooms')" :value="stats.rooms">
             <template #prefix>
               <el-icon><OfficeBuilding /></el-icon>
             </template>
@@ -127,7 +127,7 @@
     <el-row :gutter="5" style="margin-top: 10px;">
       <el-col :span="8">
         <el-card class="stat-card">
-          <el-statistic :title="currentUser?.role === 'course_admin' ? t('dashboard.relatedClasses') : t('dashboard.totalClasses')" :value="stats.classes">
+          <el-statistic :title="(currentUser?.role === 'course_admin' || currentUser?.role === 'teaching_assistant') ? t('dashboard.relatedClasses') : t('dashboard.totalClasses')" :value="stats.classes">
             <template #prefix>
               <el-icon><User /></el-icon>
             </template>
@@ -136,7 +136,7 @@
       </el-col>
       <el-col :span="8">
         <el-card class="stat-card">
-          <el-statistic :title="currentUser?.role === 'course_admin' ? t('dashboard.relatedSchedules') : t('dashboard.totalSchedules')" :value="stats.schedules">
+          <el-statistic :title="(currentUser?.role === 'course_admin' || currentUser?.role === 'teaching_assistant') ? t('dashboard.relatedSchedules') : t('dashboard.totalSchedules')" :value="stats.schedules">
             <template #prefix>
               <el-icon><Calendar /></el-icon>
             </template>
@@ -145,7 +145,7 @@
       </el-col>
       <el-col :span="8">
         <el-card class="stat-card">
-          <el-statistic :title="currentUser?.role === 'course_admin' ? t('dashboard.relatedConflicts') : t('dashboard.totalConflicts')" :value="stats.conflicts">
+          <el-statistic :title="(currentUser?.role === 'course_admin' || currentUser?.role === 'teaching_assistant') ? t('dashboard.relatedConflicts') : t('dashboard.totalConflicts')" :value="stats.conflicts">
             <template #prefix>
               <el-icon><Warning /></el-icon>
             </template>
@@ -157,25 +157,25 @@
     <el-card style="margin-top: 10px;">
       <el-row :gutter="10">
         <el-col :span="6">
-          <el-button v-if="currentUser && (currentUser.role === 'super_admin' || currentUser.role === 'course_admin')" type="success" @click="goToPage('/admin/courses')" style="width: 100%; margin-bottom: 5px;">
+          <el-button v-if="currentUser && (currentUser.role === 'super_admin' || currentUser.role === 'course_admin' || currentUser.role === 'teaching_assistant')" type="success" @click="goToPage('/admin/courses')" style="width: 100%; margin-bottom: 5px;">
             <el-icon><Reading /></el-icon>
             {{ t('dashboard.courseManagement') }}
           </el-button>
         </el-col>
         <el-col :span="6">
-          <el-button v-if="currentUser && (currentUser.role === 'super_admin' || currentUser.role === 'course_admin')" type="primary" @click="goToPage('/admin/teachers')" style="width: 100%; margin-bottom: 5px;">
+          <el-button v-if="currentUser && (currentUser.role === 'super_admin' || currentUser.role === 'course_admin' || currentUser.role === 'teaching_assistant')" type="primary" @click="goToPage('/admin/teachers')" style="width: 100%; margin-bottom: 5px;">
             <el-icon><User /></el-icon>
             {{ t('dashboard.teacherManagement') }}
           </el-button>
         </el-col>
         <el-col :span="6">
-          <el-button v-if="currentUser && (currentUser.role === 'super_admin' || currentUser.role === 'course_admin')" type="warning" @click="goToPage('/admin/students')" style="width: 100%; margin-bottom: 5px;">
+          <el-button v-if="currentUser && (currentUser.role === 'super_admin' || currentUser.role === 'course_admin' || currentUser.role === 'teaching_assistant')" type="warning" @click="goToPage('/admin/students')" style="width: 100%; margin-bottom: 5px;">
             <el-icon><UserFilled /></el-icon>
             {{ t('dashboard.studentManagement') }}
           </el-button>
         </el-col>
         <el-col :span="6">
-          <el-button v-if="currentUser && (currentUser.role === 'super_admin' || currentUser.role === 'course_admin')" type="danger" @click="goToPage('/admin/classes')" style="width: 100%; margin-bottom: 5px;">
+          <el-button v-if="currentUser && (currentUser.role === 'super_admin' || currentUser.role === 'course_admin' || currentUser.role === 'teaching_assistant')" type="danger" @click="goToPage('/admin/classes')" style="width: 100%; margin-bottom: 5px;">
             <el-icon><User /></el-icon>
             {{ t('dashboard.classManagement') }}
           </el-button>
@@ -183,25 +183,25 @@
       </el-row>
       <el-row :gutter="10">
         <el-col :span="6">
-          <el-button v-if="currentUser && (currentUser.role === 'super_admin' || currentUser.role === 'course_admin')" type="primary" @click="goToPage('/admin/rooms')" style="width: 100%; margin-bottom: 5px;">
+          <el-button v-if="currentUser && (currentUser.role === 'super_admin' || currentUser.role === 'course_admin' || currentUser.role === 'teaching_assistant')" type="primary" @click="goToPage('/admin/rooms')" style="width: 100%; margin-bottom: 5px;">
             <el-icon><OfficeBuilding /></el-icon>
             {{ t('dashboard.roomManagement') }}
           </el-button>
         </el-col>
         <el-col :span="6">
-          <el-button v-if="currentUser && (currentUser.role === 'super_admin' || currentUser.role === 'course_admin')" type="danger" @click="goToPage('/admin/leaves')" style="width: 100%; margin-bottom: 5px;">
+          <el-button v-if="currentUser && (currentUser.role === 'super_admin' || currentUser.role === 'course_admin' || currentUser.role === 'teaching_assistant')" type="danger" @click="goToPage('/admin/leaves')" style="width: 100%; margin-bottom: 5px;">
             <el-icon><DocumentDelete /></el-icon>
             {{ t('dashboard.leaveManagement') }}
           </el-button>
         </el-col>
         <el-col :span="6">
-          <el-button v-if="currentUser && (currentUser.role === 'super_admin' || currentUser.role === 'course_admin')" type="info" @click="goToPage('/admin/conditions')" style="width: 100%; margin-bottom: 5px;">
+          <el-button v-if="currentUser && (currentUser.role === 'super_admin' || currentUser.role === 'course_admin' || currentUser.role === 'teaching_assistant')" type="info" @click="goToPage('/admin/conditions')" style="width: 100%; margin-bottom: 5px;">
             <el-icon><Setting /></el-icon>
             {{ t('dashboard.conditionManagement') }}
           </el-button>
         </el-col>
         <el-col :span="6">
-          <el-button v-if="currentUser && (currentUser.role === 'super_admin' || currentUser.role === 'course_admin')" type="success" @click="goToPage('/admin/schedules')" style="width: 100%; margin-bottom: 5px;">
+          <el-button v-if="currentUser && (currentUser.role === 'super_admin' || currentUser.role === 'course_admin' || currentUser.role === 'teaching_assistant')" type="success" @click="goToPage('/admin/schedules')" style="width: 100%; margin-bottom: 5px;">
             <el-icon><Calendar /></el-icon>
             {{ t('dashboard.scheduleManagement') }}
           </el-button>
@@ -210,7 +210,7 @@
     </el-card>
 
     <!-- 添加日历视图 -->
-    <CalendarView v-if="currentUser && (currentUser.role === 'super_admin' || currentUser.role === 'course_admin')" />
+    <CalendarView v-if="currentUser && (currentUser.role === 'super_admin' || currentUser.role === 'course_admin' || currentUser.role === 'teaching_assistant')" />
 
     <!-- 系统日志对话框 -->
     <el-dialog v-model="logsDialogVisible" :title="t('dashboard.systemLogs')" width="1200px" draggable>

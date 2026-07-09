@@ -769,6 +769,7 @@
     "systemAdmin": "系统管理员",
     "courseAdmin": "课程管理员",
     "systemAudit": "系统审计员",
+    "teachingAssistant": "助教",
     "relatedTeacher": "关联导师",
     "relatedTeacherPlaceholder": "请选择关联的导师",
     "relatedTeacherTip": "提示：绑定后，该用户登录后能且仅能看到对应导师姓名相关的科目、班级和排课。",

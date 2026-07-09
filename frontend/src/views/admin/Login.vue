@@ -149,6 +149,7 @@ const handleLogin = async () => {
           role: response.data.user.role,
           is_admin: response.data.is_admin,
           is_subject_teacher: response.data.is_subject_teacher || false,
+          is_teaching_assistant: response.data.is_teaching_assistant || false,
           must_change_password: response.data.must_change_password || false
         }))
 
@@ -179,7 +180,8 @@ const handleLogin = async () => {
             role: response.data.user.role,
             teacher_id: response.data.user.teacher_id,
             is_admin: response.data.is_admin,
-            is_subject_teacher: response.data.is_subject_teacher || false
+            is_subject_teacher: response.data.is_subject_teacher || false,
+            is_teaching_assistant: response.data.is_teaching_assistant || false
           } 
         }))
         ElMessage.success(t('login.loginSuccess'))

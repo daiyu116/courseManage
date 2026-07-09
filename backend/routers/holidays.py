@@ -7,7 +7,7 @@ from datetime import date, datetime
 from database import get_db
 from models import Holiday
 from schemas import HolidayCreate, HolidayUpdate, Holiday as HolidaySchema, PaginatedHolidayResponse
-from routers.auth import get_current_course_admin_user, User
+from routers.auth import get_current_course_admin_user, get_current_user, User
 from utils.logger import log_operation
 
 router = APIRouter()
@@ -17,7 +17,7 @@ def get_holidays(
     skip: int = 0,
     limit: int = 100,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_course_admin_user)
+    current_user: User = Depends(get_current_user)
 ):
     """获取节假日列表"""
     query = db.query(Holiday).order_by(Holiday.date.asc())

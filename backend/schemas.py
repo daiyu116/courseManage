@@ -453,7 +453,7 @@ class WeChatMessage(BaseModel):
 
 class UserBase(BaseModel):
     username: str = Field(..., description="用户名")
-    role: str = Field(default='course_admin', description="角色：super_admin(超级管理员), system_admin(系统管理员), course_admin(课程管理员), system_audit(系统审计员)")
+    role: str = Field(default='course_admin', description="角色：super_admin(超级管理员), system_admin(系统管理员), course_admin(课程管理员), system_audit(系统审计员), teaching_assistant(助教)")
 
 class UserCreate(UserBase):
     password: str = Field(..., description="密码")
@@ -508,16 +508,17 @@ class Token(BaseModel):
     user: 'User'
     is_admin: bool
     is_subject_teacher: bool = False
+    is_teaching_assistant: bool = False
 
 class UserManagementCreate(BaseModel):
     username: str = Field(..., description="用户名")
     password: str = Field(..., description="初始密码")
-    role: str = Field(default='course_admin', description="角色：super_admin, system_admin, course_admin, system_audit")
+    role: str = Field(default='course_admin', description="角色：super_admin, system_admin, course_admin, system_audit, teaching_assistant")
     teacher_id: Optional[int] = None
 
 class UserManagementUpdate(BaseModel):
     password: Optional[str] = Field(None, description="输入新密码")
-    role: Optional[str] = Field(None, description="角色：super_admin, system_admin, course_admin, system_audit")
+    role: Optional[str] = Field(None, description="角色：super_admin, system_admin, course_admin, system_audit, teaching_assistant")
     teacher_id: Optional[int] = None
 
 class PasswordChange(BaseModel):

@@ -16,7 +16,7 @@ from email.utils import formataddr
 from database import get_db
 from models import Settings, Student, Class
 from utils.logger import log_operation
-from routers.auth import get_current_system_admin_user, User
+from routers.auth import get_current_system_admin_user, get_current_teaching_assistant_user, User
 from schemas import SendEmailHomeworkRequest
 
 router = APIRouter()
@@ -25,7 +25,7 @@ router = APIRouter()
 def send_email_homework(
     request: SendEmailHomeworkRequest,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_system_admin_user)
+    current_user: User = Depends(get_current_teaching_assistant_user)
 ):
     """发送作业安排邮件（同时发送给学员和家长）"""
     settings = db.query(Settings).first()

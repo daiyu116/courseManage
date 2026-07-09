@@ -31,7 +31,7 @@ def check_teacher_visibility(db: Session, current_user: User) -> bool:
     
     if not settings or not settings.teacher_visibility_restricted:
         return False
-    if current_user.role not in ['teacher', 'course_admin']:
+    if current_user.role not in ['teacher', 'course_admin', 'teaching_assistant']:
         return False
     return True
 
@@ -488,6 +488,16 @@ def get_current_system_audit_user(current_user: User = Depends(get_current_user)
         )
     return current_user
 
+def get_current_teaching_assistant_user(current_user: User = Depends(get_current_user)):
+    """助教权限检查 - 只读权限，可发送通知"""
+    if current_user.role not in ['super_admin', 'course_admin', 'teaching_assistant']:
+        log_operation(None, "用户认证", "检查助教权限", f"权限不足，当前角色: {current_user.role}", current_user.username, "WARNING")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="权限不足"
+        )
+    return current_user
+
 @router.post("/register", response_model=UserSchema)
 def register(user: UserCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_system_admin_user)):
     db_user = db.query(User).filter(User.username == user.username).first()
@@ -567,6 +577,7 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
         "user": user,
         "is_admin": user.role in ['super_admin', 'system_admin'],
         "is_subject_teacher": is_subject_teacher_flag,
+        "is_teaching_assistant": user.role == 'teaching_assistant',
         "must_change_password": getattr(user, 'must_change_password', False)
     }
 
@@ -682,7 +693,7 @@ def update_user(
     if user_data.role is not None:
         user.role = user_data.role
     if hasattr(user_data, 'teacher_id'):
-        if user_data.role != 'course_admin':
+        if user_data.role not in ['course_admin', 'teaching_assistant']:
             user.teacher_id = None
         else:
             user.teacher_id = user_data.teacher_id

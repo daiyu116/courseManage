@@ -11,7 +11,7 @@ from database import get_db
 from models import Settings, Class
 from utils.logger import log_operation
 from utils.wechat_notifier import wechat_notifier
-from routers.auth import get_current_system_admin_user, User
+from routers.auth import get_current_system_admin_user, get_current_teaching_assistant_user, User
 from routers.license import _check_premium_feature
 
 router = APIRouter()
@@ -26,7 +26,7 @@ class SendWechatRequest(BaseModel):
 def send_wechat_message(
     request: SendWechatRequest,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_system_admin_user)
+    current_user: User = Depends(get_current_teaching_assistant_user)
 ):
     """发送微信消息到指定的Webhook地址（同时发送到班级webhook和导师信息群）"""
     if not _check_premium_feature('wechat_notify', db):

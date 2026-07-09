@@ -36,7 +36,7 @@
         <el-table-column prop="username" :label="t('users.username')" />
         <el-table-column prop="teacher_id" :label="t('users.boundTeacher')" width="150">
           <template #default="{ row }">
-            <span v-if="row.role === 'course_admin' && row.teacher_id">
+            <span v-if="(row.role === 'course_admin' || row.role === 'teaching_assistant') && row.teacher_id">
               {{ getTeacherName(row.teacher_id) }}
             </span>
             <span v-else style="color: #909399;">-</span>
@@ -77,10 +77,11 @@
             <el-option :label="t('users.systemAdmin')" value="system_admin" />
             <el-option :label="t('users.courseAdmin')" value="course_admin" />
             <el-option :label="t('users.systemAudit')" value="system_audit" />
+            <el-option :label="t('users.teachingAssistant')" value="teaching_assistant" />
           </el-select>
         </el-form-item>
         <!-- 导师绑定 -->
-        <el-form-item :label="t('users.relatedTeacher')" prop="teacher_id" v-if="form.role === 'course_admin'">
+        <el-form-item :label="t('users.relatedTeacher')" prop="teacher_id" v-if="form.role === 'course_admin' || form.role === 'teaching_assistant'">
           <el-select 
             v-model="form.teacher_id" 
             :placeholder="t('users.relatedTeacherPlaceholder')" 
@@ -222,7 +223,7 @@ const getTeacherName = (teacherId) => {
 
 // 监听角色变化，如果切换到非导师角色，清空 teacher_id
 const handleRoleChange = (val) => {
-  if (val !== 'course_admin') {
+  if (val !== 'course_admin' && val !== 'teaching_assistant') {
     form.teacher_id = null
   }
 }
@@ -327,7 +328,8 @@ const getRoleType = (role) => {
     'super_admin': 'danger',
     'system_admin': 'warning',
     'course_admin': 'primary',
-    'system_audit': 'info'
+    'system_audit': 'info',
+    'teaching_assistant': 'success'
   }
   return typeMap[role] || 'info'
 }
@@ -337,7 +339,8 @@ const getRoleText = (role) => {
     'super_admin': t('users.superAdmin'),
     'system_admin': t('users.systemAdmin'),
     'course_admin': t('users.courseAdmin'),
-    'system_audit': t('users.systemAudit')
+    'system_audit': t('users.systemAudit'),
+    'teaching_assistant': t('users.teachingAssistant')
   }
   return textMap[role] || role
 }
