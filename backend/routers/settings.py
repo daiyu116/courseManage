@@ -981,14 +981,30 @@ def test_ldap_connection(
                 log_operation(db, "系统配置", "LDAP测试失败", f"LDAP匿名绑定失败: {conn.result['description']}", current_user.username, "ERROR")
                 raise HTTPException(status_code=400, detail=f"LDAP匿名绑定失败: {conn.result.get('description', '未知错误')}")
         
-        search_filter = request.user_search_filter.format(username='*')
+        test_search_filter = "(objectClass=person)"
         try:
-            conn.search(search_base=request.user_search_base, search_filter=search_filter, attributes=['cn', 'mail', 'displayName'], size_limit=5)
+            conn.search(search_base=request.user_search_base, search_filter=test_search_filter, attributes=['cn', 'mail', 'displayName'], size_limit=5)
             search_result_count = len(conn.entries)
         except Exception as e:
-            log_operation(db, "系统配置", "LDAP测试失败", f"LDAP用户搜索失败: {str(e)}", current_user.username, "ERROR")
+            log_operation(db, "系统配置", "LDAP测试失败", f"LDAP用户搜索失败(使用测试过滤器 {test_search_filter}): {str(e)}", current_user.username, "ERROR")
             conn.unbind()
             raise HTTPException(status_code=400, detail=f"LDAP用户搜索失败: {str(e)}")
+        
+        if request.user_search_filter:
+            try:
+                user_filter_template = request.user_search_filter
+                if '{username}' in user_filter_template:
+                    test_user_filter = user_filter_template.replace('{username}', 'testuser')
+                else:
+                    test_user_filter = user_filter_template
+                
+                if not test_user_filter.startswith('('):
+                    test_user_filter = '(' + test_user_filter + ')'
+                
+                conn.search(search_base=request.user_search_base, search_filter=test_user_filter, attributes=['cn'], size_limit=1)
+                log_operation(db, "系统配置", "LDAP过滤器验证", f"用户搜索过滤器格式验证通过: {test_user_filter}", current_user.username, "INFO")
+            except Exception as e:
+                log_operation(db, "系统配置", "LDAP过滤器警告", f"用户搜索过滤器可能格式有误: {request.user_search_filter} -> {test_user_filter}, 错误: {str(e)}", current_user.username, "WARNING")
         
         conn.unbind()
         

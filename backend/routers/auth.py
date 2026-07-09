@@ -117,6 +117,24 @@ def get_teacher_visibility_filter(db: Session, current_user: User):
 def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
 
+def _ldap_build_search_filter(user_search_filter: str, username: str) -> str:
+    """安全构建LDAP搜索过滤器
+    
+    处理各种用户配置格式：
+    - (uid={username}) -> (uid=actualuser)
+    - uid={username} -> (uid=actualuser)  自动补括号
+    - (&(objectClass=person)(uid={username})) -> 复合过滤器
+    """
+    if not user_search_filter:
+        return f'(uid={username})'
+    
+    search_filter = user_search_filter.replace('{username}', username)
+    
+    if not search_filter.startswith('('):
+        search_filter = '(' + search_filter + ')'
+    
+    return search_filter
+
 def _ldap_determine_role(user_entry, ldap_config: dict) -> str:
     """根据LDAP用户条目和配置确定系统角色"""
     role = ldap_config.get('default_role', 'course_admin')
@@ -244,10 +262,10 @@ def authenticate_ldap(username: str, password: str, db: Session) -> tuple[bool, 
                     return False, None
             
             if user_dn_template:
-                user_dn = user_dn_template.format(username=username)
+                user_dn = user_dn_template.replace('{username}', username)
                 
                 if user_search_base:
-                    search_filter = user_search_filter.format(username=username)
+                    search_filter = _ldap_build_search_filter(user_search_filter, username)
                     search_attributes = _ldap_get_search_attributes(ldap_config)
                     
                     try:
@@ -287,7 +305,7 @@ def authenticate_ldap(username: str, password: str, db: Session) -> tuple[bool, 
                         conn.unbind()
                     return False, None
                 
-                search_filter = user_search_filter.format(username=username)
+                search_filter = _ldap_build_search_filter(user_search_filter, username)
                 search_attributes = _ldap_get_search_attributes(ldap_config)
                 
                 conn.search(search_base=user_search_base, search_filter=search_filter, attributes=search_attributes)
