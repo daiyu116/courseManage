@@ -286,6 +286,7 @@
     "testConnection": "测试连接",
     "resetConfig": "重置配置",
     "testLdapConnection": "测试LDAP连接",
+    "ldapTestSuccess": "LDAP连接测试成功",
     "resetLdapConfig": "重置LDAP配置",
     "testEmailSend": "测试邮件发送",
     "smartCommandExamples": "智能指令示例管理",
@@ -2503,7 +2504,9 @@
     "notifyNowFail": "通知发送失败",
     "feedback": "反馈",
     "getClassStudentsFailed": "获取班级学员失败",
-    "getConflictFailed": "获取冲突课程失败"
+    "getConflictFailed": "获取冲突课程失败",
+    "studentAttendanceStatus": "学员参训状态",
+    "moreStudents": "等共{n}人"
   },
   "calendar": {
     "scheduleCalendar": "排课日历",

@@ -117,6 +117,82 @@ def get_teacher_visibility_filter(db: Session, current_user: User):
 def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
 
+def _ldap_determine_role(user_entry, ldap_config: dict) -> str:
+    """根据LDAP用户条目和配置确定系统角色"""
+    role = ldap_config.get('default_role', 'course_admin')
+    role_mapping_type = ldap_config.get('role_mapping_type', 'default')
+    
+    if role_mapping_type != 'attribute':
+        return role
+    
+    role_mappings = ldap_config.get('role_mappings', {})
+    role_mapping_attribute = ldap_config.get('role_mapping_attribute', 'ou')
+    
+    if role_mapping_attribute == 'ou':
+        user_ou = str(user_entry.ou) if hasattr(user_entry, 'ou') else ''
+        if user_ou:
+            for sys_role, ldap_value in role_mappings.items():
+                if ldap_value and ldap_value in user_ou:
+                    role = sys_role
+                    break
+    elif role_mapping_attribute == 'memberOf':
+        user_groups = []
+        if hasattr(user_entry, 'memberOf'):
+            user_groups = [str(group) for group in user_entry.memberOf]
+        for sys_role, ldap_value in role_mappings.items():
+            if ldap_value and any(ldap_value in group for group in user_groups):
+                role = sys_role
+                break
+    elif role_mapping_attribute == 'custom':
+        custom_attr = ldap_config.get('custom_attribute_name', '')
+        if custom_attr and hasattr(user_entry, custom_attr):
+            attr_value = str(getattr(user_entry, custom_attr))
+            for sys_role, ldap_value in role_mappings.items():
+                if ldap_value and ldap_value in attr_value:
+                    role = sys_role
+                    break
+    
+    return role
+
+
+def _ldap_get_search_attributes(ldap_config: dict) -> list:
+    """根据角色映射类型决定需要获取的LDAP属性"""
+    role_mapping_type = ldap_config.get('role_mapping_type', 'default')
+    search_attributes = ['cn', 'mail', 'displayName']
+    
+    if role_mapping_type == 'attribute':
+        role_mapping_attribute = ldap_config.get('role_mapping_attribute', 'ou')
+        search_attributes.extend(['memberOf', 'ou'])
+        if role_mapping_attribute == 'custom':
+            custom_attr = ldap_config.get('custom_attribute_name', '')
+            if custom_attr:
+                search_attributes.append(custom_attr)
+    
+    return list(set(search_attributes))
+
+
+def _ldap_extract_user_info(user_entry, username: str, role: str) -> dict:
+    """从LDAP用户条目中提取用户信息"""
+    display_name = username
+    if hasattr(user_entry, 'displayName'):
+        val = str(user_entry.displayName)
+        if val and val != '[]':
+            display_name = val
+    
+    email = ''
+    if hasattr(user_entry, 'mail'):
+        val = str(user_entry.mail)
+        if val and val != '[]':
+            email = val
+    
+    return {
+        'username': username,
+        'display_name': display_name,
+        'email': email,
+        'role': role
+    }
+
+
 def authenticate_ldap(username: str, password: str, db: Session) -> tuple[bool, Optional[dict]]:
     """LDAP认证函数
     返回: (认证成功, 用户信息字典)
@@ -146,115 +222,105 @@ def authenticate_ldap(username: str, password: str, db: Session) -> tuple[bool, 
             log_operation(db, "用户认证", "LDAP认证失败", "LDAP服务器地址未配置", username, "WARNING")
             return False, None
         
-        # 构建服务器地址
         server_uri = f"{'ldaps' if use_ssl else 'ldap'}://{server}:{port}"
+        server_obj = ldap3.Server(server_uri, get_info=ldap3.DSA)
         
-        # 连接LDAP服务器
-        server_obj = ldap3.Server(server_uri)
-        
-        # 如果有管理员DN，先绑定管理员
-        if bind_dn and bind_password:
-            try:
-                conn = ldap3.Connection(server_obj, user=bind_dn, password=bind_password, auto_bind=True)
-            except Exception as e:
-                log_operation(db, "用户认证", "LDAP认证失败", f"LDAP管理员绑定失败: {str(e)}", username, "WARNING")
-                return False, None
-        else:
-            conn = ldap3.Connection(server_obj)
-        
-        # 尝试用户认证
-        if user_dn_template:
-            # 使用DN模板直接认证
-            user_dn = user_dn_template.format(username=username)
-            try:
-                if conn.bind():
+        conn = None
+        try:
+            if bind_dn and bind_password:
+                try:
+                    conn = ldap3.Connection(server_obj, user=bind_dn, password=bind_password, auto_bind=True)
+                except ldap3.core.exceptions.LDAPBindError as e:
+                    log_operation(db, "用户认证", "LDAP认证失败", f"LDAP管理员绑定失败: {str(e)}", username, "WARNING")
+                    return False, None
+                except Exception as e:
+                    log_operation(db, "用户认证", "LDAP认证失败", f"LDAP管理员绑定失败: {str(e)}", username, "WARNING")
+                    return False, None
+            else:
+                conn = ldap3.Connection(server_obj)
+                if not conn.bind():
+                    log_operation(db, "用户认证", "LDAP认证失败", f"LDAP匿名绑定失败: {conn.result['description']}", username, "WARNING")
                     conn.unbind()
+                    return False, None
+            
+            if user_dn_template:
+                user_dn = user_dn_template.format(username=username)
+                
+                if user_search_base:
+                    search_filter = user_search_filter.format(username=username)
+                    search_attributes = _ldap_get_search_attributes(ldap_config)
+                    
+                    try:
+                        conn.search(search_base=user_search_base, search_filter=search_filter, attributes=search_attributes)
+                    except Exception as e:
+                        log_operation(db, "用户认证", "LDAP认证", f"DN模板模式下搜索用户信息失败: {str(e)}，将使用默认信息", username, "WARNING")
+                    
+                    if conn.entries:
+                        user_entry = conn.entries[0]
+                        role = _ldap_determine_role(user_entry, ldap_config)
+                        user_info = _ldap_extract_user_info(user_entry, username, role)
+                    else:
+                        role = ldap_config.get('default_role', 'course_admin')
+                        user_info = {'username': username, 'display_name': username, 'email': '', 'role': role}
+                else:
+                    role = ldap_config.get('default_role', 'course_admin')
+                    user_info = {'username': username, 'display_name': username, 'email': '', 'role': role}
+                
+                conn.unbind()
+                conn = None
+                
+                try:
                     user_conn = ldap3.Connection(server_obj, user=user_dn, password=password, auto_bind=True)
                     user_conn.unbind()
-                    # 使用默认角色
-                    role = ldap_config.get('default_role', 'course_admin')
                     log_operation(db, "用户认证", "LDAP认证成功", f"用户 {username} LDAP认证成功，角色: {role}", username, "INFO")
-                    return True, {'username': username, 'role': role}
-            except Exception as e:
-                log_operation(db, "用户认证", "LDAP认证失败", f"用户 {username} LDAP认证失败: {str(e)}", username, "WARNING")
-                return False, None
-        else:
-            # 先搜索用户DN，再认证
-            search_filter = user_search_filter.format(username=username)
-            
-            # 根据角色映射类型决定需要获取的属性
-            role_mapping_type = ldap_config.get('role_mapping_type', 'default')
-            if role_mapping_type == 'attribute':
-                role_mapping_attribute = ldap_config.get('role_mapping_attribute', 'ou')
-                search_attributes = ['cn', 'mail', 'displayName', 'memberOf', 'ou']
-                if role_mapping_attribute == 'custom':
-                    custom_attr = ldap_config.get('custom_attribute_name', '')
-                    if custom_attr:
-                        search_attributes.append(custom_attr)
+                    return True, user_info
+                except ldap3.core.exceptions.LDAPBindError as e:
+                    log_operation(db, "用户认证", "LDAP认证失败", f"用户 {username} LDAP认证失败(密码错误): {str(e)}", username, "WARNING")
+                    return False, None
+                except Exception as e:
+                    log_operation(db, "用户认证", "LDAP认证失败", f"用户 {username} LDAP认证失败: {str(e)}", username, "WARNING")
+                    return False, None
             else:
-                search_attributes = ['cn', 'mail', 'displayName']
-            
-            conn.search(search_base=user_search_base, search_filter=search_filter, attributes=search_attributes)
-            
-            if not conn.entries:
-                log_operation(db, "用户认证", "LDAP认证失败", f"用户 {username} 在LDAP中不存在", username, "WARNING")
-                conn.unbind()
-                return False, None
-            
-            user_dn = conn.entries[0].entry_dn
-            user_entry = conn.entries[0]
-            
-            # 确定用户角色
-            role = ldap_config.get('default_role', 'course_admin')
-            
-            if role_mapping_type == 'attribute':
-                role_mappings = ldap_config.get('role_mappings', {})
-                role_mapping_attribute = ldap_config.get('role_mapping_attribute', 'ou')
+                if not user_search_base:
+                    log_operation(db, "用户认证", "LDAP认证失败", "未配置用户搜索基础DN(user_search_base)且未配置用户DN模板(user_dn_template)", username, "WARNING")
+                    if conn:
+                        conn.unbind()
+                    return False, None
                 
-                if role_mapping_attribute == 'ou':
-                    # 根据组织单位(OU)映射角色
-                    user_ou = str(user_entry.ou) if hasattr(user_entry, 'ou') else ''
-                    if user_ou:
-                        for sys_role, ldap_value in role_mappings.items():
-                            if ldap_value and ldap_value in user_ou:
-                                role = sys_role
-                                break
-                elif role_mapping_attribute == 'memberOf':
-                    # 根据组成员身份映射角色
-                    user_groups = []
-                    if hasattr(user_entry, 'memberOf'):
-                        user_groups = [str(group) for group in user_entry.memberOf]
-                    for sys_role, ldap_value in role_mappings.items():
-                        if ldap_value and any(ldap_value in group for group in user_groups):
-                            role = sys_role
-                            break
-                elif role_mapping_attribute == 'custom':
-                    # 根据自定义属性映射角色
-                    custom_attr = ldap_config.get('custom_attribute_name', '')
-                    if custom_attr and hasattr(user_entry, custom_attr):
-                        attr_value = str(getattr(user_entry, custom_attr))
-                        for sys_role, ldap_value in role_mappings.items():
-                            if ldap_value and ldap_value in attr_value:
-                                role = sys_role
-                                break
-            
-            user_info = {
-                'username': username,
-                'display_name': str(user_entry.displayName) if hasattr(user_entry, 'displayName') else username,
-                'email': str(user_entry.mail) if hasattr(user_entry, 'mail') else '',
-                'role': role
-            }
-            conn.unbind()
-            
-            # 使用用户DN和密码进行认证
-            try:
-                user_conn = ldap3.Connection(server_obj, user=user_dn, password=password, auto_bind=True)
-                user_conn.unbind()
-                log_operation(db, "用户认证", "LDAP认证成功", f"用户 {username} LDAP认证成功，角色: {role}", username, "INFO")
-                return True, user_info
-            except Exception as e:
-                log_operation(db, "用户认证", "LDAP认证失败", f"用户 {username} LDAP认证失败: {str(e)}", username, "WARNING")
-                return False, None
+                search_filter = user_search_filter.format(username=username)
+                search_attributes = _ldap_get_search_attributes(ldap_config)
+                
+                conn.search(search_base=user_search_base, search_filter=search_filter, attributes=search_attributes)
+                
+                if not conn.entries:
+                    log_operation(db, "用户认证", "LDAP认证失败", f"用户 {username} 在LDAP中不存在(搜索基础: {user_search_base}, 过滤器: {search_filter})", username, "WARNING")
+                    conn.unbind()
+                    return False, None
+                
+                user_dn = conn.entries[0].entry_dn
+                user_entry = conn.entries[0]
+                role = _ldap_determine_role(user_entry, ldap_config)
+                user_info = _ldap_extract_user_info(user_entry, username, role)
+                conn.unbind()
+                conn = None
+                
+                try:
+                    user_conn = ldap3.Connection(server_obj, user=user_dn, password=password, auto_bind=True)
+                    user_conn.unbind()
+                    log_operation(db, "用户认证", "LDAP认证成功", f"用户 {username} LDAP认证成功，角色: {role}", username, "INFO")
+                    return True, user_info
+                except ldap3.core.exceptions.LDAPBindError as e:
+                    log_operation(db, "用户认证", "LDAP认证失败", f"用户 {username} LDAP认证失败(密码错误): {str(e)}", username, "WARNING")
+                    return False, None
+                except Exception as e:
+                    log_operation(db, "用户认证", "LDAP认证失败", f"用户 {username} LDAP认证失败: {str(e)}", username, "WARNING")
+                    return False, None
+        finally:
+            if conn is not None:
+                try:
+                    conn.unbind()
+                except Exception:
+                    pass
                 
     except ImportError:
         log_operation(db, "用户认证", "LDAP认证失败", "ldap3库未安装，请运行: pip install ldap3", username, "ERROR")

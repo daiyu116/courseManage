@@ -3658,6 +3658,37 @@ const resetLDAPConfig = () => {
   ElMessage.success(t('dashboard.ldapConfigReset'))
 }
 
+const testLDAPConnection = async () => {
+  testingLDAP.value = true
+  try {
+    const config = siteSettingsForm.value.ldap_config
+    if (!config.server) {
+      ElMessage.warning(t('dashboard.ldapServerPlaceholder'))
+      return
+    }
+    if (!config.user_search_base) {
+      ElMessage.warning(t('dashboard.userSearchBasePlaceholder'))
+      return
+    }
+    const response = await api.post('/settings/test-ldap', {
+      server: config.server,
+      port: config.port,
+      use_ssl: config.use_ssl,
+      bind_dn: config.bind_dn,
+      bind_password: config.bind_password,
+      user_search_base: config.user_search_base,
+      user_search_filter: config.user_search_filter,
+      user_dn_template: config.user_dn_template
+    })
+    ElMessage.success(response.data.message || t('dashboard.ldapTestSuccess'))
+  } catch (error) {
+    window.logger.error('LDAP连接测试失败:', error)
+    ElMessage.error(t('dashboard.testFailed') + ': ' + (error.response?.data?.detail || error.message))
+  } finally {
+    testingLDAP.value = false
+  }
+}
+
 // 考试阶段的管理
 const defaultExamStages = computed(() => [
   t('dashboard.examAutumnA'), t('dashboard.examAutumnB'), t('dashboard.examAutumnMid'), t('dashboard.examAutumnC'), t('dashboard.examAutumnD'), t('dashboard.examAutumnFinal'),

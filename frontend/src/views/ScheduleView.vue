@@ -18,7 +18,7 @@
           <el-row :gutter="10">
             <el-col :span="4.8">
               <el-form-item :label="t('scheduleView.course')" label-width="50px">
-                <el-select v-model="filters.courseIds" :placeholder="t('scheduleView.selectCourse')" clearable multiple collapse-tags collapse-tags-tooltip style="width: 180px">
+                <el-select v-model="filters.courseIds" filterable :placeholder="t('scheduleView.selectCourse')" clearable multiple collapse-tags collapse-tags-tooltip style="width: 180px">
                   <el-option
                       v-for="course in courses"
                       :key="course.id"
@@ -43,7 +43,7 @@
             </el-col>
             <el-col :span="4.8">
               <el-form-item :label="t('scheduleView.teacher')" label-width="50px">
-                <el-select v-model="filters.teacherIds" :placeholder="t('scheduleView.selectTeacher')" clearable multiple collapse-tags collapse-tags-tooltip style="width: 180px">
+                <el-select v-model="filters.teacherIds" filterable :placeholder="t('scheduleView.selectTeacher')" clearable multiple collapse-tags collapse-tags-tooltip style="width: 180px">
                   <el-option
                       v-for="teacher in teachers"
                       :key="teacher.id"
@@ -70,7 +70,7 @@
             </el-col>
             <el-col :span="4.8">
               <el-form-item :label="t('scheduleView.class')" label-width="50px">
-                <el-select v-model="filters.classIds" :placeholder="t('scheduleView.selectClass')" clearable multiple collapse-tags collapse-tags-tooltip style="width: 180px">
+                <el-select v-model="filters.classIds" filterable :placeholder="t('scheduleView.selectClass')" clearable multiple collapse-tags collapse-tags-tooltip style="width: 180px">
                   <el-option
                       v-for="class_ in classes"
                       :key="class_.id"
@@ -103,7 +103,7 @@
             </el-col>
             <el-col :span="4.8">
               <el-form-item :label="t('scheduleView.student')" label-width="50px">
-                <el-select v-model="filters.studentIds" :placeholder="t('scheduleView.selectStudent')" clearable multiple collapse-tags collapse-tags-tooltip style="width: 180px">
+                <el-select v-model="filters.studentIds" filterable :placeholder="t('scheduleView.selectStudent')" clearable multiple collapse-tags collapse-tags-tooltip style="width: 180px">
                   <el-option
                       v-for="student in students"
                       :key="student.id"
@@ -144,7 +144,7 @@
             </el-col>
             <el-col :span="4.8">
               <el-form-item :label="t('scheduleView.room')" label-width="50px">
-                <el-select v-model="filters.roomIds" :placeholder="t('scheduleView.selectRoom')" clearable multiple collapse-tags collapse-tags-tooltip style="width: 180px">
+                <el-select v-model="filters.roomIds" filterable :placeholder="t('scheduleView.selectRoom')" clearable multiple collapse-tags collapse-tags-tooltip style="width: 180px">
                   <el-option
                       v-for="room in rooms"
                       :key="room.id"
@@ -377,6 +377,36 @@
               </div>
             </el-popover>
             <el-tag v-else type="success">{{ t('scheduleView.noConflict') }}</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column :label="t('scheduleView.studentAttendanceStatus')" min-width="200">
+          <template #default="{ row }">
+            <div v-if="row.scheduled_students && row.scheduled_students.length > 0">
+              <el-popover placement="top" :width="360" trigger="hover">
+                <template #reference>
+                  <div style="cursor: pointer;">
+                    <div v-for="student in row.scheduled_students.slice(0, 3)" :key="student.id" style="margin-bottom: 2px; display: flex; align-items: center; gap: 4px;">
+                      <span style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ student.name }}</span>
+                      <el-tag :type="getAttendanceTagType(student.attendance_status)" size="small">{{ getAttendanceStatusText(student.attendance_status) }}</el-tag>
+                    </div>
+                    <div v-if="row.scheduled_students.length > 3" style="color: #909399; font-size: 12px;">
+                      {{ t('scheduleView.moreStudents', { n: row.scheduled_students.length - 3 }) }}
+                    </div>
+                  </div>
+                </template>
+                <div>
+                  <div style="font-weight: bold; margin-bottom: 8px;">{{ t('scheduleView.studentAttendanceStatus') }}</div>
+                  <div v-for="student in row.scheduled_students" :key="student.id" style="margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
+                    <span style="flex: 1;">{{ student.name }}</span>
+                    <el-tag :type="getAttendanceTagType(student.attendance_status)" size="small">{{ getAttendanceStatusText(student.attendance_status) }}</el-tag>
+                    <el-tag v-if="student.makeup_status === 'completed'" type="success" size="small">{{ t('scheduleView.makeupCompleted') }}</el-tag>
+                    <el-tag v-else-if="student.makeup_status === 'pending'" type="warning" size="small">{{ t('scheduleView.makeupPending') }}</el-tag>
+                    <el-tag v-else-if="student.makeup_status === 'declined'" type="info" size="small">{{ t('scheduleView.makeupDeclined') }}</el-tag>
+                  </div>
+                </div>
+              </el-popover>
+            </div>
+            <span v-else style="color: #909399;">-</span>
           </template>
         </el-table-column>
         <el-table-column :label="t('scheduleView.executionStatus')" width="100">
@@ -744,6 +774,24 @@ const getClassName = (classId) => {
 const getStudentName = (studentId) => {
   const student = students.value.find(s => s.id === studentId)
   return student ? student.name : '-'
+}
+
+const getAttendanceTagType = (status) => {
+  switch (status) {
+    case 'present': return 'success'
+    case 'absent': return 'danger'
+    case 'leave': return 'warning'
+    default: return 'info'
+  }
+}
+
+const getAttendanceStatusText = (status) => {
+  switch (status) {
+    case 'present': return t('scheduleView.present')
+    case 'absent': return t('scheduleView.absent')
+    case 'leave': return t('scheduleView.onLeave')
+    default: return t('scheduleView.pending')
+  }
 }
 
 const getRoomName = (roomId) => {

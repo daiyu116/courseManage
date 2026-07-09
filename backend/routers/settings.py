@@ -953,7 +953,7 @@ def test_ldap_connection(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_system_admin_user)
 ):
-    """测试LDAP连接"""
+    """测试LDAP连接（包括绑定和用户搜索）"""
     try:
         if not request.server:
             raise HTTPException(status_code=400, detail="LDAP服务器地址不能为空")
@@ -967,24 +967,33 @@ def test_ldap_connection(
             raise HTTPException(status_code=500, detail="ldap3库未安装，请运行: pip install ldap3")
         
         server_uri = f"{'ldaps' if request.use_ssl else 'ldap'}://{request.server}:{request.port}"
-        server_obj = ldap3.Server(server_uri)
+        server_obj = ldap3.Server(server_uri, get_info=ldap3.DSA)
         
         if request.bind_dn and request.bind_password:
             try:
                 conn = ldap3.Connection(server_obj, user=request.bind_dn, password=request.bind_password, auto_bind=True)
-                conn.unbind()
             except Exception as e:
                 log_operation(db, "系统配置", "LDAP测试失败", f"LDAP管理员绑定失败: {str(e)}", current_user.username, "ERROR")
                 raise HTTPException(status_code=400, detail=f"LDAP管理员绑定失败: {str(e)}")
         else:
             conn = ldap3.Connection(server_obj)
             if not conn.bind():
-                log_operation(db, "系统配置", "LDAP测试失败", "LDAP匿名绑定失败", current_user.username, "ERROR")
-                raise HTTPException(status_code=400, detail="LDAP匿名绑定失败")
-            conn.unbind()
+                log_operation(db, "系统配置", "LDAP测试失败", f"LDAP匿名绑定失败: {conn.result['description']}", current_user.username, "ERROR")
+                raise HTTPException(status_code=400, detail=f"LDAP匿名绑定失败: {conn.result.get('description', '未知错误')}")
         
-        log_operation(db, "系统配置", "LDAP测试成功", f"LDAP连接测试成功: {server_uri}", current_user.username, "INFO")
-        return {"message": "LDAP连接测试成功！"}
+        search_filter = request.user_search_filter.format(username='*')
+        try:
+            conn.search(search_base=request.user_search_base, search_filter=search_filter, attributes=['cn', 'mail', 'displayName'], size_limit=5)
+            search_result_count = len(conn.entries)
+        except Exception as e:
+            log_operation(db, "系统配置", "LDAP测试失败", f"LDAP用户搜索失败: {str(e)}", current_user.username, "ERROR")
+            conn.unbind()
+            raise HTTPException(status_code=400, detail=f"LDAP用户搜索失败: {str(e)}")
+        
+        conn.unbind()
+        
+        log_operation(db, "系统配置", "LDAP测试成功", f"LDAP连接测试成功: {server_uri}, 搜索到 {search_result_count} 条用户记录", current_user.username, "INFO")
+        return {"message": f"LDAP连接测试成功！搜索到 {search_result_count} 条用户记录"}
     except HTTPException:
         raise
     except Exception as e:

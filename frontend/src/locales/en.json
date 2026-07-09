@@ -284,6 +284,7 @@
     "testConnection": "Test Connection",
     "resetConfig": "Reset Config",
     "testLdapConnection": "Test LDAP Connection",
+    "ldapTestSuccess": "LDAP connection test successful",
     "resetLdapConfig": "Reset LDAP Config",
     "testEmailSend": "Test Email Send",
     "smartCommandExamples": "Smart Command Examples",
@@ -2503,7 +2504,9 @@
     "notifyNowFail": "Failed to send notification",
     "feedback": "Feedback",
     "getClassStudentsFailed": "Failed to get class students",
-    "getConflictFailed": "Failed to get conflict courses"
+    "getConflictFailed": "Failed to get conflict courses",
+    "studentAttendanceStatus": "Student Attendance",
+    "moreStudents": "{n} more students"
   },
   "calendar": {
     "scheduleCalendar": "Schedule Calendar",
