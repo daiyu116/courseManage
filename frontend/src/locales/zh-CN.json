@@ -109,6 +109,7 @@
     "registerSubmit": "提交注册",
     "registerSuccess": "注册申请已提交！请查收邮箱确认邮件完成注册。",
     "loginSuccess": "登录成功",
+    "loginFailed": "登录失败，请检查用户名和密码",
     "mustChangePassword": "检测到您使用的是默认密码，请立即修改密码！",
     "usernameRequired": "请输入用户名",
     "passwordRequired": "请输入密码",

@@ -191,6 +191,8 @@ const handleLogin = async () => {
         }
       } catch (error) {
         window.logger.error('Login failed:', error)
+        const errorMsg = error.response?.data?.detail || t('login.loginFailed')
+        ElMessage.error(errorMsg)
       } finally {
         loading.value = false
       }

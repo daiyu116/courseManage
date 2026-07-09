@@ -109,6 +109,7 @@
     "registerSubmit": "Submit Registration",
     "registerSuccess": "Registration submitted! Please check your email for the confirmation.",
     "loginSuccess": "Login successful",
+    "loginFailed": "Login failed, please check your username and password",
     "mustChangePassword": "Default password detected. Please change your password immediately!",
     "usernameRequired": "Please enter username",
     "passwordRequired": "Please enter password",

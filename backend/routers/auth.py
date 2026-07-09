@@ -124,6 +124,7 @@ def _ldap_build_search_filter(user_search_filter: str, username: str) -> str:
     - (uid={username}) -> (uid=actualuser)
     - uid={username} -> (uid=actualuser)  自动补括号
     - (&(objectClass=person)(uid={username})) -> 复合过滤器
+    - (cn=) -> 自动检测并回退为 (cn=actualuser)
     """
     if not user_search_filter:
         return f'(uid={username})'
@@ -132,6 +133,13 @@ def _ldap_build_search_filter(user_search_filter: str, username: str) -> str:
     
     if not search_filter.startswith('('):
         search_filter = '(' + search_filter + ')'
+    
+    if username and f'={username}' not in search_filter:
+        import re
+        match = re.match(r'\(([a-zA-Z][a-zA-Z0-9-]*)=\s*\)', search_filter)
+        if match:
+            attr = match.group(1)
+            search_filter = f'({attr}={username})'
     
     return search_filter
 
@@ -236,18 +244,29 @@ def authenticate_ldap(username: str, password: str, db: Session) -> tuple[bool, 
         user_search_filter = ldap_config.get('user_search_filter', '(uid={username})')
         user_dn_template = ldap_config.get('user_dn_template', '')
         
+        log_operation(db, "用户认证", "LDAP认证调试", f"username={username}, user_search_filter原始值={user_search_filter}, user_search_base={user_search_base}, user_dn_template={user_dn_template}", username, "DEBUG")
+        
         if not server:
             log_operation(db, "用户认证", "LDAP认证失败", "LDAP服务器地址未配置", username, "WARNING")
             return False, None
         
         server_uri = f"{'ldaps' if use_ssl else 'ldap'}://{server}:{port}"
-        server_obj = ldap3.Server(server_uri, get_info=ldap3.DSA)
+        
+        connect_timeout = 5
+        receive_timeout = 10
+        server_obj = ldap3.Server(server_uri, get_info=ldap3.DSA, connect_timeout=connect_timeout)
         
         conn = None
         try:
             if bind_dn and bind_password:
                 try:
-                    conn = ldap3.Connection(server_obj, user=bind_dn, password=bind_password, auto_bind=True)
+                    conn = ldap3.Connection(
+                        server_obj,
+                        user=bind_dn,
+                        password=bind_password,
+                        auto_bind=True,
+                        receive_timeout=receive_timeout
+                    )
                 except ldap3.core.exceptions.LDAPBindError as e:
                     log_operation(db, "用户认证", "LDAP认证失败", f"LDAP管理员绑定失败: {str(e)}", username, "WARNING")
                     return False, None
@@ -255,7 +274,10 @@ def authenticate_ldap(username: str, password: str, db: Session) -> tuple[bool, 
                     log_operation(db, "用户认证", "LDAP认证失败", f"LDAP管理员绑定失败: {str(e)}", username, "WARNING")
                     return False, None
             else:
-                conn = ldap3.Connection(server_obj)
+                conn = ldap3.Connection(
+                    server_obj,
+                    receive_timeout=receive_timeout
+                )
                 if not conn.bind():
                     log_operation(db, "用户认证", "LDAP认证失败", f"LDAP匿名绑定失败: {conn.result['description']}", username, "WARNING")
                     conn.unbind()
@@ -269,7 +291,12 @@ def authenticate_ldap(username: str, password: str, db: Session) -> tuple[bool, 
                     search_attributes = _ldap_get_search_attributes(ldap_config)
                     
                     try:
-                        conn.search(search_base=user_search_base, search_filter=search_filter, attributes=search_attributes)
+                        conn.search(
+                            search_base=user_search_base,
+                            search_filter=search_filter,
+                            attributes=search_attributes,
+                            time_limit=receive_timeout
+                        )
                     except Exception as e:
                         log_operation(db, "用户认证", "LDAP认证", f"DN模板模式下搜索用户信息失败: {str(e)}，将使用默认信息", username, "WARNING")
                     
@@ -288,7 +315,13 @@ def authenticate_ldap(username: str, password: str, db: Session) -> tuple[bool, 
                 conn = None
                 
                 try:
-                    user_conn = ldap3.Connection(server_obj, user=user_dn, password=password, auto_bind=True)
+                    user_conn = ldap3.Connection(
+                        server_obj,
+                        user=user_dn,
+                        password=password,
+                        auto_bind=True,
+                        receive_timeout=receive_timeout
+                    )
                     user_conn.unbind()
                     log_operation(db, "用户认证", "LDAP认证成功", f"用户 {username} LDAP认证成功，角色: {role}", username, "INFO")
                     return True, user_info
@@ -308,7 +341,12 @@ def authenticate_ldap(username: str, password: str, db: Session) -> tuple[bool, 
                 search_filter = _ldap_build_search_filter(user_search_filter, username)
                 search_attributes = _ldap_get_search_attributes(ldap_config)
                 
-                conn.search(search_base=user_search_base, search_filter=search_filter, attributes=search_attributes)
+                conn.search(
+                    search_base=user_search_base,
+                    search_filter=search_filter,
+                    attributes=search_attributes,
+                    time_limit=receive_timeout
+                )
                 
                 if not conn.entries:
                     log_operation(db, "用户认证", "LDAP认证失败", f"用户 {username} 在LDAP中不存在(搜索基础: {user_search_base}, 过滤器: {search_filter})", username, "WARNING")
@@ -323,7 +361,13 @@ def authenticate_ldap(username: str, password: str, db: Session) -> tuple[bool, 
                 conn = None
                 
                 try:
-                    user_conn = ldap3.Connection(server_obj, user=user_dn, password=password, auto_bind=True)
+                    user_conn = ldap3.Connection(
+                        server_obj,
+                        user=user_dn,
+                        password=password,
+                        auto_bind=True,
+                        receive_timeout=receive_timeout
+                    )
                     user_conn.unbind()
                     log_operation(db, "用户认证", "LDAP认证成功", f"用户 {username} LDAP认证成功，角色: {role}", username, "INFO")
                     return True, user_info

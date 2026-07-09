@@ -488,6 +488,13 @@ def create_or_update_settings(
     # 处理 ldap_config，确保不为空
     ldap_config_str = settings_data.ldap_config or '{}'
     
+    try:
+        _ldap_debug = json.loads(ldap_config_str) if ldap_config_str else {}
+        _filter_val = _ldap_debug.get('user_search_filter', 'NOT_SET')
+        log_operation(db, "系统配置", "LDAP配置保存调试", f"保存的ldap_config中user_search_filter={_filter_val}, ldap_config_str长度={len(ldap_config_str)}", current_user.username, "DEBUG")
+    except Exception:
+        pass
+    
     # License 检查（仅在功能被启用时检查，避免格式差异误触发）
     from routers.license import _check_premium_feature
     old_ai = (settings.ai_config or '{}') if settings else '{}'
@@ -967,23 +974,25 @@ def test_ldap_connection(
             raise HTTPException(status_code=500, detail="ldap3库未安装，请运行: pip install ldap3")
         
         server_uri = f"{'ldaps' if request.use_ssl else 'ldap'}://{request.server}:{request.port}"
-        server_obj = ldap3.Server(server_uri, get_info=ldap3.DSA)
+        connect_timeout = 5
+        receive_timeout = 10
+        server_obj = ldap3.Server(server_uri, get_info=ldap3.DSA, connect_timeout=connect_timeout)
         
         if request.bind_dn and request.bind_password:
             try:
-                conn = ldap3.Connection(server_obj, user=request.bind_dn, password=request.bind_password, auto_bind=True)
+                conn = ldap3.Connection(server_obj, user=request.bind_dn, password=request.bind_password, auto_bind=True, receive_timeout=receive_timeout)
             except Exception as e:
                 log_operation(db, "系统配置", "LDAP测试失败", f"LDAP管理员绑定失败: {str(e)}", current_user.username, "ERROR")
                 raise HTTPException(status_code=400, detail=f"LDAP管理员绑定失败: {str(e)}")
         else:
-            conn = ldap3.Connection(server_obj)
+            conn = ldap3.Connection(server_obj, receive_timeout=receive_timeout)
             if not conn.bind():
                 log_operation(db, "系统配置", "LDAP测试失败", f"LDAP匿名绑定失败: {conn.result['description']}", current_user.username, "ERROR")
                 raise HTTPException(status_code=400, detail=f"LDAP匿名绑定失败: {conn.result.get('description', '未知错误')}")
         
         test_search_filter = "(objectClass=person)"
         try:
-            conn.search(search_base=request.user_search_base, search_filter=test_search_filter, attributes=['cn', 'mail', 'displayName'], size_limit=5)
+            conn.search(search_base=request.user_search_base, search_filter=test_search_filter, attributes=['cn', 'mail', 'displayName'], size_limit=5, time_limit=receive_timeout)
             search_result_count = len(conn.entries)
         except Exception as e:
             log_operation(db, "系统配置", "LDAP测试失败", f"LDAP用户搜索失败(使用测试过滤器 {test_search_filter}): {str(e)}", current_user.username, "ERROR")
