@@ -119,6 +119,12 @@ const routes = [
     meta: { requiresAuth: true, requiresLicense: true, licenseFeature: 'student_evaluation' }
   },
   {
+    path: '/admin/daily-words',
+    name: 'DailyWords',
+    component: () => import('@/views/admin/DailyWords.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
     path: '/admin/holidays',
     name: 'Holidays',
     component: () => import('@/views/admin/Holidays.vue'),

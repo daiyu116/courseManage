@@ -743,6 +743,12 @@ class HolidayUpdate(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
 
+class HolidayRangeCreate(BaseModel):
+    start_date: str = Field(..., description="开始日期（格式：YYYY-MM-DD）")
+    end_date: str = Field(..., description="结束日期（格式：YYYY-MM-DD）")
+    name: str = Field(..., description="节假日名称")
+    description: Optional[str] = Field(None, description="节假日描述")
+
 class Holiday(HolidayBase):
     id: int
     created_at: datetime
@@ -978,4 +984,76 @@ class PaginatedSubjectEvaluationResponse(BaseModel):
 
 class PaginatedEvaluationTemplateResponse(BaseModel):
     items: List[CourseEvaluationTemplate]
+    total: int
+
+# ==================== 每日单词相关Schema ====================
+
+class WordItem(BaseModel):
+    word: str = Field(..., description="单词")
+    meaning: str = Field("", description="释义")
+    phonetic: str = Field("", description="音标")
+
+class DailyWordBase(BaseModel):
+    grade: str = Field(..., description="年级")
+    date: date = Field(..., description="日期")
+    words: List[WordItem] = Field(..., description="单词列表")
+
+class DailyWordCreate(DailyWordBase):
+    created_by: Optional[int] = Field(None, description="创建人导师ID")
+
+class DailyWordUpdate(BaseModel):
+    grade: Optional[str] = None
+    date: Optional[date] = None
+    words: Optional[List[WordItem]] = None
+
+class DailyWord(DailyWordBase):
+    id: int
+    created_by: Optional[int] = None
+    creator_name: Optional[str] = None
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+class WordCheckBase(BaseModel):
+    schedule_id: int = Field(..., description="课程安排ID")
+    student_id: int = Field(..., description="学员ID")
+    daily_word_id: Optional[int] = Field(None, description="关联的每日单词ID")
+    completion_status: str = Field("incomplete", description="完成状态：completed/partial/incomplete")
+    attention_words: List[str] = Field(default=[], description="须注意的单词列表")
+    notes: str = Field("", description="备注")
+
+class WordCheckCreate(WordCheckBase):
+    checked_by: Optional[int] = Field(None, description="检查人导师ID")
+
+class WordCheckUpdate(BaseModel):
+    completion_status: Optional[str] = None
+    attention_words: Optional[List[str]] = None
+    notes: Optional[str] = None
+    daily_word_id: Optional[int] = None
+
+class WordCheck(WordCheckBase):
+    id: int
+    checked_by: Optional[int] = None
+    checker_name: Optional[str] = None
+    student_name: Optional[str] = None
+    student_grade: Optional[str] = None
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+class BatchWordCheckCreate(BaseModel):
+    schedule_id: int = Field(..., description="课程安排ID")
+    checks: List[WordCheckCreate] = Field(..., description="单词检查列表")
+
+class WordCheckNotificationRequest(BaseModel):
+    schedule_id: int = Field(..., description="课程安排ID")
+    send_wechat: bool = Field(True, description="是否发送微信通知")
+    send_email: bool = Field(True, description="是否发送邮件通知")
+
+class PaginatedDailyWordResponse(BaseModel):
+    items: List[DailyWord]
     total: int

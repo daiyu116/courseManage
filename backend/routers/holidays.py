@@ -2,11 +2,11 @@
 # Copyright (C) 2024-2026 courseManage Contributors
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from typing import List
-from datetime import date, datetime
+from typing import List, Optional
+from datetime import date, datetime, timedelta
 from database import get_db
 from models import Holiday
-from schemas import HolidayCreate, HolidayUpdate, Holiday as HolidaySchema, PaginatedHolidayResponse
+from schemas import HolidayCreate, HolidayUpdate, Holiday as HolidaySchema, PaginatedHolidayResponse, HolidayRangeCreate
 from routers.auth import get_current_course_admin_user, get_current_user, User
 from utils.logger import log_operation
 
@@ -86,6 +86,67 @@ def create_holiday(
     except Exception as e:
         db.rollback()
         log_operation(db,"假期管理","创建",f"创建节假日失败：{str(e)}",current_user.username,"ERROR")
+        raise HTTPException(status_code=500, detail=f"创建失败：{str(e)}")
+
+@router.post("/holidays/range")
+def create_holiday_range(
+    holiday_range: HolidayRangeCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_course_admin_user)
+):
+    """按日期段批量创建节假日"""
+    try:
+        if isinstance(holiday_range.start_date, str):
+            start_date = datetime.strptime(holiday_range.start_date, "%Y-%m-%d").date()
+        else:
+            start_date = holiday_range.start_date
+
+        if isinstance(holiday_range.end_date, str):
+            end_date = datetime.strptime(holiday_range.end_date, "%Y-%m-%d").date()
+        else:
+            end_date = holiday_range.end_date
+
+        if start_date > end_date:
+            raise HTTPException(status_code=400, detail="开始日期不能晚于结束日期")
+
+        if (end_date - start_date).days > 366:
+            raise HTTPException(status_code=400, detail="日期范围不能超过一年")
+
+        created = []
+        skipped = []
+        current_date = start_date
+        while current_date <= end_date:
+            existing = db.query(Holiday).filter(Holiday.date == current_date).first()
+            if existing:
+                skipped.append(current_date.strftime("%Y-%m-%d"))
+            else:
+                db_holiday = Holiday(
+                    date=current_date,
+                    name=holiday_range.name,
+                    description=holiday_range.description or ""
+                )
+                db.add(db_holiday)
+                created.append(current_date.strftime("%Y-%m-%d"))
+            current_date += timedelta(days=1)
+
+        db.commit()
+
+        log_operation(db, "假期管理", "批量创建",
+                      f"按日期段创建节假日：{holiday_range.name}，{start_date}至{end_date}，成功{len(created)}天，跳过{len(skipped)}天",
+                      current_user.username)
+
+        return {
+            "message": "按日期段创建完成",
+            "created_count": len(created),
+            "skipped_count": len(skipped),
+            "created_dates": created,
+            "skipped_dates": skipped
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        log_operation(db, "假期管理", "批量创建", f"按日期段创建节假日失败：{str(e)}", current_user.username, "ERROR")
         raise HTTPException(status_code=500, detail=f"创建失败：{str(e)}")
 
 @router.put("/holidays/{holiday_id}", response_model=HolidaySchema)

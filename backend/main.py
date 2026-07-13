@@ -11,6 +11,7 @@ from routers import fees, grades, schedules, statistics
 from routers import smart_command, smart_command_examples
 from routers import license
 from routers import evaluations
+from routers import daily_words
 from utils.logger import log_operation
 from routers.auth import get_current_system_admin_user, User
 from routers.license import _check_premium_feature
@@ -428,6 +429,7 @@ app.include_router(wechat.router, prefix="/api/wechat", tags=["微信通知"])
 app.include_router(email.router, prefix="/api/email", tags=["邮件通知"])
 app.include_router(license.router, prefix="/api", tags=["系统授权"])
 app.include_router(evaluations.router, prefix="/api/evaluations", tags=["学员评价管理"])
+app.include_router(daily_words.router, prefix="/api/daily-words", tags=["每日单词管理"])
 
 
 # 静态文件服务

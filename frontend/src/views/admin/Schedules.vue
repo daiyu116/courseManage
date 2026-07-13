@@ -53,6 +53,12 @@
             {{ t('schedules.conditionManagement') }}
           </el-button>
         </el-col>
+        <el-col :span="3">
+          <el-button type="success" @click="goToPage('/admin/daily-words')" style="width: 100%;height: 100%;">
+            <el-icon><Reading /></el-icon>
+            {{ t('schedules.dailyWords') }}
+          </el-button>
+        </el-col>
       </el-row>
     </el-card>
 
@@ -581,6 +587,7 @@
                       <el-button v-if="currentUser && currentUser.role !== 'teaching_assistant'" size="small" type="success" @click="showCompleteDialog(row)" :disabled="row.has_conflict || row.execution_status !== 'pending'">{{ t('schedules.completed') }}</el-button>
                       <el-button v-if="currentUser && currentUser.role !== 'teaching_assistant'" size="small" type="warning" @click="showPostponeDialog(row)" :disabled="row.has_conflict || row.execution_status !== 'pending'">{{ t('schedules.postponed') }}</el-button>
                       <el-button size="small" type="success" @click="showHomeworkDialog(row)" :disabled="row.execution_status !== 'completed'">{{ t('schedules.homeworkNotify') }}</el-button>
+                      <el-button size="small" type="primary" @click="showWordCheckDialog(row)" :disabled="row.execution_status !== 'completed'">{{ t('schedules.wordCheck') }}</el-button>
                       <el-button v-if="currentUser && currentUser.role !== 'teaching_assistant'" size="small" type="primary" @click="showMakeupDialog(row)" :disabled="row.execution_status !== 'completed' || !hasStudentsNeedingMakeup(row)">{{ t('schedules.studentMakeup') }}</el-button>
                       <el-button v-if="currentUser && currentUser.role !== 'teaching_assistant'" size="small" type="info" @click="showCancelDialog(row)" :disabled="row.has_conflict || row.execution_status !== 'pending'">{{ t('schedules.cancelSchedule') }}</el-button>
                       <el-button size="small" type="warning" @click="handleNotifyNow(row)">{{ t('schedules.notifyNow') }}</el-button>
@@ -1634,6 +1641,73 @@
         <el-button type="primary" @click="handleHomeworkSubmit(true)" :loading="homeworkLoading">{{ t('schedules.saveAndNotifyNow') }}</el-button>
       </template>
     </el-dialog>
+
+    <!-- 单词检查对话框 -->
+    <el-dialog v-model="wordCheckDialogVisible" :title="t('schedules.wordCheckTitle')" width="900px" draggable>
+      <div v-if="wordCheckData" style="margin-bottom: 15px;">
+        <el-descriptions :column="3" border size="small">
+          <el-descriptions-item :label="t('schedules.course')">{{ wordCheckData.course_name }}</el-descriptions-item>
+          <el-descriptions-item :label="t('schedules.class')">{{ wordCheckData.class_name }}</el-descriptions-item>
+          <el-descriptions-item :label="t('schedules.date')">{{ wordCheckData.start_date }} {{ wordCheckData.start_time }}-{{ wordCheckData.end_time }}</el-descriptions-item>
+        </el-descriptions>
+      </div>
+
+      <div v-if="wordCheckNoWords" style="margin-bottom: 15px;">
+        <el-alert :title="t('schedules.noDailyWordsForGrade')" type="warning" :closable="false" show-icon>
+          <template #default>
+            <div>{{ t('schedules.noDailyWordsTip') }}</div>
+            <el-button type="primary" size="small" style="margin-top: 8px;" @click="goToDailyWords">{{ t('schedules.goToAddDailyWords') }}</el-button>
+          </template>
+        </el-alert>
+      </div>
+
+      <el-table :data="wordCheckData?.checks || []" border style="width: 100%;">
+        <el-table-column prop="student_name" :label="t('schedules.studentName')" width="100" />
+        <el-table-column prop="student_grade" :label="t('schedules.studentGrade')" width="100" />
+        <el-table-column :label="t('schedules.completionStatus')" width="140">
+          <template #default="{ row }">
+            <el-select v-model="row.completion_status" size="small">
+              <el-option :label="t('schedules.wordCompleted')" value="completed" />
+              <el-option :label="t('schedules.wordPartial')" value="partial" />
+              <el-option :label="t('schedules.wordIncomplete')" value="incomplete" />
+            </el-select>
+          </template>
+        </el-table-column>
+        <el-table-column :label="t('schedules.attentionWords')" min-width="200">
+          <template #default="{ row }">
+            <el-select v-model="row.attention_words" multiple filterable allow-create size="small" :placeholder="t('schedules.inputAttentionWords')" style="width: 100%;">
+              <el-option v-for="w in (row.words || [])" :key="w.word" :label="w.word" :value="w.word" />
+            </el-select>
+          </template>
+        </el-table-column>
+        <el-table-column :label="t('schedules.wordCheckNotes')" min-width="150">
+          <template #default="{ row }">
+            <el-input v-model="row.notes" size="small" :placeholder="t('schedules.inputWordCheckNotes')" />
+          </template>
+        </el-table-column>
+        <el-table-column :label="t('schedules.wordList')" width="80">
+          <template #default="{ row }">
+            <el-popover placement="left" :width="300" trigger="hover" v-if="row.words && row.words.length > 0">
+              <template #reference>
+                <el-button size="small" type="info">{{ row.words.length }}</el-button>
+              </template>
+              <el-table :data="row.words" size="small" border>
+                <el-table-column prop="word" :label="t('schedules.wordLabel')" />
+                <el-table-column prop="phonetic" :label="t('schedules.phoneticLabel')" />
+                <el-table-column prop="meaning" :label="t('schedules.meaningLabel')" />
+              </el-table>
+            </el-popover>
+            <span v-else style="color: #909399;">-</span>
+          </template>
+        </el-table-column>
+      </el-table>
+
+      <template #footer>
+        <el-button @click="wordCheckDialogVisible = false">{{ t('common.cancel') }}</el-button>
+        <el-button @click="handleWordCheckSave(false)" :loading="wordCheckLoading">{{ t('schedules.saveAndScheduleNotify') }}</el-button>
+        <el-button type="primary" @click="handleWordCheckSave(true)" :loading="wordCheckLoading">{{ t('schedules.saveAndNotifyNow') }}</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -1908,6 +1982,12 @@ const homeworkRules = {
   classHomework: [{ required: true, message: t('schedules.validation.inputClassHomework'), trigger: 'blur' }],
   regularHomework: [{ required: true, message: t('schedules.validation.inputRegularHomework'), trigger: 'blur' }]
 }
+// 单词检查对话框
+const wordCheckDialogVisible = ref(false)
+const wordCheckLoading = ref(false)
+const wordCheckData = ref(null)
+const wordCheckNoWords = ref(false)
+const currentWordCheckSchedule = ref(null)
 // 修改反馈对话框
 const editFeedbackDialogVisible = ref(false)
 const editFeedbackDialogTitle = ref('')
@@ -3694,6 +3774,69 @@ const getMakeupInfoText = (schedule) => {
   })
   
   return lines.join('\n')
+}
+
+// 显示单词检查对话框
+const showWordCheckDialog = async (schedule) => {
+  currentWordCheckSchedule.value = schedule
+  wordCheckLoading.value = true
+  wordCheckDialogVisible.value = true
+  wordCheckNoWords.value = false
+  try {
+    const response = await api.get(`/daily-words/checks/schedule/${schedule.id}`)
+    wordCheckData.value = response.data
+    const hasAnyWords = response.data.checks && response.data.checks.some(c => c.words && c.words.length > 0)
+    wordCheckNoWords.value = !hasAnyWords
+  } catch (error) {
+    window.logger.error('获取单词检查数据失败:', error)
+    ElMessage.error(t('common.operationFailedNetwork'))
+  } finally {
+    wordCheckLoading.value = false
+  }
+}
+
+const goToDailyWords = () => {
+  router.push('/admin/daily-words')
+}
+
+const handleWordCheckSave = async (sendNotification = false) => {
+  if (!wordCheckData.value) return
+  wordCheckLoading.value = true
+  try {
+    const checks = wordCheckData.value.checks.map(c => ({
+      student_id: c.student_id,
+      daily_word_id: c.daily_word_id,
+      completion_status: c.completion_status,
+      attention_words: c.attention_words || [],
+      notes: c.notes || '',
+    }))
+    await api.post('/daily-words/checks/batch', {
+      schedule_id: wordCheckData.value.schedule_id,
+      checks: checks,
+    })
+
+    if (sendNotification) {
+      try {
+        await api.post('/daily-words/checks/notify', {
+          schedule_id: wordCheckData.value.schedule_id,
+          send_wechat: true,
+          send_email: true,
+        })
+        ElMessage.success(t('schedules.wordCheckNotifySuccess'))
+      } catch (error) {
+        window.logger.error('发送单词检查通知失败:', error)
+        ElMessage.warning(t('schedules.wordCheckSavedButNotifyFailed'))
+      }
+    } else {
+      ElMessage.success(t('schedules.wordCheckSaved'))
+    }
+    wordCheckDialogVisible.value = false
+  } catch (error) {
+    window.logger.error('保存单词检查失败:', error)
+    ElMessage.error(t('common.operationFailedNetwork'))
+  } finally {
+    wordCheckLoading.value = false
+  }
 }
 
 // 显示作业安排对话框

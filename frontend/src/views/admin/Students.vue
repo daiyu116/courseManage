@@ -206,7 +206,7 @@
               </el-tag>
             </template>
           </el-table-column>
-          <el-table-column :label="t('common.operation')" width="300" fixed="right">
+          <el-table-column :label="t('common.operation')" width="120" fixed="right">
             <template #default="{ row }">
               <el-button v-if="currentUser && currentUser.role !== 'teaching_assistant'" size="small" @click="showEditDialog(row)">{{ t('common.edit') }}</el-button>
               <el-button v-if="hasFeature('grade_trend')" size="small" type="primary" @click="showGradeCurve(row)">{{ t('students.gradeCurve') }}</el-button>

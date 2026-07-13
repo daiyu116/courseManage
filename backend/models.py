@@ -422,6 +422,38 @@ class SmartCommandExample(Base):
     created_at = Column(DateTime, default=datetime.now)
     updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
 
+class DailyWord(Base):
+    __tablename__ = "daily_words"
+
+    id = Column(Integer, primary_key=True, index=True)
+    grade = Column(String(50), nullable=False, index=True, comment="年级")
+    date = Column(Date, nullable=False, index=True, comment="日期")
+    words = Column(JSONB, nullable=False, comment='单词列表，如 [{"word":"apple","meaning":"苹果","phonetic":"/ˈæpl/"}]')
+    created_by = Column(Integer, ForeignKey("teachers.id"), nullable=True, comment="创建人导师ID")
+    creator = relationship("Teacher", backref="created_daily_words")
+    created_at = Column(DateTime, default=datetime.now)
+    updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
+
+
+class WordCheck(Base):
+    __tablename__ = "word_checks"
+
+    id = Column(Integer, primary_key=True, index=True)
+    schedule_id = Column(Integer, ForeignKey("schedules.id"), nullable=False, index=True, comment="课程安排ID")
+    student_id = Column(Integer, ForeignKey("students.id"), nullable=False, index=True, comment="学员ID")
+    daily_word_id = Column(Integer, ForeignKey("daily_words.id"), nullable=True, comment="关联的每日单词ID")
+    completion_status = Column(String(20), default="incomplete", comment="完成状态：completed-已完成, partial-部分完成, incomplete-未完成")
+    attention_words = Column(JSONB, default=[], comment='须注意的单词列表，如 ["word1","word2"]')
+    notes = Column(Text, default="", comment="备注")
+    checked_by = Column(Integer, ForeignKey("teachers.id"), nullable=True, comment="检查人导师ID")
+    schedule = relationship("Schedule", backref="word_checks")
+    student = relationship("Student", backref="word_checks")
+    daily_word = relationship("DailyWord", backref="word_checks")
+    checker = relationship("Teacher", backref="checked_word_checks")
+    created_at = Column(DateTime, default=datetime.now)
+    updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
+
+
 class RegistrationToken(Base):
     __tablename__ = "registration_tokens"
     id = Column(Integer, primary_key=True, index=True)

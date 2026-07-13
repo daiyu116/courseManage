@@ -107,11 +107,12 @@
 
     <el-dialog v-model="dialogVisible" :title="dialogTitle" width="600px" draggable>
       <el-form :model="form" :rules="rules" ref="formRef" label-width="120px">
-        <el-form-item :label="t('holidays.holidayDate')" prop="date">
+        <el-form-item :label="t('holidays.holidayDateRange')" prop="dateRange">
           <el-date-picker
-            v-model="form.date"
-            type="date"
-            :placeholder="t('holidays.datePlaceholder')"
+            v-model="form.dateRange"
+            type="daterange"
+            :start-placeholder="t('holidays.startDatePlaceholder')"
+            :end-placeholder="t('holidays.endDatePlaceholder')"
             value-format="YYYY-MM-DD"
             style="width: 100%"
           />
@@ -223,19 +224,19 @@ const handleSizeChange = (size) => {
 }
 
 const form = ref({
-  date: '',
+  dateRange: [],
   name: '',
   description: ''
 })
 
 const originalForm = ref({
-  date: '',
+  dateRange: [],
   name: '',
   description: ''
 })
 
 const rules = {
-  date: [{ required: true, message: () => t('holidays.dateRequired'), trigger: 'change' }],
+  dateRange: [{ required: true, message: () => t('holidays.dateRequired'), trigger: 'change' }],
   name: [{ required: true, message: () => t('holidays.holidayNameRequired'), trigger: 'blur' }]
 }
 
@@ -260,7 +261,6 @@ const fetchHolidays = async () => {
 const showAddDialog = () => {
   dialogTitle.value = t('holidays.addHolidayTitle')
   
-  // 检查是否有预填充数据
   const storageData = sessionStorage.getItem('smartCommandData')
   let prefillData = null
   if (storageData) {
@@ -274,7 +274,7 @@ const showAddDialog = () => {
   }
   
   form.value = {
-    date: prefillData?.start_date || '',
+    dateRange: prefillData?.start_date ? [prefillData.start_date, prefillData.end_date || prefillData.start_date] : [],
     name: prefillData?.holiday_name || '',
     description: ''
   }
@@ -369,7 +369,7 @@ const showEditDialog = (row) => {
   dialogTitle.value = t('holidays.editHolidayTitle')
   const formData = {
     id: row.id,
-    date: row.date,
+    dateRange: [row.date, row.date],
     name: row.name,
     description: row.description
   }
@@ -387,7 +387,6 @@ const handleSubmit = async () => {
       try {
         if (form.value.id) {
           const isChanged = 
-            form.value.date !== originalForm.value.date ||
             form.value.name !== originalForm.value.name ||
             form.value.description !== originalForm.value.description
           
@@ -402,15 +401,22 @@ const handleSubmit = async () => {
           })
           ElMessage.success(t('common.updateSuccess'))
         } else {
-          // 确保日期格式正确
           const submitData = {
-            date: form.value.date,
+            start_date: form.value.dateRange[0],
+            end_date: form.value.dateRange[1],
             name: form.value.name,
             description: form.value.description || ''
           }
-          window.logger.log('提交数据:', submitData)
-          await api.post('/holidays/holidays', submitData)
-          ElMessage.success(t('common.createSuccess'))
+          const response = await api.post('/holidays/holidays/range', submitData)
+          const result = response.data
+          if (result.skipped_count > 0) {
+            ElMessage.success(t('holidays.rangeCreatePartial', {
+              created: result.created_count,
+              skipped: result.skipped_count
+            }))
+          } else {
+            ElMessage.success(t('holidays.rangeCreateSuccess', { n: result.created_count }))
+          }
         }
         dialogVisible.value = false
         fetchHolidays()
