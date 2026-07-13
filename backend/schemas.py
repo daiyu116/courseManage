@@ -3,7 +3,7 @@
 from __future__ import annotations
 from pydantic import BaseModel, Field
 from typing import Optional, List, Dict
-from datetime import date,datetime
+from datetime import date as date_type, datetime
 
 class CourseBase(BaseModel):
     code: str = Field(..., description="科目代码")
@@ -48,7 +48,7 @@ class SendEmailHomeworkRequest(BaseModel):
 class TeacherBase(BaseModel):
     code: str = Field(..., description="导师代码")
     name: str = Field(..., description="导师姓名")
-    join_date: Optional[date] = Field(None, description="进入机构日期")
+    join_date: Optional[date_type] = Field(None, description="进入机构日期")
     title: Optional[str] = Field(None, description="职称")
     department: Optional[str] = Field(None, description="部门")
     contact_phone: Optional[str] = Field(None, description="联系电话")
@@ -59,7 +59,7 @@ class TeacherBase(BaseModel):
     allow_holiday_scheduling: bool = Field(False, description="节假日可排课")
     no_feedback_required: bool = Field(False, description="无需反馈")
     is_active: bool = Field(True, description="是否本机构在职")
-    end_date: Optional[date] = Field(None, description="离职日期")
+    end_date: Optional[date_type] = Field(None, description="离职日期")
 
 class TeacherCreate(TeacherBase):
     created_at: Optional[datetime] = Field(None, description="创建时间")
@@ -67,7 +67,7 @@ class TeacherCreate(TeacherBase):
 
 class TeacherUpdate(BaseModel):
     name: Optional[str] = None
-    join_date: Optional[date] = None
+    join_date: Optional[date_type] = None
     title: Optional[str] = None
     department: Optional[str] = None
     max_weekly_hours: Optional[int] = None
@@ -78,17 +78,17 @@ class TeacherUpdate(BaseModel):
     email: Optional[str] = None
     no_feedback_required: Optional[bool] = None
     is_active: Optional[bool] = None
-    end_date: Optional[date] = None
+    end_date: Optional[date_type] = None
 
 class Teacher(TeacherBase):
     id: int
     course_ids: List[int] = []
     contact_phone: Optional[str] = None
     email: Optional[str] = None
-    join_date: Optional[date] = None
+    join_date: Optional[date_type] = None
     created_at: datetime
     updated_at: datetime
-    end_date: Optional[date] = None
+    end_date: Optional[date_type] = None
     no_feedback_required: Optional[bool] = None
 
     class Config:
@@ -124,7 +124,7 @@ class StudentBase(BaseModel):
     name: str = Field(..., description="学员姓名")
     school: Optional[str] = Field(None, description="学校")
     grade: Optional[str] = Field(None, description="年级")
-    enrollment_date: Optional[date] = Field(None, description="进入机构日期")
+    enrollment_date: Optional[date_type] = Field(None, description="进入机构日期")
     # 删除 class_id: Optional[int] = Field(None, description="班级ID")
     # 添加：class_ids: List[int] = Field(default=[], description="班级ID列表")
     class_ids: List[int] = Field(default=[], description="班级ID列表")
@@ -135,7 +135,7 @@ class StudentBase(BaseModel):
     contact_phone: Optional[str] = Field(None, description="联系方式")
     email: Optional[str] = Field(None, description="电子邮箱")
     is_active: bool = Field(True, description="是否本机构在读")
-    end_date: Optional[date] = Field(None, description="结束日期")
+    end_date: Optional[date_type] = Field(None, description="结束日期")
 
 class StudentCreate(StudentBase):
     created_at: Optional[datetime] = Field(None, description="创建时间")
@@ -145,7 +145,7 @@ class StudentUpdate(BaseModel):
     name: Optional[str] = None
     school: Optional[str] = None
     grade: Optional[str] = None
-    enrollment_date: Optional[date] = None
+    enrollment_date: Optional[date_type] = None
     # 删除 class_id: Optional[int] = None
     # 添加：class_ids: Optional[List[int]] = None
     class_ids: Optional[List[int]] = None
@@ -156,7 +156,7 @@ class StudentUpdate(BaseModel):
     contact_phone: Optional[str] = None
     email: Optional[str] = None
     is_active: Optional[bool] = None
-    end_date: Optional[date] = None
+    end_date: Optional[date_type] = None
 
 class Student(StudentBase):
     id: int
@@ -167,7 +167,7 @@ class Student(StudentBase):
     email: Optional[str] = None
     created_at: datetime
     updated_at: datetime
-    end_date: Optional[date] = None
+    end_date: Optional[date_type] = None
 
     class Config:
         from_attributes = True
@@ -318,8 +318,8 @@ class ScheduleBase(BaseModel):
     day_of_week: int = Field(..., ge=1, le=7, description="星期几(1-7)")
     start_time: str = Field(..., description="开始时间")
     end_time: str = Field(..., description="结束时间")
-    start_date: date = Field(..., description="课程开始日期")
-    end_date: date = Field(..., description="课程结束日期")
+    start_date: date_type = Field(..., description="课程开始日期")
+    end_date: date_type = Field(..., description="课程结束日期")
     execution_status: str = Field(default="pending", description="执行状态：pending-待执行, completed-完训, postponed-延期, cancelled-取消")
     content_feedback: str = Field(default="", description="内容反馈")
     cancel_reason: str = Field(default="", description="取消原因")
@@ -340,8 +340,8 @@ class ScheduleUpdate(BaseModel):
     day_of_week: Optional[int] = None
     start_time: Optional[str] = None
     end_time: Optional[str] = None
-    start_date: Optional[date] = None
-    end_date: Optional[date] = None
+    start_date: Optional[date_type] = None
+    end_date: Optional[date_type] = None
     execution_status: Optional[str] = None
     homework_regular: Optional[str] = None
     homework_images: Optional[str] = None
@@ -557,7 +557,7 @@ class StudentFeeCreate(BaseModel):
     hourly_fee: float = Field(..., ge=0, description="课时费/小时")
     lesson_count: float = Field(..., ge=0, description="本次新增课节数")
     discount_amount: float = Field(0.0, ge=0, description="本次优惠金额")
-    payment_date: Optional[date] = Field(None, description="收费日期")
+    payment_date: Optional[date_type] = Field(None, description="收费日期")
     payment_method: str = Field('', description="收费途径")
     alert_threshold: float = Field(6.0, ge=0, description="预警阈值（剩余课时低于此值时提醒）")
     is_active: bool = Field(True, description="是否启用")
@@ -628,7 +628,7 @@ class PaymentRequest(BaseModel):
     course_id: int = Field(..., description="科目ID")
     lesson_count: float = Field(..., ge=0, description="本次新增课节数")
     discount_amount: float = Field(0.0, ge=0, description="本次优惠金额")
-    payment_date: Optional[date] = Field(None, description="收费日期")
+    payment_date: Optional[date_type] = Field(None, description="收费日期")
     payment_method: str = Field('', description="收费途径")
     description: Optional[str] = None
 
@@ -636,7 +636,7 @@ class RefundRequest(BaseModel):
     student_id: int = Field(..., description="学生ID")
     course_id: int = Field(..., description="科目ID")
     amount: float = Field(..., gt=0, description="退费金额")
-    refund_date: Optional[date] = Field(None, description="退费日期")
+    refund_date: Optional[date_type] = Field(None, description="退费日期")
     refund_reason: Optional[str] = Field(None, description="退费说明")
     description: Optional[str] = None
 
@@ -995,7 +995,7 @@ class WordItem(BaseModel):
 
 class DailyWordBase(BaseModel):
     grade: str = Field(..., description="年级")
-    date: date = Field(..., description="日期")
+    date: date_type = Field(..., description="日期")
     words: List[WordItem] = Field(..., description="单词列表")
 
 class DailyWordCreate(DailyWordBase):
@@ -1003,7 +1003,7 @@ class DailyWordCreate(DailyWordBase):
 
 class DailyWordUpdate(BaseModel):
     grade: Optional[str] = None
-    date: Optional[date] = None
+    date: Optional[date_type] = None
     words: Optional[List[WordItem]] = None
 
 class DailyWord(DailyWordBase):
