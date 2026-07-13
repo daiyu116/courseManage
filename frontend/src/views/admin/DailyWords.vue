@@ -113,8 +113,12 @@
           <div style="width: 100%;">
             <div v-for="(word, index) in form.words" :key="index" style="display: flex; gap: 8px; margin-bottom: 8px; align-items: center;">
               <el-input v-model="word.word" :placeholder="t('dailyWords.word')" style="flex: 1;" />
+              <el-select v-model="word.part_of_speech" :placeholder="t('dailyWords.selectPartOfSpeech')" clearable style="flex: 0.8;">
+                <el-option v-for="pos in partOfSpeechOptions" :key="pos.value" :label="pos.label" :value="pos.value" />
+              </el-select>
               <el-input v-model="word.phonetic" :placeholder="t('dailyWords.phonetic')" style="flex: 1;" />
               <el-input v-model="word.meaning" :placeholder="t('dailyWords.meaning')" style="flex: 1;" />
+              <el-input v-model="word.remark" :placeholder="t('dailyWords.remark')" style="flex: 0.8;" />
               <el-button type="danger" :icon="Delete" circle @click="removeWord(index)" />
             </div>
             <el-button type="primary" @click="addWord" style="width: 100%;">
@@ -141,8 +145,14 @@
         <el-table v-if="currentDailyWord.words && currentDailyWord.words.length > 0" :data="currentDailyWord.words" border style="margin-top: 15px;">
           <el-table-column type="index" :label="t('dailyWords.index')" width="60" />
           <el-table-column prop="word" :label="t('dailyWords.word')" />
+          <el-table-column prop="part_of_speech" :label="t('dailyWords.partOfSpeech')" width="100">
+            <template #default="{ row }">
+              {{ getPartOfSpeechLabel(row.part_of_speech) }}
+            </template>
+          </el-table-column>
           <el-table-column prop="phonetic" :label="t('dailyWords.phonetic')" />
           <el-table-column prop="meaning" :label="t('dailyWords.meaning')" />
+          <el-table-column prop="remark" :label="t('dailyWords.remark')" />
         </el-table>
       </div>
     </el-dialog>
@@ -179,8 +189,27 @@ const formRef = ref(null)
 const form = ref({
   grade: '',
   date: '',
-  words: [{ word: '', phonetic: '', meaning: '' }],
+  words: [{ word: '', phonetic: '', meaning: '', part_of_speech: '', remark: '' }],
 })
+
+const partOfSpeechOptions = [
+  { value: 'noun', label: t('dailyWords.noun') },
+  { value: 'pronoun', label: t('dailyWords.pronoun') },
+  { value: 'verb', label: t('dailyWords.verb') },
+  { value: 'adjective', label: t('dailyWords.adjective') },
+  { value: 'adverb', label: t('dailyWords.adverb') },
+  { value: 'preposition', label: t('dailyWords.preposition') },
+  { value: 'conjunction', label: t('dailyWords.conjunction') },
+  { value: 'interjection', label: t('dailyWords.interjection') },
+  { value: 'article', label: t('dailyWords.article') },
+  { value: 'determiner', label: t('dailyWords.determiner') },
+  { value: 'numeral', label: t('dailyWords.numeral') },
+]
+
+const getPartOfSpeechLabel = (value) => {
+  const option = partOfSpeechOptions.find(o => o.value === value)
+  return option ? option.label : (value || '-')
+}
 
 const formRules = {
   grade: [{ required: true, message: t('dailyWords.validation.inputGrade'), trigger: 'blur' }],
@@ -246,7 +275,7 @@ const handleSizeChange = (size) => {
 }
 
 const addWord = () => {
-  form.value.words.push({ word: '', phonetic: '', meaning: '' })
+  form.value.words.push({ word: '', phonetic: '', meaning: '', part_of_speech: '', remark: '' })
 }
 
 const removeWord = (index) => {
@@ -263,7 +292,7 @@ const showAddDialog = () => {
   form.value = {
     grade: '',
     date: '',
-    words: [{ word: '', phonetic: '', meaning: '' }],
+    words: [{ word: '', phonetic: '', meaning: '', part_of_speech: '', remark: '' }],
   }
   addDialogVisible.value = true
 }
@@ -275,8 +304,8 @@ const showEditDialog = (row) => {
     grade: row.grade,
     date: row.date,
     words: row.words && row.words.length > 0
-      ? row.words.map(w => ({ word: w.word || '', phonetic: w.phonetic || '', meaning: w.meaning || '' }))
-      : [{ word: '', phonetic: '', meaning: '' }],
+      ? row.words.map(w => ({ word: w.word || '', phonetic: w.phonetic || '', meaning: w.meaning || '', part_of_speech: w.part_of_speech || '', remark: w.remark || '' }))
+      : [{ word: '', phonetic: '', meaning: '', part_of_speech: '', remark: '' }],
   }
   addDialogVisible.value = true
 }

@@ -997,8 +997,10 @@
               </template>
               <el-table :data="row.words" size="small" border>
                 <el-table-column prop="word" :label="t('dashboardView.wordLabel')" />
+                <el-table-column prop="part_of_speech" :label="t('dashboardView.partOfSpeechLabel')" width="70" />
                 <el-table-column prop="phonetic" :label="t('dashboardView.phoneticLabel')" />
                 <el-table-column prop="meaning" :label="t('dashboardView.meaningLabel')" />
+                <el-table-column prop="remark" :label="t('dashboardView.remarkLabel')" />
               </el-table>
             </el-popover>
             <span v-else style="color: #909399;">-</span>

@@ -1693,8 +1693,10 @@
               </template>
               <el-table :data="row.words" size="small" border>
                 <el-table-column prop="word" :label="t('schedules.wordLabel')" />
+                <el-table-column prop="part_of_speech" :label="t('schedules.partOfSpeechLabel')" width="70" />
                 <el-table-column prop="phonetic" :label="t('schedules.phoneticLabel')" />
                 <el-table-column prop="meaning" :label="t('schedules.meaningLabel')" />
+                <el-table-column prop="remark" :label="t('schedules.remarkLabel')" />
               </el-table>
             </el-popover>
             <span v-else style="color: #909399;">-</span>

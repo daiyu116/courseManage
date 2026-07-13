@@ -992,6 +992,8 @@ class WordItem(BaseModel):
     word: str = Field(..., description="单词")
     meaning: str = Field("", description="释义")
     phonetic: str = Field("", description="音标")
+    part_of_speech: str = Field("", description="词性")
+    remark: str = Field("", description="备注")
 
 class DailyWordBase(BaseModel):
     grade: str = Field(..., description="年级")
