@@ -3347,6 +3347,12 @@
     "appositive": "Appositive",
     "parenthetical": "Parenthetical",
     "inputGrade": "Input grade",
+    "selectGrade": "Select grade",
+    "gradePrimary": "Primary Grade {n}",
+    "gradeJunior": "Junior Grade {n}",
+    "gradeSenior": "Senior Grade {n}",
+    "gradeCollege": "College Grade {n}",
+    "gradeGraduate": "Graduate Grade {n}",
     "selectDate": "Select date",
     "validation": {
       "inputGrade": "Please input grade",

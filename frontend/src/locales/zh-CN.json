@@ -3347,6 +3347,12 @@
     "appositive": "同位语",
     "parenthetical": "插入语",
     "inputGrade": "请输入年级",
+    "selectGrade": "请选择年级",
+    "gradePrimary": "小学{n}年级",
+    "gradeJunior": "初中{n}年级",
+    "gradeSenior": "高中{n}年级",
+    "gradeCollege": "大学{n}年级",
+    "gradeGraduate": "研究生{n}年级",
     "selectDate": "请选择日期",
     "validation": {
       "inputGrade": "请输入年级",

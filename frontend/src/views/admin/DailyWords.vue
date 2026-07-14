@@ -143,29 +143,32 @@
       />
     </el-card>
 
-    <el-dialog v-model="addDialogVisible" :title="isEditing ? t('dailyWords.editDailyWord') : t('dailyWords.addDailyWord')" width="900px" draggable>
+    <el-dialog v-model="addDialogVisible" :title="isEditing ? t('dailyWords.editDailyWord') : t('dailyWords.addDailyWord')" width="90%" top="5vh" draggable>
+      <div class="dialog-scroll-body">
       <el-form :model="form" :rules="formRules" ref="formRef" label-width="100px">
         <el-form-item :label="t('dailyWords.grade')" prop="grade">
-          <el-input v-model="form.grade" :placeholder="t('dailyWords.inputGrade')" />
+          <el-select v-model="form.grade" :placeholder="t('dailyWords.selectGrade')" clearable filterable allow-create style="width: 100%;">
+            <el-option v-for="g in gradeOptions" :key="g" :label="g" :value="g" />
+          </el-select>
         </el-form-item>
         <el-form-item :label="t('dailyWords.date')" prop="date">
           <el-date-picker v-model="form.date" type="date" :placeholder="t('dailyWords.selectDate')" value-format="YYYY-MM-DD" style="width: 100%;" />
         </el-form-item>
         <el-form-item :label="t('dailyWords.wordList')" prop="words">
           <div style="width: 100%;">
-            <div v-for="(word, index) in form.words" :key="index" style="display: flex; gap: 8px; margin-bottom: 8px; align-items: center;">
-              <el-input v-model="word.word" :placeholder="t('dailyWords.word')" style="flex: 1;" />
-              <el-select v-model="word.part_of_speech" :placeholder="t('dailyWords.selectPartOfSpeech')" clearable style="flex: 0.8;">
+            <div v-for="(word, index) in form.words" :key="index" class="word-phrase-row">
+              <el-input v-model="word.word" :placeholder="t('dailyWords.word')" class="row-field-main" />
+              <el-select v-model="word.part_of_speech" :placeholder="t('dailyWords.selectPartOfSpeech')" clearable class="row-field-select">
                 <el-option v-for="pos in partOfSpeechOptions" :key="pos.value" :label="pos.label" :value="pos.value" />
               </el-select>
-              <el-input v-model="word.phonetic" :placeholder="t('dailyWords.phonetic')" style="flex: 1;" />
-              <el-input v-model="word.meaning" :placeholder="t('dailyWords.meaning')" style="flex: 1;" />
-              <el-select v-model="word.mastery_requirement" :placeholder="t('dailyWords.masteryRequirement')" clearable style="flex: 0.6;">
+              <el-input v-model="word.phonetic" :placeholder="t('dailyWords.phonetic')" class="row-field-main" />
+              <el-input v-model="word.meaning" :placeholder="t('dailyWords.meaning')" class="row-field-main" />
+              <el-select v-model="word.mastery_requirement" :placeholder="t('dailyWords.masteryRequirement')" clearable class="row-field-select">
                 <el-option v-for="mr in masteryRequirementOptions" :key="mr.value" :label="mr.label" :value="mr.value" />
               </el-select>
-              <el-input v-model="word.remark" :placeholder="t('dailyWords.remark')" style="flex: 0.8;" />
-              <el-input v-model="word.link" :placeholder="t('dailyWords.link')" style="flex: 0.8;" />
-              <el-button type="danger" :icon="Delete" circle @click="removeWord(index)" />
+              <el-input v-model="word.remark" :placeholder="t('dailyWords.remark')" class="row-field-remark" />
+              <el-input v-model="word.link" :placeholder="t('dailyWords.link')" class="row-field-remark" />
+              <el-button type="danger" :icon="Delete" circle @click="removeWord(index)" class="row-delete-btn" />
             </div>
             <el-button type="primary" @click="addWord" style="width: 100%;">
               <el-icon><Plus /></el-icon>
@@ -175,21 +178,21 @@
         </el-form-item>
         <el-form-item :label="t('dailyWords.phraseList')">
           <div style="width: 100%;">
-            <div v-for="(phrase, index) in form.phrases" :key="'phrase-'+index" style="display: flex; gap: 8px; margin-bottom: 8px; align-items: center;">
-              <el-input v-model="phrase.phrase" :placeholder="t('dailyWords.phraseContent')" style="flex: 1;" />
-              <el-select v-model="phrase.phrase_type" :placeholder="t('dailyWords.selectPhraseType')" clearable multiple collapse-tags style="flex: 0.8;">
+            <div v-for="(phrase, index) in form.phrases" :key="'phrase-'+index" class="word-phrase-row">
+              <el-input v-model="phrase.phrase" :placeholder="t('dailyWords.phraseContent')" class="row-field-main" />
+              <el-select v-model="phrase.phrase_type" :placeholder="t('dailyWords.selectPhraseType')" clearable multiple collapse-tags class="row-field-select">
                 <el-option v-for="pt in phraseTypeOptions" :key="pt.value" :label="pt.label" :value="pt.value" />
               </el-select>
-              <el-select v-model="phrase.syntactic_role" :placeholder="t('dailyWords.selectSyntacticRole')" clearable multiple collapse-tags style="flex: 0.8;">
+              <el-select v-model="phrase.syntactic_role" :placeholder="t('dailyWords.selectSyntacticRole')" clearable multiple collapse-tags class="row-field-select">
                 <el-option v-for="sr in syntacticRoleOptions" :key="sr.value" :label="sr.label" :value="sr.value" />
               </el-select>
-              <el-input v-model="phrase.meaning" :placeholder="t('dailyWords.meaning')" style="flex: 1;" />
-              <el-select v-model="phrase.mastery_requirement" :placeholder="t('dailyWords.masteryRequirement')" clearable style="flex: 0.6;">
+              <el-input v-model="phrase.meaning" :placeholder="t('dailyWords.meaning')" class="row-field-main" />
+              <el-select v-model="phrase.mastery_requirement" :placeholder="t('dailyWords.masteryRequirement')" clearable class="row-field-select">
                 <el-option v-for="mr in masteryRequirementOptions" :key="mr.value" :label="mr.label" :value="mr.value" />
               </el-select>
-              <el-input v-model="phrase.remark" :placeholder="t('dailyWords.remark')" style="flex: 0.8;" />
-              <el-input v-model="phrase.link" :placeholder="t('dailyWords.link')" style="flex: 0.8;" />
-              <el-button type="danger" :icon="Delete" circle @click="removePhrase(index)" />
+              <el-input v-model="phrase.remark" :placeholder="t('dailyWords.remark')" class="row-field-remark" />
+              <el-input v-model="phrase.link" :placeholder="t('dailyWords.link')" class="row-field-remark" />
+              <el-button type="danger" :icon="Delete" circle @click="removePhrase(index)" class="row-delete-btn" />
             </div>
             <el-button type="primary" @click="addPhrase" style="width: 100%;">
               <el-icon><Plus /></el-icon>
@@ -198,6 +201,7 @@
           </div>
         </el-form-item>
       </el-form>
+      </div>
       <template #footer>
         <el-button @click="addDialogVisible = false">{{ t('common.cancel') }}</el-button>
         <el-button type="primary" @click="handleSubmit" :loading="submitLoading">{{ t('common.confirm') }}</el-button>
@@ -278,7 +282,9 @@
     <el-dialog v-model="importDialogVisible" :title="t('dailyWords.importData')" width="600px" draggable>
       <el-form :model="importForm" ref="importFormRef" label-width="100px">
         <el-form-item :label="t('dailyWords.grade')" prop="grade">
-          <el-input v-model="importForm.grade" :placeholder="t('dailyWords.inputGrade')" />
+          <el-select v-model="importForm.grade" :placeholder="t('dailyWords.selectGrade')" clearable filterable allow-create style="width: 100%;">
+            <el-option v-for="g in gradeOptions" :key="g" :label="g" :value="g" />
+          </el-select>
         </el-form-item>
         <el-form-item :label="t('dailyWords.date')" prop="date">
           <el-date-picker v-model="importForm.date" type="date" :placeholder="t('dailyWords.selectDate')" value-format="YYYY-MM-DD" style="width: 100%;" />
@@ -308,7 +314,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ArrowLeft, Plus, Delete, Reading, Calendar, Download, Printer, Upload, User, UserFilled, OfficeBuilding, Setting } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -342,7 +348,20 @@ const form = ref({
   phrases: [{ phrase: '', meaning: '', phrase_type: [], syntactic_role: [], mastery_requirement: '', remark: '', link: '' }],
 })
 
-const partOfSpeechOptions = [
+const defaultGradeOptions = computed(() => [
+  t('dailyWords.gradePrimary', { n: 1 }), t('dailyWords.gradePrimary', { n: 2 }), t('dailyWords.gradePrimary', { n: 3 }), t('dailyWords.gradePrimary', { n: 4 }), t('dailyWords.gradePrimary', { n: 5 }), t('dailyWords.gradePrimary', { n: 6 }),
+  t('dailyWords.gradeJunior', { n: 1 }), t('dailyWords.gradeJunior', { n: 2 }), t('dailyWords.gradeJunior', { n: 3 }),
+  t('dailyWords.gradeSenior', { n: 1 }), t('dailyWords.gradeSenior', { n: 2 }), t('dailyWords.gradeSenior', { n: 3 }),
+  t('dailyWords.gradeCollege', { n: 1 }), t('dailyWords.gradeCollege', { n: 2 }), t('dailyWords.gradeCollege', { n: 3 }), t('dailyWords.gradeCollege', { n: 4 }),
+  t('dailyWords.gradeGraduate', { n: 1 }), t('dailyWords.gradeGraduate', { n: 2 }), t('dailyWords.gradeGraduate', { n: 3 })
+])
+const gradeOptions = ref([])
+
+watch(defaultGradeOptions, (newVal) => {
+  gradeOptions.value = [...newVal]
+}, { immediate: true })
+
+const partOfSpeechOptions = computed(() => [
   { value: 'noun', label: t('dailyWords.noun') },
   { value: 'pronoun', label: t('dailyWords.pronoun') },
   { value: 'verb', label: t('dailyWords.verb') },
@@ -354,24 +373,24 @@ const partOfSpeechOptions = [
   { value: 'article', label: t('dailyWords.article') },
   { value: 'determiner', label: t('dailyWords.determiner') },
   { value: 'numeral', label: t('dailyWords.numeral') },
-]
+])
 
 const getPartOfSpeechLabel = (value) => {
-  const option = partOfSpeechOptions.find(o => o.value === value)
+  const option = partOfSpeechOptions.value.find(o => o.value === value)
   return option ? option.label : (value || '-')
 }
 
-const masteryRequirementOptions = [
+const masteryRequirementOptions = computed(() => [
   { value: 'recite', label: t('dailyWords.recite') },
   { value: 'recognize', label: t('dailyWords.recognize') },
-]
+])
 
 const getMasteryRequirementLabel = (value) => {
-  const option = masteryRequirementOptions.find(o => o.value === value)
+  const option = masteryRequirementOptions.value.find(o => o.value === value)
   return option ? option.label : (value || '-')
 }
 
-const phraseTypeOptions = [
+const phraseTypeOptions = computed(() => [
   { value: 'prepositional_phrase', label: t('dailyWords.prepositionalPhrase') },
   { value: 'verb_phrase', label: t('dailyWords.verbPhrase') },
   { value: 'noun_phrase', label: t('dailyWords.nounPhrase') },
@@ -382,22 +401,22 @@ const phraseTypeOptions = [
   { value: 'participle_phrase', label: t('dailyWords.participlePhrase') },
   { value: 'conjunction_phrase', label: t('dailyWords.conjunctionPhrase') },
   { value: 'clause_phrase', label: t('dailyWords.clausePhrase') },
-]
+])
 
 const getPhraseTypeLabel = (value) => {
-  const option = phraseTypeOptions.find(o => o.value === value)
+  const option = phraseTypeOptions.value.find(o => o.value === value)
   return option ? option.label : (value || '-')
 }
 
 const getPhraseTypeLabels = (values) => {
   if (!values || !Array.isArray(values) || values.length === 0) return '-'
   return values.map(v => {
-    const option = phraseTypeOptions.find(o => o.value === v)
+    const option = phraseTypeOptions.value.find(o => o.value === v)
     return option ? option.label : v
-  }).join('、')
+  }).join(t('common.listSeparator'))
 }
 
-const syntacticRoleOptions = [
+const syntacticRoleOptions = computed(() => [
   { value: 'subject', label: t('dailyWords.subject') },
   { value: 'predicate', label: t('dailyWords.predicate') },
   { value: 'object', label: t('dailyWords.object') },
@@ -407,19 +426,19 @@ const syntacticRoleOptions = [
   { value: 'complement', label: t('dailyWords.complement') },
   { value: 'appositive', label: t('dailyWords.appositive') },
   { value: 'parenthetical', label: t('dailyWords.parenthetical') },
-]
+])
 
 const getSyntacticRoleLabel = (value) => {
-  const option = syntacticRoleOptions.find(o => o.value === value)
+  const option = syntacticRoleOptions.value.find(o => o.value === value)
   return option ? option.label : (value || '-')
 }
 
 const getSyntacticRoleLabels = (values) => {
   if (!values || !Array.isArray(values) || values.length === 0) return '-'
   return values.map(v => {
-    const option = syntacticRoleOptions.find(o => o.value === v)
+    const option = syntacticRoleOptions.value.find(o => o.value === v)
     return option ? option.label : v
-  }).join('、')
+  }).join(t('common.listSeparator'))
 }
 
 const formRules = {
@@ -950,6 +969,16 @@ const handleImport = async () => {
 onMounted(() => {
   fetchDailyWords()
   fetchGrades()
+  api.get('/settings').then(res => {
+    if (res.data && res.data.course_config) {
+      try {
+        const config = JSON.parse(res.data.course_config)
+        if (config.grade_options && Array.isArray(config.grade_options) && config.grade_options.length > 0) {
+          gradeOptions.value = config.grade_options
+        }
+      } catch (e) {}
+    }
+  }).catch(() => {})
 })
 </script>
 
@@ -971,5 +1000,57 @@ onMounted(() => {
   gap: 10px;
   margin-bottom: 15px;
   flex-wrap: wrap;
+}
+.dialog-scroll-body {
+  max-height: 70vh;
+  overflow: auto;
+  padding-right: 4px;
+}
+.word-phrase-row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 8px;
+  align-items: center;
+  min-width: max-content;
+}
+.row-field-main {
+  flex: 1;
+  min-width: 100px;
+}
+.row-field-select {
+  flex: 0 0 140px;
+  min-width: 140px;
+}
+.row-field-remark {
+  flex: 0 0 120px;
+  min-width: 120px;
+}
+.row-delete-btn {
+  flex-shrink: 0;
+}
+@media (max-width: 1200px) {
+  .row-field-select {
+    flex: 0 0 120px;
+    min-width: 120px;
+  }
+  .row-field-remark {
+    flex: 0 0 100px;
+    min-width: 100px;
+  }
+}
+@media (max-width: 768px) {
+  .dialog-scroll-body {
+    max-height: 60vh;
+  }
+  .word-phrase-row {
+    flex-wrap: wrap;
+    min-width: unset;
+  }
+  .row-field-main,
+  .row-field-select,
+  .row-field-remark {
+    flex: 1 1 120px;
+    min-width: 120px;
+  }
 }
 </style>
