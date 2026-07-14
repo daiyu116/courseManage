@@ -157,17 +157,17 @@
         <el-form-item :label="t('dailyWords.wordList')" prop="words">
           <div style="width: 100%;">
             <div v-for="(word, index) in form.words" :key="index" class="word-phrase-row">
-              <el-input v-model="word.word" :placeholder="t('dailyWords.word')" class="row-field-main" />
+              <el-input v-model="word.word" :placeholder="t('dailyWords.word')" class="row-field-short" />
               <el-select v-model="word.part_of_speech" :placeholder="t('dailyWords.selectPartOfSpeech')" clearable class="row-field-select">
                 <el-option v-for="pos in partOfSpeechOptions" :key="pos.value" :label="pos.label" :value="pos.value" />
               </el-select>
-              <el-input v-model="word.phonetic" :placeholder="t('dailyWords.phonetic')" class="row-field-main" />
+              <el-input v-model="word.phonetic" :placeholder="t('dailyWords.phonetic')" class="row-field-short" />
               <el-input v-model="word.meaning" :placeholder="t('dailyWords.meaning')" class="row-field-main" />
               <el-select v-model="word.mastery_requirement" :placeholder="t('dailyWords.masteryRequirement')" clearable class="row-field-select">
                 <el-option v-for="mr in masteryRequirementOptions" :key="mr.value" :label="mr.label" :value="mr.value" />
               </el-select>
               <el-input v-model="word.remark" :placeholder="t('dailyWords.remark')" class="row-field-remark" />
-              <el-input v-model="word.link" :placeholder="t('dailyWords.link')" class="row-field-remark" />
+              <el-input v-model="word.link" :placeholder="t('dailyWords.link')" class="row-field-link" />
               <el-button type="danger" :icon="Delete" circle @click="removeWord(index)" class="row-delete-btn" />
             </div>
             <el-button type="primary" @click="addWord" style="width: 100%;">
@@ -191,7 +191,7 @@
                 <el-option v-for="mr in masteryRequirementOptions" :key="mr.value" :label="mr.label" :value="mr.value" />
               </el-select>
               <el-input v-model="phrase.remark" :placeholder="t('dailyWords.remark')" class="row-field-remark" />
-              <el-input v-model="phrase.link" :placeholder="t('dailyWords.link')" class="row-field-remark" />
+              <el-input v-model="phrase.link" :placeholder="t('dailyWords.link')" class="row-field-link" />
               <el-button type="danger" :icon="Delete" circle @click="removePhrase(index)" class="row-delete-btn" />
             </div>
             <el-button type="primary" @click="addPhrase" style="width: 100%;">
@@ -631,6 +631,7 @@ const exportDocument = (row) => {
   wsData.push([title])
   wsData.push([])
   wsData.push([t('dailyWords.grade') + ':', row.grade || ''])
+  wsData.push([t('dailyWords.date') + ':', row.date || ''])
 
   if (row.words && row.words.length > 0) {
     wsData.push([])
@@ -643,7 +644,6 @@ const exportDocument = (row) => {
       t('dailyWords.meaning'),
       t('dailyWords.masteryRequirement'),
       t('dailyWords.remark'),
-      t('dailyWords.link'),
     ])
     row.words.forEach((w, idx) => {
       wsData.push([
@@ -654,7 +654,6 @@ const exportDocument = (row) => {
         w.meaning || '',
         getMasteryRequirementLabel(w.mastery_requirement),
         w.remark || '',
-        w.link || '',
       ])
     })
   }
@@ -670,7 +669,6 @@ const exportDocument = (row) => {
       t('dailyWords.meaning'),
       t('dailyWords.masteryRequirement'),
       t('dailyWords.remark'),
-      t('dailyWords.link'),
     ])
     row.phrases.forEach((p, idx) => {
       wsData.push([
@@ -681,7 +679,6 @@ const exportDocument = (row) => {
         p.meaning || '',
         getMasteryRequirementLabel(p.mastery_requirement),
         p.remark || '',
-        p.link || '',
       ])
     })
   }
@@ -747,7 +744,7 @@ const printDocument = (row) => {
   </style></head><body>`
 
   html += `<h1>${title}</h1>`
-  html += `<div class="info">${t('dailyWords.grade')}: ${row.grade || ''}</div>`
+  html += `<div class="info">${t('dailyWords.grade')}: ${row.grade || ''} &nbsp;&nbsp; ${t('dailyWords.date')}: ${row.date || ''}</div>`
 
   if (row.words && row.words.length > 0) {
     html += `<h2>${t('dailyWords.wordList')}</h2>`
@@ -759,7 +756,6 @@ const printDocument = (row) => {
       <th>${t('dailyWords.meaning')}</th>
       <th>${t('dailyWords.masteryRequirement')}</th>
       <th>${t('dailyWords.remark')}</th>
-      <th>${t('dailyWords.link')}</th>
     </tr></thead><tbody>`
     row.words.forEach((w, idx) => {
       html += `<tr>
@@ -770,7 +766,6 @@ const printDocument = (row) => {
         <td>${w.meaning || ''}</td>
         <td>${getMasteryRequirementLabel(w.mastery_requirement)}</td>
         <td>${w.remark || ''}</td>
-        <td>${w.link || ''}</td>
       </tr>`
     })
     html += `</tbody></table>`
@@ -786,7 +781,6 @@ const printDocument = (row) => {
       <th>${t('dailyWords.meaning')}</th>
       <th>${t('dailyWords.masteryRequirement')}</th>
       <th>${t('dailyWords.remark')}</th>
-      <th>${t('dailyWords.link')}</th>
     </tr></thead><tbody>`
     row.phrases.forEach((p, idx) => {
       html += `<tr>
@@ -797,7 +791,6 @@ const printDocument = (row) => {
         <td>${p.meaning || ''}</td>
         <td>${getMasteryRequirementLabel(p.mastery_requirement)}</td>
         <td>${p.remark || ''}</td>
-        <td>${p.link || ''}</td>
       </tr>`
     })
     html += `</tbody></table>`
@@ -1013,6 +1006,10 @@ onMounted(() => {
   align-items: center;
   min-width: max-content;
 }
+.row-field-short {
+  flex: 0 0 80px;
+  min-width: 80px;
+}
 .row-field-main {
   flex: 1;
   min-width: 100px;
@@ -1025,10 +1022,18 @@ onMounted(() => {
   flex: 0 0 120px;
   min-width: 120px;
 }
+.row-field-link {
+  flex: 2;
+  min-width: 180px;
+}
 .row-delete-btn {
   flex-shrink: 0;
 }
 @media (max-width: 1200px) {
+  .row-field-short {
+    flex: 0 0 70px;
+    min-width: 70px;
+  }
   .row-field-select {
     flex: 0 0 120px;
     min-width: 120px;
@@ -1036,6 +1041,10 @@ onMounted(() => {
   .row-field-remark {
     flex: 0 0 100px;
     min-width: 100px;
+  }
+  .row-field-link {
+    flex: 1.5;
+    min-width: 140px;
   }
 }
 @media (max-width: 768px) {
@@ -1046,9 +1055,11 @@ onMounted(() => {
     flex-wrap: wrap;
     min-width: unset;
   }
+  .row-field-short,
   .row-field-main,
   .row-field-select,
-  .row-field-remark {
+  .row-field-remark,
+  .row-field-link {
     flex: 1 1 120px;
     min-width: 120px;
   }
