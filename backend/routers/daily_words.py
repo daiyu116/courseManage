@@ -230,6 +230,7 @@ def get_schedule_word_checks(
             "checked_by": check.checked_by if check else None,
             "checker_name": None,
             "words": daily_word.words if daily_word else [],
+            "phrases": daily_word.phrases if daily_word else [],
         })
         if check and check.checked_by:
             teacher = db.query(Teacher).filter(Teacher.id == check.checked_by).first()

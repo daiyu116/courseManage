@@ -53,12 +53,6 @@
             {{ t('schedules.conditionManagement') }}
           </el-button>
         </el-col>
-        <el-col :span="3">
-          <el-button type="success" @click="goToPage('/admin/daily-words')" style="width: 100%;height: 100%;">
-            <el-icon><Reading /></el-icon>
-            {{ t('schedules.dailyWords') }}
-          </el-button>
-        </el-col>
       </el-row>
     </el-card>
 
@@ -70,6 +64,10 @@
             <el-button type="info" @click="goBack">
               <el-icon><ArrowLeft /></el-icon>
               {{ t('schedules.goBack') }}
+            </el-button>
+            <el-button type="warning" @click="goToPage('/admin/daily-words')">
+              <el-icon><Reading /></el-icon>
+              {{ t('schedules.dailyWords') }}
             </el-button>
             <el-button v-if="hasFeature(licenseFeatures.SMART_SCHEDULING) && currentUser && currentUser.role !== 'teaching_assistant'" type="success" @click="showAutoScheduleDialog">
               <el-icon><MagicStick /></el-icon>
@@ -1696,6 +1694,33 @@
                 <el-table-column prop="part_of_speech" :label="t('schedules.partOfSpeechLabel')" width="70" />
                 <el-table-column prop="phonetic" :label="t('schedules.phoneticLabel')" />
                 <el-table-column prop="meaning" :label="t('schedules.meaningLabel')" />
+                <el-table-column :label="t('schedules.masteryRequirementLabel')" width="70">
+                  <template #default="{ row }">
+                    {{ formatMasteryRequirement(row.mastery_requirement) }}
+                  </template>
+                </el-table-column>
+                <el-table-column prop="remark" :label="t('schedules.remarkLabel')" />
+              </el-table>
+              <div v-if="wordCheckPopoverData.phrases && wordCheckPopoverData.phrases.length > 0" style="margin-top: 10px; font-weight: bold;">{{ t('schedules.phraseListLabel') }}</div>
+              <el-table v-if="wordCheckPopoverData.phrases && wordCheckPopoverData.phrases.length > 0" :data="wordCheckPopoverData.phrases" border size="small" style="margin-top: 5px;">
+                <el-table-column type="index" :label="t('schedules.indexLabel')" width="50" />
+                <el-table-column prop="phrase" :label="t('schedules.phraseContentLabel')" />
+                <el-table-column :label="t('schedules.phraseTypeLabel')" width="80">
+                  <template #default="{ row }">
+                    {{ formatPhraseType(row.phrase_type) }}
+                  </template>
+                </el-table-column>
+                <el-table-column :label="t('schedules.syntacticRoleLabel')" width="80">
+                  <template #default="{ row }">
+                    {{ formatSyntacticRole(row.syntactic_role) }}
+                  </template>
+                </el-table-column>
+                <el-table-column prop="meaning" :label="t('schedules.meaningLabel')" />
+                <el-table-column :label="t('schedules.masteryRequirementLabel')" width="70">
+                  <template #default="{ row }">
+                    {{ formatMasteryRequirement(row.mastery_requirement) }}
+                  </template>
+                </el-table-column>
                 <el-table-column prop="remark" :label="t('schedules.remarkLabel')" />
               </el-table>
             </el-popover>
@@ -1990,6 +2015,54 @@ const wordCheckLoading = ref(false)
 const wordCheckData = ref(null)
 const wordCheckNoWords = ref(false)
 const currentWordCheckSchedule = ref(null)
+
+const phraseTypeMap = {
+  prepositional_phrase: t('schedules.prepositionalPhrase') || '介词短语',
+  verb_phrase: t('schedules.verbPhrase') || '动词短语',
+  noun_phrase: t('schedules.nounPhrase') || '名词短语',
+  adjective_phrase: t('schedules.adjectivePhrase') || '形容词短语',
+  adverb_phrase: t('schedules.adverbPhrase') || '副词短语',
+  infinitive_phrase: t('schedules.infinitivePhrase') || '不定式短语',
+  gerund_phrase: t('schedules.gerundPhrase') || '动名词短语',
+  participle_phrase: t('schedules.participlePhrase') || '分词短语',
+  conjunction_phrase: t('schedules.conjunctionPhrase') || '连词短语',
+  clause_phrase: t('schedules.clausePhrase') || '从句',
+}
+
+const syntacticRoleMap = {
+  subject: t('schedules.subject') || '主语',
+  predicate: t('schedules.predicate') || '谓语',
+  object: t('schedules.object') || '宾语',
+  predicative: t('schedules.predicative') || '表语',
+  attributive: t('schedules.attributive') || '定语',
+  adverbial: t('schedules.adverbial') || '状语',
+  complement: t('schedules.complement') || '补语',
+  appositive: t('schedules.appositive') || '同位语',
+  parenthetical: t('schedules.parenthetical') || '插入语',
+}
+
+const formatPhraseType = (val) => {
+  if (!val) return '-'
+  if (Array.isArray(val)) return val.length === 0 ? '-' : val.map(v => phraseTypeMap[v] || v).join('、')
+  return phraseTypeMap[val] || val
+}
+
+const formatSyntacticRole = (val) => {
+  if (!val) return '-'
+  if (Array.isArray(val)) return val.length === 0 ? '-' : val.map(v => syntacticRoleMap[v] || v).join('、')
+  return syntacticRoleMap[val] || val
+}
+
+const masteryRequirementMap = {
+  recite: t('schedules.recite') || '会背',
+  recognize: t('schedules.recognize') || '会认',
+}
+
+const formatMasteryRequirement = (val) => {
+  if (!val) return '-'
+  return masteryRequirementMap[val] || val
+}
+
 // 修改反馈对话框
 const editFeedbackDialogVisible = ref(false)
 const editFeedbackDialogTitle = ref('')

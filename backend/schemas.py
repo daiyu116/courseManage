@@ -993,12 +993,22 @@ class WordItem(BaseModel):
     meaning: str = Field("", description="释义")
     phonetic: str = Field("", description="音标")
     part_of_speech: str = Field("", description="词性")
+    mastery_requirement: str = Field("", description="掌握要求：recite-会背, recognize-会认")
+    remark: str = Field("", description="备注")
+
+class PhraseItem(BaseModel):
+    phrase: str = Field(..., description="短语内容")
+    meaning: str = Field("", description="释义")
+    phrase_type: List[str] = Field(default=[], description="短语类型")
+    syntactic_role: List[str] = Field(default=[], description="可充当语素")
+    mastery_requirement: str = Field("", description="掌握要求：recite-会背, recognize-会认")
     remark: str = Field("", description="备注")
 
 class DailyWordBase(BaseModel):
     grade: str = Field(..., description="年级")
     date: date_type = Field(..., description="日期")
-    words: List[WordItem] = Field(..., description="单词列表")
+    words: List[WordItem] = Field(default=[], description="单词列表")
+    phrases: List[PhraseItem] = Field(default=[], description="短语列表")
 
 class DailyWordCreate(DailyWordBase):
     created_by: Optional[int] = Field(None, description="创建人导师ID")
@@ -1007,6 +1017,7 @@ class DailyWordUpdate(BaseModel):
     grade: Optional[str] = None
     date: Optional[date_type] = None
     words: Optional[List[WordItem]] = None
+    phrases: Optional[List[PhraseItem]] = None
 
 class DailyWord(DailyWordBase):
     id: int

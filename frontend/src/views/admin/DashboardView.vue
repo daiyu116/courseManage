@@ -1000,6 +1000,33 @@
                 <el-table-column prop="part_of_speech" :label="t('dashboardView.partOfSpeechLabel')" width="70" />
                 <el-table-column prop="phonetic" :label="t('dashboardView.phoneticLabel')" />
                 <el-table-column prop="meaning" :label="t('dashboardView.meaningLabel')" />
+                <el-table-column :label="t('dashboardView.masteryRequirementLabel')" width="70">
+                  <template #default="{ row }">
+                    {{ formatMasteryRequirement(row.mastery_requirement) }}
+                  </template>
+                </el-table-column>
+                <el-table-column prop="remark" :label="t('dashboardView.remarkLabel')" />
+              </el-table>
+              <div v-if="wordCheckPopoverData.phrases && wordCheckPopoverData.phrases.length > 0" style="margin-top: 10px; font-weight: bold;">{{ t('dashboardView.phraseListLabel') }}</div>
+              <el-table v-if="wordCheckPopoverData.phrases && wordCheckPopoverData.phrases.length > 0" :data="wordCheckPopoverData.phrases" border size="small" style="margin-top: 5px;">
+                <el-table-column type="index" :label="t('dashboardView.indexLabel')" width="50" />
+                <el-table-column prop="phrase" :label="t('dashboardView.phraseContentLabel')" />
+                <el-table-column :label="t('dashboardView.phraseTypeLabel')" width="80">
+                  <template #default="{ row }">
+                    {{ formatPhraseType(row.phrase_type) }}
+                  </template>
+                </el-table-column>
+                <el-table-column :label="t('dashboardView.syntacticRoleLabel')" width="80">
+                  <template #default="{ row }">
+                    {{ formatSyntacticRole(row.syntactic_role) }}
+                  </template>
+                </el-table-column>
+                <el-table-column prop="meaning" :label="t('dashboardView.meaningLabel')" />
+                <el-table-column :label="t('dashboardView.masteryRequirementLabel')" width="70">
+                  <template #default="{ row }">
+                    {{ formatMasteryRequirement(row.mastery_requirement) }}
+                  </template>
+                </el-table-column>
                 <el-table-column prop="remark" :label="t('dashboardView.remarkLabel')" />
               </el-table>
             </el-popover>
@@ -2737,6 +2764,53 @@ const wordCheckDialogVisible = ref(false)
 const wordCheckLoading = ref(false)
 const wordCheckData = ref(null)
 const wordCheckNoWords = ref(false)
+
+const phraseTypeMap = {
+  prepositional_phrase: t('dashboardView.prepositionalPhrase') || '介词短语',
+  verb_phrase: t('dashboardView.verbPhrase') || '动词短语',
+  noun_phrase: t('dashboardView.nounPhrase') || '名词短语',
+  adjective_phrase: t('dashboardView.adjectivePhrase') || '形容词短语',
+  adverb_phrase: t('dashboardView.adverbPhrase') || '副词短语',
+  infinitive_phrase: t('dashboardView.infinitivePhrase') || '不定式短语',
+  gerund_phrase: t('dashboardView.gerundPhrase') || '动名词短语',
+  participle_phrase: t('dashboardView.participlePhrase') || '分词短语',
+  conjunction_phrase: t('dashboardView.conjunctionPhrase') || '连词短语',
+  clause_phrase: t('dashboardView.clausePhrase') || '从句',
+}
+
+const syntacticRoleMap = {
+  subject: t('dashboardView.subject') || '主语',
+  predicate: t('dashboardView.predicate') || '谓语',
+  object: t('dashboardView.object') || '宾语',
+  predicative: t('dashboardView.predicative') || '表语',
+  attributive: t('dashboardView.attributive') || '定语',
+  adverbial: t('dashboardView.adverbial') || '状语',
+  complement: t('dashboardView.complement') || '补语',
+  appositive: t('dashboardView.appositive') || '同位语',
+  parenthetical: t('dashboardView.parenthetical') || '插入语',
+}
+
+const formatPhraseType = (val) => {
+  if (!val) return '-'
+  if (Array.isArray(val)) return val.length === 0 ? '-' : val.map(v => phraseTypeMap[v] || v).join('、')
+  return phraseTypeMap[val] || val
+}
+
+const formatSyntacticRole = (val) => {
+  if (!val) return '-'
+  if (Array.isArray(val)) return val.length === 0 ? '-' : val.map(v => syntacticRoleMap[v] || v).join('、')
+  return syntacticRoleMap[val] || val
+}
+
+const masteryRequirementMap = {
+  recite: t('dashboardView.recite') || '会背',
+  recognize: t('dashboardView.recognize') || '会认',
+}
+
+const formatMasteryRequirement = (val) => {
+  if (!val) return '-'
+  return masteryRequirementMap[val] || val
+}
 
 const showWordCheckDialogFromDashboard = async (row) => {
   wordCheckLoading.value = true

@@ -429,6 +429,7 @@ class DailyWord(Base):
     grade = Column(String(50), nullable=False, index=True, comment="年级")
     date = Column(Date, nullable=False, index=True, comment="日期")
     words = Column(JSONB, nullable=False, comment='单词列表，如 [{"word":"apple","meaning":"苹果","phonetic":"/ˈæpl/"}]')
+    phrases = Column(JSONB, nullable=True, default=[], comment='短语列表，如 [{"phrase":"look up","meaning":"查找","phrase_type":"动词短语","syntactic_role":"谓语"}]')
     created_by = Column(Integer, ForeignKey("teachers.id"), nullable=True, comment="创建人导师ID")
     creator = relationship("Teacher", backref="created_daily_words")
     created_at = Column(DateTime, default=datetime.now)
