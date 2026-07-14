@@ -11,9 +11,45 @@
           </el-button>
         </el-col>
         <el-col :span="3">
-          <el-button type="success" @click="goToPage('/admin/schedules')" style="width: 100%;height: 100%;">
+          <el-button type="primary" @click="goToPage('/admin/courses')" style="width: 100%;height: 100%;">
+            <el-icon><Reading /></el-icon>
+            {{ t('dailyWords.courseManagement') }}
+          </el-button>
+        </el-col>
+        <el-col :span="3">
+          <el-button type="success" @click="goToPage('/admin/teachers')" style="width: 100%;height: 100%;">
+            <el-icon><User /></el-icon>
+            {{ t('dailyWords.teacherManagement') }}
+          </el-button>
+        </el-col>
+        <el-col :span="3">
+          <el-button type="warning" @click="goToPage('/admin/classes')" style="width: 100%;height: 100%;">
+            <el-icon><OfficeBuilding /></el-icon>
+            {{ t('dailyWords.classManagement') }}
+          </el-button>
+        </el-col>
+        <el-col :span="3">
+          <el-button type="warning" @click="goToPage('/admin/students')" style="width: 100%;height: 100%;">
+            <el-icon><UserFilled /></el-icon>
+            {{ t('dailyWords.studentManagement') }}
+          </el-button>
+        </el-col>
+        <el-col :span="3">
+          <el-button type="info" @click="goToPage('/admin/rooms')" style="width: 100%;height: 100%;">
+            <el-icon><OfficeBuilding /></el-icon>
+            {{ t('dailyWords.roomManagement') }}
+          </el-button>
+        </el-col>
+        <el-col :span="3">
+          <el-button type="danger" @click="goToPage('/admin/leaves')" style="width: 100%;height: 100%;">
             <el-icon><Calendar /></el-icon>
-            {{ t('dailyWords.scheduleManagement') }}
+            {{ t('dailyWords.holidayManagement') }}
+          </el-button>
+        </el-col>
+        <el-col :span="3">
+          <el-button type="primary" @click="goToPage('/admin/conditions')" style="width: 100%;height: 100%;">
+            <el-icon><Setting /></el-icon>
+            {{ t('dailyWords.conditionManagement') }}
           </el-button>
         </el-col>
       </el-row>
@@ -107,7 +143,7 @@
       />
     </el-card>
 
-    <el-dialog v-model="addDialogVisible" :title="isEditing ? t('dailyWords.editDailyWord') : t('dailyWords.addDailyWord')" width="700px" draggable>
+    <el-dialog v-model="addDialogVisible" :title="isEditing ? t('dailyWords.editDailyWord') : t('dailyWords.addDailyWord')" width="900px" draggable>
       <el-form :model="form" :rules="formRules" ref="formRef" label-width="100px">
         <el-form-item :label="t('dailyWords.grade')" prop="grade">
           <el-input v-model="form.grade" :placeholder="t('dailyWords.inputGrade')" />
@@ -128,6 +164,7 @@
                 <el-option v-for="mr in masteryRequirementOptions" :key="mr.value" :label="mr.label" :value="mr.value" />
               </el-select>
               <el-input v-model="word.remark" :placeholder="t('dailyWords.remark')" style="flex: 0.8;" />
+              <el-input v-model="word.link" :placeholder="t('dailyWords.link')" style="flex: 0.8;" />
               <el-button type="danger" :icon="Delete" circle @click="removeWord(index)" />
             </div>
             <el-button type="primary" @click="addWord" style="width: 100%;">
@@ -151,6 +188,7 @@
                 <el-option v-for="mr in masteryRequirementOptions" :key="mr.value" :label="mr.label" :value="mr.value" />
               </el-select>
               <el-input v-model="phrase.remark" :placeholder="t('dailyWords.remark')" style="flex: 0.8;" />
+              <el-input v-model="phrase.link" :placeholder="t('dailyWords.link')" style="flex: 0.8;" />
               <el-button type="danger" :icon="Delete" circle @click="removePhrase(index)" />
             </div>
             <el-button type="primary" @click="addPhrase" style="width: 100%;">
@@ -200,6 +238,12 @@
             </template>
           </el-table-column>
           <el-table-column prop="remark" :label="t('dailyWords.remark')" />
+          <el-table-column prop="link" :label="t('dailyWords.link')" width="120">
+            <template #default="{ row }">
+              <a v-if="row.link" :href="row.link" target="_blank" style="color: #409eff; text-decoration: underline;">{{ t('dailyWords.viewLink') }}</a>
+              <span v-else>-</span>
+            </template>
+          </el-table-column>
         </el-table>
         <el-table v-if="currentDailyWord.phrases && currentDailyWord.phrases.length > 0" :data="currentDailyWord.phrases" border style="margin-top: 15px;">
           <el-table-column type="index" :label="t('dailyWords.index')" width="60" />
@@ -221,6 +265,12 @@
             </template>
           </el-table-column>
           <el-table-column prop="remark" :label="t('dailyWords.remark')" />
+          <el-table-column prop="link" :label="t('dailyWords.link')" width="120">
+            <template #default="{ row }">
+              <a v-if="row.link" :href="row.link" target="_blank" style="color: #409eff; text-decoration: underline;">{{ t('dailyWords.viewLink') }}</a>
+              <span v-else>-</span>
+            </template>
+          </el-table-column>
         </el-table>
       </div>
     </el-dialog>
@@ -260,7 +310,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { ArrowLeft, Plus, Delete, Reading, Calendar, Download, Printer, Upload } from '@element-plus/icons-vue'
+import { ArrowLeft, Plus, Delete, Reading, Calendar, Download, Printer, Upload, User, UserFilled, OfficeBuilding, Setting } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import api from '@/utils/api'
 import { useI18n } from 'vue-i18n'
@@ -288,8 +338,8 @@ const formRef = ref(null)
 const form = ref({
   grade: '',
   date: '',
-  words: [{ word: '', phonetic: '', meaning: '', part_of_speech: '', mastery_requirement: '', remark: '' }],
-  phrases: [{ phrase: '', meaning: '', phrase_type: [], syntactic_role: [], mastery_requirement: '', remark: '' }],
+  words: [{ word: '', phonetic: '', meaning: '', part_of_speech: '', mastery_requirement: '', remark: '', link: '' }],
+  phrases: [{ phrase: '', meaning: '', phrase_type: [], syntactic_role: [], mastery_requirement: '', remark: '', link: '' }],
 })
 
 const partOfSpeechOptions = [
@@ -436,7 +486,7 @@ const handleSizeChange = (size) => {
 }
 
 const addWord = () => {
-  form.value.words.push({ word: '', phonetic: '', meaning: '', part_of_speech: '', mastery_requirement: '', remark: '' })
+  form.value.words.push({ word: '', phonetic: '', meaning: '', part_of_speech: '', mastery_requirement: '', remark: '', link: '' })
 }
 
 const removeWord = (index) => {
@@ -448,7 +498,7 @@ const removeWord = (index) => {
 }
 
 const addPhrase = () => {
-  form.value.phrases.push({ phrase: '', meaning: '', phrase_type: [], syntactic_role: [], mastery_requirement: '', remark: '' })
+  form.value.phrases.push({ phrase: '', meaning: '', phrase_type: [], syntactic_role: [], mastery_requirement: '', remark: '', link: '' })
 }
 
 const removePhrase = (index) => {
@@ -461,8 +511,8 @@ const showAddDialog = () => {
   form.value = {
     grade: '',
     date: '',
-    words: [{ word: '', phonetic: '', meaning: '', part_of_speech: '', mastery_requirement: '', remark: '' }],
-    phrases: [{ phrase: '', meaning: '', phrase_type: [], syntactic_role: [], mastery_requirement: '', remark: '' }],
+    words: [{ word: '', phonetic: '', meaning: '', part_of_speech: '', mastery_requirement: '', remark: '', link: '' }],
+    phrases: [{ phrase: '', meaning: '', phrase_type: [], syntactic_role: [], mastery_requirement: '', remark: '', link: '' }],
   }
   addDialogVisible.value = true
 }
@@ -474,11 +524,11 @@ const showEditDialog = (row) => {
     grade: row.grade,
     date: row.date,
     words: row.words && row.words.length > 0
-      ? row.words.map(w => ({ word: w.word || '', phonetic: w.phonetic || '', meaning: w.meaning || '', part_of_speech: w.part_of_speech || '', mastery_requirement: w.mastery_requirement || '', remark: w.remark || '' }))
-      : [{ word: '', phonetic: '', meaning: '', part_of_speech: '', mastery_requirement: '', remark: '' }],
+      ? row.words.map(w => ({ word: w.word || '', phonetic: w.phonetic || '', meaning: w.meaning || '', part_of_speech: w.part_of_speech || '', mastery_requirement: w.mastery_requirement || '', remark: w.remark || '', link: w.link || '' }))
+      : [{ word: '', phonetic: '', meaning: '', part_of_speech: '', mastery_requirement: '', remark: '', link: '' }],
     phrases: row.phrases && row.phrases.length > 0
-      ? row.phrases.map(p => ({ phrase: p.phrase || '', meaning: p.meaning || '', phrase_type: Array.isArray(p.phrase_type) ? p.phrase_type : (p.phrase_type ? [p.phrase_type] : []), syntactic_role: Array.isArray(p.syntactic_role) ? p.syntactic_role : (p.syntactic_role ? [p.syntactic_role] : []), mastery_requirement: p.mastery_requirement || '', remark: p.remark || '' }))
-      : [{ phrase: '', meaning: '', phrase_type: [], syntactic_role: [], mastery_requirement: '', remark: '' }],
+      ? row.phrases.map(p => ({ phrase: p.phrase || '', meaning: p.meaning || '', phrase_type: Array.isArray(p.phrase_type) ? p.phrase_type : (p.phrase_type ? [p.phrase_type] : []), syntactic_role: Array.isArray(p.syntactic_role) ? p.syntactic_role : (p.syntactic_role ? [p.syntactic_role] : []), mastery_requirement: p.mastery_requirement || '', remark: p.remark || '', link: p.link || '' }))
+      : [{ phrase: '', meaning: '', phrase_type: [], syntactic_role: [], mastery_requirement: '', remark: '', link: '' }],
   }
   addDialogVisible.value = true
 }
@@ -574,6 +624,7 @@ const exportDocument = (row) => {
       t('dailyWords.meaning'),
       t('dailyWords.masteryRequirement'),
       t('dailyWords.remark'),
+      t('dailyWords.link'),
     ])
     row.words.forEach((w, idx) => {
       wsData.push([
@@ -584,6 +635,7 @@ const exportDocument = (row) => {
         w.meaning || '',
         getMasteryRequirementLabel(w.mastery_requirement),
         w.remark || '',
+        w.link || '',
       ])
     })
   }
@@ -599,6 +651,7 @@ const exportDocument = (row) => {
       t('dailyWords.meaning'),
       t('dailyWords.masteryRequirement'),
       t('dailyWords.remark'),
+      t('dailyWords.link'),
     ])
     row.phrases.forEach((p, idx) => {
       wsData.push([
@@ -609,6 +662,7 @@ const exportDocument = (row) => {
         p.meaning || '',
         getMasteryRequirementLabel(p.mastery_requirement),
         p.remark || '',
+        p.link || '',
       ])
     })
   }
@@ -686,6 +740,7 @@ const printDocument = (row) => {
       <th>${t('dailyWords.meaning')}</th>
       <th>${t('dailyWords.masteryRequirement')}</th>
       <th>${t('dailyWords.remark')}</th>
+      <th>${t('dailyWords.link')}</th>
     </tr></thead><tbody>`
     row.words.forEach((w, idx) => {
       html += `<tr>
@@ -696,6 +751,7 @@ const printDocument = (row) => {
         <td>${w.meaning || ''}</td>
         <td>${getMasteryRequirementLabel(w.mastery_requirement)}</td>
         <td>${w.remark || ''}</td>
+        <td>${w.link || ''}</td>
       </tr>`
     })
     html += `</tbody></table>`
@@ -711,6 +767,7 @@ const printDocument = (row) => {
       <th>${t('dailyWords.meaning')}</th>
       <th>${t('dailyWords.masteryRequirement')}</th>
       <th>${t('dailyWords.remark')}</th>
+      <th>${t('dailyWords.link')}</th>
     </tr></thead><tbody>`
     row.phrases.forEach((p, idx) => {
       html += `<tr>
@@ -721,6 +778,7 @@ const printDocument = (row) => {
         <td>${p.meaning || ''}</td>
         <td>${getMasteryRequirementLabel(p.mastery_requirement)}</td>
         <td>${p.remark || ''}</td>
+        <td>${p.link || ''}</td>
       </tr>`
     })
     html += `</tbody></table>`
@@ -819,6 +877,7 @@ const handleImport = async () => {
                 meaning: String(row[4] || '').trim(),
                 mastery_requirement: String(row[5] || '').trim(),
                 remark: String(row[6] || '').trim(),
+                link: String(row[7] || '').trim(),
               })
             }
 
@@ -842,6 +901,7 @@ const handleImport = async () => {
                 meaning: String(row[4] || '').trim(),
                 mastery_requirement: String(row[5] || '').trim(),
                 remark: String(row[6] || '').trim(),
+                link: String(row[7] || '').trim(),
               })
             }
           }

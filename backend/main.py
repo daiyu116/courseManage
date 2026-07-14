@@ -30,6 +30,7 @@ from migrate_add_payment_method import migrate_add_payment_method
 from migrate_add_course_config import migrate_add_course_config
 from migrate_add_license import migrate_add_license_fields
 from migrate_add_evaluation import migrate_evaluation_managers
+from migrate_add_daily_words_phrases import migrate_add_daily_words_phrases
 
 import threading
 import time
@@ -366,6 +367,7 @@ migrate_add_makeup_fields()
 migrate_add_payment_method()
 migrate_add_course_config()
 migrate_add_license_fields()
+migrate_add_daily_words_phrases()
 
 def add_auto_backup_config_column():
     inspector = inspect(engine)

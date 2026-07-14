@@ -3372,6 +3372,15 @@
     "importFileTip": "Supports .xlsx / .xls / .csv format, file format must match exported document format",
     "startImport": "Start Import",
     "importSuccess": "Import successful",
-    "importParseFailed": "File parsing failed, please check file format"
+    "importParseFailed": "File parsing failed, please check file format",
+    "link": "Link",
+    "viewLink": "View",
+    "courseManagement": "Courses",
+    "teacherManagement": "Teachers",
+    "classManagement": "Classes",
+    "studentManagement": "Students",
+    "roomManagement": "Rooms",
+    "holidayManagement": "Holidays",
+    "conditionManagement": "Conditions"
   }
 }

@@ -3372,6 +3372,15 @@
     "importFileTip": "支持 .xlsx / .xls / .csv 格式，文件格式需与导出文档格式一致",
     "startImport": "开始导入",
     "importSuccess": "导入成功",
-    "importParseFailed": "文件解析失败，请检查文件格式"
+    "importParseFailed": "文件解析失败，请检查文件格式",
+    "link": "链接",
+    "viewLink": "查看",
+    "courseManagement": "科目管理",
+    "teacherManagement": "导师管理",
+    "classManagement": "班级管理",
+    "studentManagement": "学员管理",
+    "roomManagement": "教室管理",
+    "holidayManagement": "假期管理",
+    "conditionManagement": "条件管理"
   }
 }

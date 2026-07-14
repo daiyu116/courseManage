@@ -995,6 +995,7 @@ class WordItem(BaseModel):
     part_of_speech: str = Field("", description="词性")
     mastery_requirement: str = Field("", description="掌握要求：recite-会背, recognize-会认")
     remark: str = Field("", description="备注")
+    link: str = Field("", description="链接")
 
 class PhraseItem(BaseModel):
     phrase: str = Field(..., description="短语内容")
@@ -1003,6 +1004,7 @@ class PhraseItem(BaseModel):
     syntactic_role: List[str] = Field(default=[], description="可充当语素")
     mastery_requirement: str = Field("", description="掌握要求：recite-会背, recognize-会认")
     remark: str = Field("", description="备注")
+    link: str = Field("", description="链接")
 
 class DailyWordBase(BaseModel):
     grade: str = Field(..., description="年级")
