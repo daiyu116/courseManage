@@ -290,6 +290,7 @@
             <el-button v-if="currentSchedule && currentSchedule.execution_status === 'completed' && currentUser && (currentUser.role === 'super_admin' || currentUser.role === 'course_admin') && hasStudentsNeedingMakeup(currentSchedule)" type="warning" @click="showMakeupDialog">{{ t('calendar.studentMakeup') }}</el-button>
             <el-button v-if="currentSchedule && currentSchedule.execution_status === 'pending' && currentUser && (currentUser.role === 'super_admin' || currentUser.role === 'course_admin')" @click="showEditDialog">{{ t('calendar.edit') }}</el-button>
             <el-button v-if="currentSchedule && currentSchedule.execution_status === 'pending' && currentUser && (currentUser.role === 'super_admin' || currentUser.role === 'course_admin')" type="primary" @click="showCopyDialog">{{ t('calendar.copy') }}</el-button>
+            <el-button v-if="currentSchedule && currentSchedule.execution_status === 'pending' && currentUser && (currentUser.role === 'super_admin' || currentUser.role === 'course_admin')" type="info" @click="showExtraStudentDialog">{{ t('calendar.extraStudent') }}</el-button>
             <el-button v-if="currentUser && (currentUser.role === 'super_admin' || currentUser.role === 'course_admin')" type="warning" @click="handleNotifyNow">{{ t('calendar.notifyNow') }}</el-button>
           </div>
           <div>
@@ -891,6 +892,51 @@
         <el-button type="primary" @click="executeMakeup">{{ t('calendar.confirm') }}</el-button>
       </template>
     </el-dialog>
+
+    <!-- 临时增员对话框 -->
+    <el-dialog v-model="extraStudentDialogVisible" :title="t('calendar.extraStudentManage')" width="650px" draggable>
+      <div v-if="currentSchedule" style="margin-bottom: 15px;">
+        <el-descriptions :column="2" border size="small">
+          <el-descriptions-item :label="t('calendar.course')">{{ getCourseName(currentSchedule.course_id) }}</el-descriptions-item>
+          <el-descriptions-item :label="t('calendar.class')">{{ getClassName(currentSchedule.class_id) }}</el-descriptions-item>
+          <el-descriptions-item :label="t('calendar.date')">{{ currentSchedule.start_date }} {{ currentSchedule.start_time }}-{{ currentSchedule.end_time }}</el-descriptions-item>
+          <el-descriptions-item :label="t('calendar.teacher')">{{ getTeacherName(currentSchedule.teacher_id) }}</el-descriptions-item>
+        </el-descriptions>
+      </div>
+
+      <el-divider content-position="left">{{ t('calendar.currentExtraStudents') }}</el-divider>
+      <div v-if="currentExtraStudents.length > 0" style="margin-bottom: 15px;">
+        <el-tag v-for="student in currentExtraStudents" :key="student.id" closable type="warning" size="large" style="margin: 3px;" @close="removeExtraStudent(student.id)">
+          {{ student.name }}
+        </el-tag>
+      </div>
+      <div v-else style="color: #909399; margin-bottom: 15px;">{{ t('calendar.noExtraStudents') }}</div>
+
+      <el-divider content-position="left">{{ t('calendar.addExtraStudents') }}</el-divider>
+      <el-form label-width="80px">
+        <el-form-item :label="t('calendar.selectStudents')">
+          <el-select
+            v-model="selectedExtraStudentIds"
+            multiple
+            filterable
+            :placeholder="t('calendar.selectStudentsPlaceholder')"
+            style="width: 100%;"
+          >
+            <el-option
+              v-for="student in availableExtraStudents"
+              :key="student.id"
+              :label="`${student.name} (${student.code || 'N/A'})`"
+              :value="student.id"
+            />
+          </el-select>
+        </el-form-item>
+      </el-form>
+
+      <template #footer>
+        <el-button @click="extraStudentDialogVisible = false">{{ t('calendar.cancel') }}</el-button>
+        <el-button type="primary" @click="handleAddExtraStudents" :loading="extraStudentLoading" :disabled="selectedExtraStudentIds.length === 0">{{ t('calendar.confirmAddExtra') }}</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -1117,6 +1163,13 @@ const makeupRules = computed(() => {
   }
 })
 const currentMakeupSchedule = ref(null)
+
+// 临时增员相关
+const extraStudentDialogVisible = ref(false)
+const extraStudentLoading = ref(false)
+const selectedExtraStudentIds = ref([])
+const currentExtraStudents = ref([])
+const availableExtraStudents = ref([])
 // 监听props变化
 watch(() => props.dateRange, (newVal) => {
   if (newVal && newVal.length === 2) {
@@ -2562,6 +2615,79 @@ const getDayOfWeekFromDate = (date) => {
 const getDayOfWeekIntFromDate = (date) => {
   const dayOfWeek = dayjs(date).day() || 7
   return dayOfWeek === 0 ? 7 : dayOfWeek
+}
+
+// 临时增员相关函数
+const showExtraStudentDialog = async () => {
+  if (!currentSchedule.value) return
+  selectedExtraStudentIds.value = []
+  extraStudentLoading.value = false
+  extraStudentDialogVisible.value = true
+
+  const extraStudents = (currentSchedule.value.scheduled_students || []).filter(s => s.is_extra)
+  currentExtraStudents.value = extraStudents
+
+  try {
+    const response = await api.get('/students')
+    const allStudents = response.data
+    const classStudentIds = new Set()
+    if (currentSchedule.value.class_id) {
+      const classResponse = await api.get(`/classes/${currentSchedule.value.class_id}`)
+      if (classResponse.data && classResponse.data.students) {
+        classResponse.data.students.forEach(s => classStudentIds.add(s.id))
+      }
+    }
+    const scheduledStudentIds = new Set((currentSchedule.value.scheduled_students || []).map(s => s.id))
+    availableExtraStudents.value = allStudents.filter(s =>
+      !classStudentIds.has(s.id) && !scheduledStudentIds.has(s.id)
+    )
+  } catch (error) {
+    window.logger.error('获取学员列表失败:', error)
+    ElMessage.error(t('calendar.operationFailed'))
+  }
+}
+
+const handleAddExtraStudents = async () => {
+  if (selectedExtraStudentIds.value.length === 0) return
+  extraStudentLoading.value = true
+  try {
+    const response = await api.post(`/schedules/${currentSchedule.value.id}/extra-students`, selectedExtraStudentIds.value)
+    const result = response.data
+    if (result.added_students && result.added_students.length > 0) {
+      ElMessage.success(t('calendar.extraStudentAdded', { count: result.added_students.length }))
+    }
+    if (result.skipped_students && result.skipped_students.length > 0) {
+      const skippedNames = result.skipped_students.map(s => `${s.name || s.student_id}(${s.reason})`).join(', ')
+      ElMessage.warning(t('calendar.extraStudentSkipped', { names: skippedNames }))
+    }
+    selectedExtraStudentIds.value = []
+    const scheduleResponse = await api.get(`/schedules/${currentSchedule.value.id}`)
+    if (scheduleResponse.data) {
+      currentSchedule.value = scheduleResponse.data
+      const extraStudents = (scheduleResponse.data.scheduled_students || []).filter(s => s.is_extra)
+      currentExtraStudents.value = extraStudents
+      const scheduledStudentIds = new Set((scheduleResponse.data.scheduled_students || []).map(s => s.id))
+      availableExtraStudents.value = availableExtraStudents.value.filter(s => !scheduledStudentIds.has(s.id))
+    }
+    fetchSchedules()
+  } catch (error) {
+    window.logger.error('添加临时增员学员失败:', error)
+    ElMessage.error(t('calendar.operationFailed'))
+  } finally {
+    extraStudentLoading.value = false
+  }
+}
+
+const removeExtraStudent = async (studentId) => {
+  try {
+    await api.delete(`/schedules/${currentSchedule.value.id}/extra-students/${studentId}`)
+    ElMessage.success(t('calendar.extraStudentRemoved'))
+    currentExtraStudents.value = currentExtraStudents.value.filter(s => s.id !== studentId)
+    fetchSchedules()
+  } catch (error) {
+    window.logger.error('移除临时增员学员失败:', error)
+    ElMessage.error(t('calendar.operationFailed'))
+  }
 }
 </script>
 
