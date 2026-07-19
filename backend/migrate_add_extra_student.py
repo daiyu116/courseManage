@@ -6,7 +6,7 @@
 from sqlalchemy import create_engine, text
 from database import engine
 
-def migrate():
+def migrate_add_extra_student():
     """执行迁移"""
     print("开始迁移：为schedule_student表添加is_extra列...")
     
@@ -35,4 +35,4 @@ def migrate():
             raise
 
 if __name__ == "__main__":
-    migrate()
+    migrate_add_extra_student()
