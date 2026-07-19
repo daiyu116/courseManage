@@ -4042,7 +4042,7 @@ const showExtraStudentDialog = async (schedule) => {
   try {
     // 获取所有学员作为可选列表
     const response = await api.get('/students')
-    const allStudents = response.data
+    const allStudents = response.data.items || response.data
     // 获取班级学员ID集合
     const classStudentIds = new Set()
     if (schedule.class_id) {

@@ -2629,7 +2629,7 @@ const showExtraStudentDialog = async () => {
 
   try {
     const response = await api.get('/students')
-    const allStudents = response.data
+    const allStudents = response.data.items || response.data
     const classStudentIds = new Set()
     if (currentSchedule.value.class_id) {
       const classResponse = await api.get(`/classes/${currentSchedule.value.class_id}`)

@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: AGPL-3.0-only
 # Copyright (C) 2024-2026 courseManage Contributors
-from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File
+from fastapi import APIRouter, Body, Depends, HTTPException, Query, UploadFile, File
 from fastapi.responses import StreamingResponse, Response
 from sqlalchemy.orm import Session
 from sqlalchemy import asc, desc
@@ -3482,7 +3482,7 @@ def notify_schedule_status(
 @router.post("/{schedule_id}/extra-students")
 def add_extra_students(
     schedule_id: int,
-    student_ids: List[int],
+    student_ids: List[int] = Body(...),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_course_admin_user)
 ):

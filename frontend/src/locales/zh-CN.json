@@ -1668,7 +1668,6 @@
     "makeupOptions": "补课选项",
     "makeup": "补课",
     "declineMakeup": "不补课",
-    "selectStudents": "选择学员",
     "selectStudentPlaceholder": "选择学员",
     "studentsNeedMakeup": "共 {count} 名学员需要补课",
     "declinedReasonLabel": "不补课原因",
