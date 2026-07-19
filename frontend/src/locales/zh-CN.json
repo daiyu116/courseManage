@@ -828,7 +828,7 @@
     "lineFormatError": "格式错误，至少需要代码和名称",
     "lineError": "第{line}行：{msg}",
     "parentCourse": "父科目",
-    "parentCoursePlaceholder": "选择父科目（可选，用于科目归类）"
+    "parentCoursePlaceholder": "选择父科目（可选，用于科目归类）",
     "batchAddErrorCount": "发现{count}个错误",
     "batchAddFailDetail": "{code}({name}): {detail}",
     "courseInfo": "科目信息",
