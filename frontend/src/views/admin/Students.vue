@@ -585,9 +585,15 @@ const goBack = () => {
   router.back()
 }
 
+const gradeUpgradeMonth = ref(9)
+const gradeUpgradeDay = ref(1)
+
 const canUpgradeGrade = computed(() => {
   const today = new Date()
-  return today.getMonth() >= 8 // 9月及之后（getMonth() 0-based）
+  const month = gradeUpgradeMonth.value
+  const day = gradeUpgradeDay.value
+  const upgradeDate = new Date(today.getFullYear(), month - 1, day)
+  return today >= upgradeDate
 })
 
 const handleGradeUpgrade = () => {
@@ -1739,6 +1745,12 @@ onMounted(async () => {
         const config = JSON.parse(res.data.course_config)
         if (config.grade_options && Array.isArray(config.grade_options) && config.grade_options.length > 0) {
           gradeOptions.value = config.grade_options
+        }
+        if (config.grade_upgrade_month) {
+          gradeUpgradeMonth.value = config.grade_upgrade_month
+        }
+        if (config.grade_upgrade_day) {
+          gradeUpgradeDay.value = config.grade_upgrade_day
         }
       } catch (e) {}
     }

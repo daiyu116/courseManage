@@ -507,19 +507,123 @@
         <el-button @click="classStudentsDialogVisible = false">{{ t('scheduleView.close') }}</el-button>
       </template>
     </el-dialog>
+
+    <!-- 单词检查对话框 -->
+    <el-dialog v-model="wordCheckDialogVisible" :title="t('scheduleView.wordCheckTitle')" width="900px" draggable>
+      <div v-if="wordCheckData" style="margin-bottom: 15px;">
+        <el-descriptions :column="3" border size="small">
+          <el-descriptions-item :label="t('scheduleView.course')">{{ wordCheckData.course_name }}</el-descriptions-item>
+          <el-descriptions-item :label="t('scheduleView.class')">{{ wordCheckData.class_name }}</el-descriptions-item>
+          <el-descriptions-item :label="t('scheduleView.date')">{{ wordCheckData.start_date }} {{ wordCheckData.start_time }}-{{ wordCheckData.end_time }}</el-descriptions-item>
+        </el-descriptions>
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px;">
+          <el-button type="warning" size="small" @click="printWordCheck">
+            <el-icon><Printer /></el-icon>
+            {{ t('scheduleView.wordCheckPrint') }}
+          </el-button>
+          <el-button type="success" size="small" @click="screenshotWordCheck">
+            <el-icon><Camera /></el-icon>
+            {{ t('scheduleView.wordCheckScreenshot') }}
+          </el-button>
+        </div>
+      </div>
+
+      <div v-if="wordCheckNoWords" style="margin-bottom: 15px;">
+        <el-alert :title="t('scheduleView.noDailyWordsForGrade')" type="warning" :closable="false" show-icon />
+      </div>
+
+      <div v-if="wordCheckCommonWords && wordCheckCommonWords.length > 0" style="margin-bottom: 15px;">
+        <div style="font-weight: bold; margin-bottom: 8px;">{{ t('scheduleView.wordCheckCommonWords') }}</div>
+        <el-table :data="wordCheckCommonWords" border size="small">
+          <el-table-column type="index" :label="t('scheduleView.indexLabel')" width="50" />
+          <el-table-column prop="word" :label="t('scheduleView.wordLabel')" />
+          <el-table-column prop="part_of_speech" :label="t('scheduleView.partOfSpeechLabel')" width="70">
+            <template #default="{ row }">
+              {{ formatPartOfSpeech(row.part_of_speech) }}
+            </template>
+          </el-table-column>
+          <el-table-column prop="uk_phonetic" :label="t('scheduleView.ukPhoneticLabel')" />
+          <el-table-column prop="us_phonetic" :label="t('scheduleView.usPhoneticLabel')" />
+          <el-table-column prop="meaning" :label="t('scheduleView.meaningLabel')" />
+          <el-table-column :label="t('scheduleView.masteryRequirementLabel')" width="70">
+            <template #default="{ row }">
+              {{ formatMasteryRequirement(row.mastery_requirement) }}
+            </template>
+          </el-table-column>
+          <el-table-column prop="remark" :label="t('scheduleView.remarkLabel')" />
+        </el-table>
+        <div v-if="wordCheckCommonPhrases && wordCheckCommonPhrases.length > 0" style="margin-top: 10px;">
+          <div style="font-weight: bold; margin-bottom: 8px;">{{ t('scheduleView.phraseListLabel') }}</div>
+          <el-table :data="wordCheckCommonPhrases" border size="small">
+            <el-table-column type="index" :label="t('scheduleView.indexLabel')" width="50" />
+            <el-table-column prop="phrase" :label="t('scheduleView.phraseContentLabel')" />
+            <el-table-column :label="t('scheduleView.phraseTypeLabel')" width="80">
+              <template #default="{ row }">
+                {{ formatPhraseType(row.phrase_type) }}
+              </template>
+            </el-table-column>
+            <el-table-column :label="t('scheduleView.syntacticRoleLabel')" width="80">
+              <template #default="{ row }">
+                {{ formatSyntacticRole(row.syntactic_role) }}
+              </template>
+            </el-table-column>
+            <el-table-column prop="meaning" :label="t('scheduleView.meaningLabel')" />
+            <el-table-column :label="t('scheduleView.masteryRequirementLabel')" width="70">
+              <template #default="{ row }">
+                {{ formatMasteryRequirement(row.mastery_requirement) }}
+              </template>
+            </el-table-column>
+            <el-table-column prop="remark" :label="t('scheduleView.remarkLabel')" />
+          </el-table>
+        </div>
+      </div>
+
+      <el-table v-if="wordCheckData?.checks" :data="wordCheckData.checks" border style="width: 100%;">
+        <el-table-column prop="student_name" :label="t('scheduleView.studentName')" width="100" />
+        <el-table-column prop="student_grade" :label="t('scheduleView.studentGrade')" width="100" />
+        <el-table-column :label="t('scheduleView.completionStatus')" width="140">
+          <template #default="{ row }">
+            <el-select v-model="row.completion_status" size="small">
+              <el-option :label="t('scheduleView.wordCompleted')" value="completed" />
+              <el-option :label="t('scheduleView.wordPartial')" value="partial" />
+              <el-option :label="t('scheduleView.wordIncomplete')" value="incomplete" />
+            </el-select>
+          </template>
+        </el-table-column>
+        <el-table-column :label="t('scheduleView.attentionWords')" min-width="200">
+          <template #default="{ row }">
+            <el-select v-model="row.attention_words" multiple filterable allow-create size="small" :placeholder="t('scheduleView.inputAttentionWords')" style="width: 100%;">
+              <el-option v-for="w in (wordCheckCommonWords || [])" :key="w.word" :label="w.word" :value="w.word" />
+            </el-select>
+          </template>
+        </el-table-column>
+        <el-table-column :label="t('scheduleView.wordCheckNotes')" min-width="150">
+          <template #default="{ row }">
+            <el-input v-model="row.notes" size="small" :placeholder="t('scheduleView.inputWordCheckNotes')" />
+          </template>
+        </el-table-column>
+      </el-table>
+
+      <template #footer>
+        <el-button @click="wordCheckDialogVisible = false">{{ t('common.cancel') }}</el-button>
+        <el-button type="primary" @click="handleWordCheckSave" :loading="wordCheckLoading">{{ t('scheduleView.save') }}</el-button>
+      </template>
+    </el-dialog>
+
     <!-- 日历视图 -->
-    <CalendarView v-if="viewType === 'calendar'" :date-range="dateRange" :view-type="calendarViewType" @date-range-change="handleDateRangeChange" />
+    <CalendarView v-if="viewType === 'calendar'" :date-range="dateRange" :view-type="calendarViewType" @date-range-change="handleDateRangeChange" @word-check="handleCalendarWordCheck" />
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { Search } from '@element-plus/icons-vue'
+import { ref, computed, onMounted } from 'vue'
+import { Search, Printer, Camera } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import CalendarView from '@/components/CalendarView.vue'
 import api from '@/utils/api'
 import dayjs from 'dayjs'
 import { useI18n } from 'vue-i18n'
+import html2canvas from 'html2canvas'
 
 
 const { t } = useI18n()
@@ -924,6 +1028,163 @@ const handleNotifyNow = (row) => {
     }
   }).catch(() => {})
 }
+
+// 单词检查相关
+const wordCheckDialogVisible = ref(false)
+const wordCheckLoading = ref(false)
+const wordCheckData = ref(null)
+const wordCheckNoWords = ref(false)
+const currentWordCheckSchedule = ref(null)
+
+const wordCheckCommonWords = computed(() => {
+  if (!wordCheckData.value || !wordCheckData.value.checks || wordCheckData.value.checks.length === 0) return []
+  const firstCheck = wordCheckData.value.checks.find(c => c.words && c.words.length > 0)
+  return firstCheck ? firstCheck.words : []
+})
+const wordCheckCommonPhrases = computed(() => {
+  if (!wordCheckData.value || !wordCheckData.value.checks || wordCheckData.value.checks.length === 0) return []
+  const firstCheck = wordCheckData.value.checks.find(c => c.phrases && c.phrases.length > 0)
+  return firstCheck ? firstCheck.phrases : []
+})
+
+const phraseTypeMap = {
+  prepositional_phrase: '介词短语',
+  verb_phrase: '动词短语',
+  noun_phrase: '名词短语',
+  adjective_phrase: '形容词短语',
+  adverb_phrase: '副词短语',
+  infinitive_phrase: '不定式短语',
+  gerund_phrase: '动名词短语',
+  participial_phrase: '分词短语',
+  absolute_phrase: '独立主格',
+  appositive_phrase: '同位语',
+  clause: '从句',
+}
+
+const syntacticRoleMap = {
+  subject: '主语',
+  predicate: '谓语',
+  object: '宾语',
+  complement: '补语',
+  attributive: '定语',
+  adverbial: '状语',
+  appositive: '同位语',
+  predicative: '表语',
+}
+
+const formatPhraseType = (val) => {
+  return phraseTypeMap[val] || val || '-'
+}
+
+const formatSyntacticRole = (val) => {
+  return syntacticRoleMap[val] || val || '-'
+}
+
+const formatMasteryRequirement = (val) => {
+  const map = {
+    full_mastery: '会背(听说读写用)',
+    use: '会用',
+  }
+  return map[val] || val || '-'
+}
+
+const formatPartOfSpeech = (val) => {
+  const map = {
+    noun: 'n.',
+    pronoun: 'pron.',
+    verb: 'v.',
+    adjective: 'adj.',
+    adverb: 'adv.',
+    preposition: 'prep.',
+    conjunction: 'conj.',
+    interjection: 'interj.',
+    article: 'art.',
+    determiner: 'det.',
+  }
+  return map[val] || val || '-'
+}
+
+const handleCalendarWordCheck = (schedule) => {
+  showWordCheckDialog(schedule)
+}
+
+const showWordCheckDialog = async (schedule) => {
+  currentWordCheckSchedule.value = schedule
+  wordCheckLoading.value = true
+  wordCheckDialogVisible.value = true
+  wordCheckNoWords.value = false
+  try {
+    const response = await api.get(`/daily-words/checks/schedule/${schedule.id}`)
+    wordCheckData.value = response.data
+    const hasAnyWords = response.data.checks && response.data.checks.some(c => c.words && c.words.length > 0)
+    wordCheckNoWords.value = !hasAnyWords
+  } catch (error) {
+    window.logger.error('获取单词检查数据失败:', error)
+    ElMessage.error(t('common.operationFailedNetwork'))
+  } finally {
+    wordCheckLoading.value = false
+  }
+}
+
+const handleWordCheckSave = async () => {
+  if (!wordCheckData.value) return
+  wordCheckLoading.value = true
+  try {
+    const checks = wordCheckData.value.checks.map(c => ({
+      student_id: c.student_id,
+      daily_word_id: c.daily_word_id,
+      completion_status: c.completion_status,
+      attention_words: c.attention_words || [],
+      notes: c.notes || '',
+    }))
+    await api.post('/daily-words/checks/batch', {
+      schedule_id: wordCheckData.value.schedule_id,
+      checks: checks,
+    })
+    ElMessage.success(t('scheduleView.wordCheckSaved'))
+    wordCheckDialogVisible.value = false
+  } catch (error) {
+    window.logger.error('保存单词检查失败:', error)
+    ElMessage.error(t('common.operationFailedNetwork'))
+  } finally {
+    wordCheckLoading.value = false
+  }
+}
+
+const printWordCheck = () => {
+  const dialogEl = document.querySelector('.el-dialog')
+  if (!dialogEl) return
+  const printContent = dialogEl.innerHTML
+  const originalContent = document.body.innerHTML
+  document.body.innerHTML = printContent
+  window.print()
+  document.body.innerHTML = originalContent
+  window.location.reload()
+}
+
+const screenshotWordCheck = async () => {
+  try {
+    const dialogEl = document.querySelector('.el-dialog .el-dialog__body')
+    if (!dialogEl) {
+      ElMessage.warning(t('scheduleView.wordCheckNotFound'))
+      return
+    }
+    const canvas = await html2canvas(dialogEl, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: '#ffffff'
+    })
+    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'))
+    await navigator.clipboard.write([
+      new ClipboardItem({ 'image/png': blob })
+    ])
+    ElMessage.success(t('scheduleView.wordCheckScreenshotCopied'))
+  } catch (error) {
+    window.logger.error('截图失败:', error)
+    ElMessage.error(t('scheduleView.wordCheckScreenshotFailed'))
+  }
+}
+
 </script>
 
 <style scoped>

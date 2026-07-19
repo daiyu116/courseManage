@@ -896,6 +896,20 @@
                   <el-icon><InfoFilled /></el-icon> {{ t('dashboard.examStageOrderTip') }}
                 </div>
               </el-form-item>
+              <el-divider content-position="left">{{ t('dashboard.gradeUpgradeConfig') }}</el-divider>
+              <el-form-item :label="t('dashboard.gradeUpgradeDate')">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <el-select v-model="siteSettingsForm.grade_upgrade_month" :placeholder="t('dashboard.month')" style="width: 120px">
+                    <el-option v-for="m in 12" :key="m" :label="m + t('dashboard.monthUnit')" :value="m" />
+                  </el-select>
+                  <el-select v-model="siteSettingsForm.grade_upgrade_day" :placeholder="t('dashboard.day')" style="width: 120px">
+                    <el-option v-for="d in 31" :key="d" :label="d + t('dashboard.dayUnit')" :value="d" />
+                  </el-select>
+                </div>
+                <div style="margin-top: 5px; font-size: 12px; color: #909399;">
+                  <el-icon><InfoFilled /></el-icon> {{ t('dashboard.gradeUpgradeDateTip') }}
+                </div>
+              </el-form-item>
             </el-form>
           </el-tab-pane>
           <el-tab-pane :label="t('dashboard.emailTab')">
@@ -2112,6 +2126,8 @@ const siteSettingsForm = ref({
   open_registration_expiry: null,
   session_timeout_minutes: 1440,
   hours_per_lesson: 2.0,
+  grade_upgrade_month: 9,
+  grade_upgrade_day: 1,
   grade_options: [
     t('dashboard.grade1'), t('dashboard.grade2'), t('dashboard.grade3'), t('dashboard.grade4'), t('dashboard.grade5'), t('dashboard.grade6'),
     t('dashboard.grade7'), t('dashboard.grade8'), t('dashboard.grade9'),
@@ -2507,7 +2523,9 @@ const handleSiteSettingsSave = async () => {
           hours_per_lesson: siteSettingsForm.value.hours_per_lesson,
           course_config: JSON.stringify({
             grade_options: siteSettingsForm.value.grade_options.filter(g => g.trim() !== ''),
-            exam_stages: siteSettingsForm.value.exam_stages.filter(s => s.trim() !== '')
+            exam_stages: siteSettingsForm.value.exam_stages.filter(s => s.trim() !== ''),
+            grade_upgrade_month: siteSettingsForm.value.grade_upgrade_month,
+            grade_upgrade_day: siteSettingsForm.value.grade_upgrade_day
           })
         }
         
@@ -2600,6 +2618,12 @@ const fetchSiteSettings = async () => {
           }
           if (courseConfig.exam_stages && Array.isArray(courseConfig.exam_stages) && courseConfig.exam_stages.length > 0) {
             siteSettingsForm.value.exam_stages = courseConfig.exam_stages
+          }
+          if (courseConfig.grade_upgrade_month) {
+            siteSettingsForm.value.grade_upgrade_month = courseConfig.grade_upgrade_month
+          }
+          if (courseConfig.grade_upgrade_day) {
+            siteSettingsForm.value.grade_upgrade_day = courseConfig.grade_upgrade_day
           }
         } catch (e) {
           window.logger.error('解析课程配置失败:', e)

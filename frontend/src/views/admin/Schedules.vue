@@ -1648,6 +1648,62 @@
           <el-descriptions-item :label="t('schedules.class')">{{ wordCheckData.class_name }}</el-descriptions-item>
           <el-descriptions-item :label="t('schedules.date')">{{ wordCheckData.start_date }} {{ wordCheckData.start_time }}-{{ wordCheckData.end_time }}</el-descriptions-item>
         </el-descriptions>
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px;">
+          <el-button type="warning" size="small" @click="printWordCheck">
+            <el-icon><Printer /></el-icon>
+            {{ t('schedules.wordCheckPrint') }}
+          </el-button>
+          <el-button type="success" size="small" @click="screenshotWordCheck">
+            <el-icon><Camera /></el-icon>
+            {{ t('schedules.wordCheckScreenshot') }}
+          </el-button>
+        </div>
+      </div>
+
+      <div v-if="wordCheckCommonWords && wordCheckCommonWords.length > 0" style="margin-bottom: 15px;">
+        <div style="font-weight: bold; margin-bottom: 8px;">{{ t('schedules.wordList') }}</div>
+        <el-table :data="wordCheckCommonWords" border size="small">
+          <el-table-column type="index" :label="t('schedules.indexLabel')" width="50" />
+          <el-table-column prop="word" :label="t('schedules.wordLabel')" />
+          <el-table-column prop="part_of_speech" :label="t('schedules.partOfSpeechLabel')" width="70">
+            <template #default="{ row }">
+              {{ formatPartOfSpeech(row.part_of_speech) }}
+            </template>
+          </el-table-column>
+          <el-table-column prop="uk_phonetic" :label="t('schedules.ukPhoneticLabel')" />
+          <el-table-column prop="us_phonetic" :label="t('schedules.usPhoneticLabel')" />
+          <el-table-column prop="meaning" :label="t('schedules.meaningLabel')" />
+          <el-table-column :label="t('schedules.masteryRequirementLabel')" width="70">
+            <template #default="{ row }">
+              {{ formatMasteryRequirement(row.mastery_requirement) }}
+            </template>
+          </el-table-column>
+          <el-table-column prop="remark" :label="t('schedules.remarkLabel')" />
+        </el-table>
+        <div v-if="wordCheckCommonPhrases && wordCheckCommonPhrases.length > 0" style="margin-top: 10px;">
+          <div style="font-weight: bold; margin-bottom: 8px;">{{ t('schedules.phraseListLabel') }}</div>
+          <el-table :data="wordCheckCommonPhrases" border size="small">
+            <el-table-column type="index" :label="t('schedules.indexLabel')" width="50" />
+            <el-table-column prop="phrase" :label="t('schedules.phraseContentLabel')" />
+            <el-table-column :label="t('schedules.phraseTypeLabel')" width="80">
+              <template #default="{ row }">
+                {{ formatPhraseType(row.phrase_type) }}
+              </template>
+            </el-table-column>
+            <el-table-column :label="t('schedules.syntacticRoleLabel')" width="80">
+              <template #default="{ row }">
+                {{ formatSyntacticRole(row.syntactic_role) }}
+              </template>
+            </el-table-column>
+            <el-table-column prop="meaning" :label="t('schedules.meaningLabel')" />
+            <el-table-column :label="t('schedules.masteryRequirementLabel')" width="70">
+              <template #default="{ row }">
+                {{ formatMasteryRequirement(row.mastery_requirement) }}
+              </template>
+            </el-table-column>
+            <el-table-column prop="remark" :label="t('schedules.remarkLabel')" />
+          </el-table>
+        </div>
       </div>
 
       <div v-if="wordCheckNoWords" style="margin-bottom: 15px;">
@@ -1683,51 +1739,7 @@
             <el-input v-model="row.notes" size="small" :placeholder="t('schedules.inputWordCheckNotes')" />
           </template>
         </el-table-column>
-        <el-table-column :label="t('schedules.wordList')" width="80">
-          <template #default="{ row }">
-            <el-popover placement="left" :width="300" trigger="hover" v-if="row.words && row.words.length > 0">
-              <template #reference>
-                <el-button size="small" type="info">{{ row.words.length }}</el-button>
-              </template>
-              <el-table :data="row.words" size="small" border>
-                <el-table-column prop="word" :label="t('schedules.wordLabel')" />
-                <el-table-column prop="part_of_speech" :label="t('schedules.partOfSpeechLabel')" width="70" />
-                <el-table-column prop="phonetic" :label="t('schedules.phoneticLabel')" />
-                <el-table-column prop="meaning" :label="t('schedules.meaningLabel')" />
-                <el-table-column :label="t('schedules.masteryRequirementLabel')" width="70">
-                  <template #default="{ row }">
-                    {{ formatMasteryRequirement(row.mastery_requirement) }}
-                  </template>
-                </el-table-column>
-                <el-table-column prop="remark" :label="t('schedules.remarkLabel')" />
-              </el-table>
-              <div v-if="wordCheckPopoverData.phrases && wordCheckPopoverData.phrases.length > 0" style="margin-top: 10px; font-weight: bold;">{{ t('schedules.phraseListLabel') }}</div>
-              <el-table v-if="wordCheckPopoverData.phrases && wordCheckPopoverData.phrases.length > 0" :data="wordCheckPopoverData.phrases" border size="small" style="margin-top: 5px;">
-                <el-table-column type="index" :label="t('schedules.indexLabel')" width="50" />
-                <el-table-column prop="phrase" :label="t('schedules.phraseContentLabel')" />
-                <el-table-column :label="t('schedules.phraseTypeLabel')" width="80">
-                  <template #default="{ row }">
-                    {{ formatPhraseType(row.phrase_type) }}
-                  </template>
-                </el-table-column>
-                <el-table-column :label="t('schedules.syntacticRoleLabel')" width="80">
-                  <template #default="{ row }">
-                    {{ formatSyntacticRole(row.syntactic_role) }}
-                  </template>
-                </el-table-column>
-                <el-table-column prop="meaning" :label="t('schedules.meaningLabel')" />
-                <el-table-column :label="t('schedules.masteryRequirementLabel')" width="70">
-                  <template #default="{ row }">
-                    {{ formatMasteryRequirement(row.mastery_requirement) }}
-                  </template>
-                </el-table-column>
-                <el-table-column prop="remark" :label="t('schedules.remarkLabel')" />
-              </el-table>
-            </el-popover>
-            <span v-else style="color: #909399;">-</span>
-          </template>
-        </el-table-column>
-      </el-table>
+        </el-table>
 
       <template #footer>
         <el-button @click="wordCheckDialogVisible = false">{{ t('common.cancel') }}</el-button>
@@ -1741,11 +1753,12 @@
 <script setup>
 import { ref, onMounted, onUnmounted, computed, watch, nextTick } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { ArrowLeft, Plus, MagicStick, Delete, Reading, User, UserFilled, OfficeBuilding, Calendar, Clock, InfoFilled, Link, Download, Upload, Document, Setting, Warning, Lock } from '@element-plus/icons-vue'
+import { ArrowLeft, Plus, MagicStick, Delete, Reading, User, UserFilled, OfficeBuilding, Calendar, Clock, InfoFilled, Link, Download, Upload, Document, Setting, Warning, Lock, Printer, Camera } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import api from '@/utils/api'
 import { hasFeature, FEATURES as licenseFeatures } from '@/utils/license'
 import * as XLSX from 'xlsx'
+import html2canvas from 'html2canvas'
 import dayjs from 'dayjs'
 import { useI18n } from 'vue-i18n'
 
@@ -2015,6 +2028,16 @@ const wordCheckLoading = ref(false)
 const wordCheckData = ref(null)
 const wordCheckNoWords = ref(false)
 const currentWordCheckSchedule = ref(null)
+const wordCheckCommonWords = computed(() => {
+  if (!wordCheckData.value || !wordCheckData.value.checks || wordCheckData.value.checks.length === 0) return []
+  const firstCheck = wordCheckData.value.checks.find(c => c.words && c.words.length > 0)
+  return firstCheck ? firstCheck.words : []
+})
+const wordCheckCommonPhrases = computed(() => {
+  if (!wordCheckData.value || !wordCheckData.value.checks || wordCheckData.value.checks.length === 0) return []
+  const firstCheck = wordCheckData.value.checks.find(c => c.phrases && c.phrases.length > 0)
+  return firstCheck ? firstCheck.phrases : []
+})
 
 const phraseTypeMap = {
   prepositional_phrase: t('schedules.prepositionalPhrase') || '介词短语',
@@ -3912,6 +3935,59 @@ const handleWordCheckSave = async (sendNotification = false) => {
   } finally {
     wordCheckLoading.value = false
   }
+}
+
+// 打印单词检查
+const printWordCheck = () => {
+  const dialogEl = document.querySelector('.el-dialog')
+  if (!dialogEl) return
+  const printContent = dialogEl.innerHTML
+  const originalContent = document.body.innerHTML
+  document.body.innerHTML = printContent
+  window.print()
+  document.body.innerHTML = originalContent
+  window.location.reload()
+}
+
+// 截图单词检查
+const screenshotWordCheck = async () => {
+  try {
+    const dialogEl = document.querySelector('.el-dialog .el-dialog__body')
+    if (!dialogEl) {
+      ElMessage.warning(t('schedules.wordCheckNotFound'))
+      return
+    }
+    const canvas = await html2canvas(dialogEl, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: '#ffffff'
+    })
+    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'))
+    await navigator.clipboard.write([
+      new ClipboardItem({ 'image/png': blob })
+    ])
+    ElMessage.success(t('schedules.wordCheckScreenshotCopied'))
+  } catch (error) {
+    window.logger.error('截图失败:', error)
+    ElMessage.error(t('schedules.wordCheckScreenshotFailed'))
+  }
+}
+
+// 格式化词性
+const formatPartOfSpeech = (val) => {
+  const map = {
+    noun: 'n.',
+    pronoun: 'pron.',
+    verb: 'v.',
+    adjective: 'adj.',
+    adverb: 'adv.',
+    preposition: 'prep.',
+    conjunction: 'conj.',
+    interjection: 'interj.',
+    article: 'art.',
+    determiner: 'det.',
+  }
+  return map[val] || val || '-'
 }
 
 // 显示作业安排对话框

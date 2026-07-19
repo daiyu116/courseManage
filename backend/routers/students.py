@@ -5,8 +5,9 @@ from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import asc, desc
 from typing import List, Optional
 from datetime import date
+import json
 from database import get_db
-from models import Student, Class, Schedule, Course, Teacher
+from models import Student, Class, Schedule, Course, Teacher, Settings
 from schemas import StudentCreate, StudentUpdate, Student as StudentSchema, PaginatedStudentResponse
 from routers.auth import get_teacher_visibility_filter, get_current_user,  get_current_course_admin_user, User
 from utils.logger import log_operation
@@ -352,8 +353,21 @@ def upgrade_grades(
     today = date.today()
     current_year = today.year
 
-    if today < date(current_year, 9, 1):
-        raise HTTPException(status_code=400, detail="年级升级仅在每年9月1日后可用")
+    settings = db.query(Settings).first()
+    if settings and settings.course_config:
+        try:
+            config = json.loads(settings.course_config)
+            upgrade_month = config.get("grade_upgrade_month", 9)
+            upgrade_day = config.get("grade_upgrade_day", 1)
+        except:
+            upgrade_month = 9
+            upgrade_day = 1
+    else:
+        upgrade_month = 9
+        upgrade_day = 1
+
+    if today < date(current_year, upgrade_month, upgrade_day):
+        raise HTTPException(status_code=400, detail="年级升级在当前日期之后不可用")
 
     active_students = db.query(Student).filter(
         Student.is_active == True,

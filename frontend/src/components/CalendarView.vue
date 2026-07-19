@@ -286,6 +286,7 @@
             <el-button v-if="canEditCompletedSchedule" @click="showEditDialog">{{ t('calendar.edit') }}</el-button>
             <el-button v-if="currentSchedule && currentSchedule.execution_status === 'completed' && currentUser && (currentUser.role === 'super_admin' || currentUser.role === 'course_admin')" type="primary" @click="showCopyDialog">{{ t('calendar.copy') }}</el-button>
             <el-button v-if="currentSchedule && currentSchedule.execution_status === 'completed' && currentUser && (currentUser.role === 'super_admin' || currentUser.role === 'course_admin')" type="success" @click="showHomeworkDialog">{{ t('calendar.sendHomework') }}</el-button>
+            <el-button v-if="currentSchedule && currentSchedule.execution_status === 'completed'" type="primary" @click="emit('word-check', currentSchedule)">{{ t('calendar.wordCheck') }}</el-button>
             <el-button v-if="currentSchedule && currentSchedule.execution_status === 'completed' && currentUser && (currentUser.role === 'super_admin' || currentUser.role === 'course_admin') && hasStudentsNeedingMakeup(currentSchedule)" type="warning" @click="showMakeupDialog">{{ t('calendar.studentMakeup') }}</el-button>
             <el-button v-if="currentSchedule && currentSchedule.execution_status === 'pending' && currentUser && (currentUser.role === 'super_admin' || currentUser.role === 'course_admin')" @click="showEditDialog">{{ t('calendar.edit') }}</el-button>
             <el-button v-if="currentSchedule && currentSchedule.execution_status === 'pending' && currentUser && (currentUser.role === 'super_admin' || currentUser.role === 'course_admin')" type="primary" @click="showCopyDialog">{{ t('calendar.copy') }}</el-button>
@@ -921,7 +922,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['date-range-change'])
+const emit = defineEmits(['date-range-change', 'word-check'])
 const conflictDialogVisible = ref(false)
 const conflictSchedules = ref([])
 const executionStatusDialogVisible = ref(false)

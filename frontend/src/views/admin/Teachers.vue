@@ -728,13 +728,13 @@ const showAddDialog = () => {
     email: prefillData?.email || '',
     max_weekly_hours: 40,
     available_days: '6,7',
-    available_time_slots: '',
+    available_time_slots: '08:00-10:00,10:00-12:00,14:30-16:30,16:30-18:30',
     allow_holiday_scheduling: true,
     no_feedback_required: false,
     is_active: true
   }
   selectedDays.value = [6, 7]
-  selectedTimeSlots.value = []
+  selectedTimeSlots.value = ['08:00-10:00', '10:00-12:00', '14:30-16:30', '16:30-18:30']
   dialogVisible.value = true
 }
 

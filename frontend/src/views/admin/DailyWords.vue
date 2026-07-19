@@ -120,7 +120,7 @@
           </template>
         </el-table-column>
         <el-table-column prop="creator_name" :label="t('dailyWords.creator')" width="100" />
-        <el-table-column :label="t('common.operation')" width="310" fixed="right">
+        <el-table-column :label="t('common.operation')" width="120" fixed="right">
           <template #default="{ row }">
             <el-button size="small" @click="showViewDialog(row)">{{ t('common.view') }}</el-button>
             <el-button size="small" type="primary" @click="showEditDialog(row)">{{ t('common.edit') }}</el-button>
@@ -157,7 +157,8 @@
         <el-form-item :label="t('dailyWords.wordList')" prop="words">
           <div style="width: 100%;">
             <div v-for="(word, index) in form.words" :key="index" class="word-phrase-row">
-              <el-input v-model="word.word" :placeholder="t('dailyWords.word')" class="row-field-short" />
+              <el-input v-model="word.word" :placeholder="t('dailyWords.word')" class="row-field-short" @blur="onWordBlur(index)" />
+              <el-button type="info" :icon="Search" circle size="small" @click="fetchPhonetic(index)" :loading="word._phoneticLoading" :title="t('dailyWords.lookupPhonetic')" class="row-lookup-btn" />
               <el-select v-model="word.part_of_speech" :placeholder="t('dailyWords.selectPartOfSpeech')" clearable class="row-field-select">
                 <el-option v-for="pos in partOfSpeechOptions" :key="pos.value" :label="pos.label" :value="pos.value" />
               </el-select>
@@ -209,7 +210,7 @@
       </template>
     </el-dialog>
 
-    <el-dialog v-model="viewDialogVisible" :title="t('dailyWords.wordDetail')" width="700px" draggable>
+    <el-dialog v-model="viewDialogVisible" :title="t('dailyWords.wordDetail')" width="95%" top="3vh" draggable>
       <div v-if="currentDailyWord">
         <div style="display: flex; justify-content: flex-end; margin-bottom: 10px; gap: 10px;">
           <el-button type="success" @click="exportDocument(currentDailyWord)">
@@ -292,16 +293,22 @@
           <el-date-picker v-model="importForm.date" type="date" :placeholder="t('dailyWords.selectDate')" value-format="YYYY-MM-DD" style="width: 100%;" />
         </el-form-item>
         <el-form-item :label="t('dailyWords.selectFile')">
-          <el-upload
-            ref="importUploadRef"
-            :auto-upload="false"
-            :limit="1"
-            accept=".xlsx,.xls,.csv"
-            :on-change="handleImportFileChange"
-            :on-remove="handleImportFileRemove"
-          >
-            <el-button type="primary">{{ t('dailyWords.selectFileBtn') }}</el-button>
-          </el-upload>
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <el-upload
+              ref="importUploadRef"
+              :auto-upload="false"
+              :limit="1"
+              accept=".xlsx,.xls,.csv"
+              :on-change="handleImportFileChange"
+              :on-remove="handleImportFileRemove"
+            >
+              <el-button type="primary">{{ t('dailyWords.selectFileBtn') }}</el-button>
+            </el-upload>
+            <el-button type="success" @click="downloadImportTemplate">
+              <el-icon><Download /></el-icon>
+              {{ t('dailyWords.downloadTemplate') }}
+            </el-button>
+          </div>
           <div style="margin-top: 8px; color: #909399; font-size: 12px;">
             {{ t('dailyWords.importFileTip') }}
           </div>
@@ -318,7 +325,7 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { ArrowLeft, Plus, Delete, Reading, Calendar, Download, Printer, Upload, User, UserFilled, OfficeBuilding, Setting } from '@element-plus/icons-vue'
+import { ArrowLeft, Plus, Delete, Reading, Calendar, Download, Printer, Upload, User, UserFilled, OfficeBuilding, Setting, Search } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import api from '@/utils/api'
 import { useI18n } from 'vue-i18n'
@@ -507,7 +514,7 @@ const handleSizeChange = (size) => {
 }
 
 const addWord = () => {
-  form.value.words.push({ word: '', uk_phonetic: '', us_phonetic: '', meaning: '', part_of_speech: '', mastery_requirement: '', remark: '', link: '' })
+  form.value.words.push({ word: '', uk_phonetic: '', us_phonetic: '', meaning: '', part_of_speech: '', mastery_requirement: '', remark: '', link: '', _phoneticLoading: false })
 }
 
 const removeWord = (index) => {
@@ -532,7 +539,7 @@ const showAddDialog = () => {
   form.value = {
     grade: '',
     date: '',
-    words: [{ word: '', uk_phonetic: '', us_phonetic: '', meaning: '', part_of_speech: '', mastery_requirement: '', remark: '', link: '' }],
+    words: [{ word: '', uk_phonetic: '', us_phonetic: '', meaning: '', part_of_speech: '', mastery_requirement: '', remark: '', link: '', _phoneticLoading: false }],
     phrases: [{ phrase: '', meaning: '', phrase_type: [], syntactic_role: [], mastery_requirement: '', remark: '', link: '' }],
   }
   addDialogVisible.value = true
@@ -545,8 +552,8 @@ const showEditDialog = (row) => {
     grade: row.grade,
     date: row.date,
     words: row.words && row.words.length > 0
-      ? row.words.map(w => ({ word: w.word || '', uk_phonetic: w.uk_phonetic || w.phonetic || '', us_phonetic: w.us_phonetic || '', meaning: w.meaning || '', part_of_speech: w.part_of_speech || '', mastery_requirement: w.mastery_requirement || '', remark: w.remark || '', link: w.link || '' }))
-      : [{ word: '', uk_phonetic: '', us_phonetic: '', meaning: '', part_of_speech: '', mastery_requirement: '', remark: '', link: '' }],
+      ? row.words.map(w => ({ word: w.word || '', uk_phonetic: w.uk_phonetic || w.phonetic || '', us_phonetic: w.us_phonetic || '', meaning: w.meaning || '', part_of_speech: w.part_of_speech || '', mastery_requirement: w.mastery_requirement || '', remark: w.remark || '', link: w.link || '', _phoneticLoading: false }))
+      : [{ word: '', uk_phonetic: '', us_phonetic: '', meaning: '', part_of_speech: '', mastery_requirement: '', remark: '', link: '', _phoneticLoading: false }],
     phrases: row.phrases && row.phrases.length > 0
       ? row.phrases.map(p => ({ phrase: p.phrase || '', meaning: p.meaning || '', phrase_type: Array.isArray(p.phrase_type) ? p.phrase_type : (p.phrase_type ? [p.phrase_type] : []), syntactic_role: Array.isArray(p.syntactic_role) ? p.syntactic_role : (p.syntactic_role ? [p.syntactic_role] : []), mastery_requirement: p.mastery_requirement || '', remark: p.remark || '', link: p.link || '' }))
       : [{ phrase: '', meaning: '', phrase_type: [], syntactic_role: [], mastery_requirement: '', remark: '', link: '' }],
@@ -990,6 +997,128 @@ const handleImport = async () => {
   }
 }
 
+const fetchPhonetic = async (index) => {
+  const word = form.value.words[index]
+  if (!word || !word.word.trim()) {
+    ElMessage.warning(t('dailyWords.enterWordFirst'))
+    return
+  }
+
+  word._phoneticLoading = true
+  try {
+    const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word.word.trim())}`)
+    if (!response.ok) {
+      ElMessage.warning(t('dailyWords.phoneticNotFound', { word: word.word.trim() }))
+      return
+    }
+    const data = await response.json()
+    if (!data || data.length === 0) {
+      ElMessage.warning(t('dailyWords.phoneticNotFound', { word: word.word.trim() }))
+      return
+    }
+
+    const entry = data[0]
+    const phonetics = entry.phonetics || []
+
+    const ukPhon = phonetics.find(p => p.text && p.text.includes('/'))
+    let ukText = ukPhon ? ukPhon.text : (entry.phonetic || '')
+
+    const usPhon = phonetics.slice(1).find(p => p.text && p.text !== ukText && p.text.includes('/'))
+    let usText = usPhon ? usPhon.text : ''
+
+    if (!usText && ukText) {
+      usText = ukText
+    }
+
+    if (!ukText) {
+      ElMessage.warning(t('dailyWords.phoneticNotFound', { word: word.word.trim() }))
+      return
+    }
+
+    if (!word.uk_phonetic.trim()) {
+      word.uk_phonetic = ukText
+    }
+    if (!word.us_phonetic.trim()) {
+      word.us_phonetic = usText
+    }
+
+    if (!word.meaning.trim() && entry.meanings && entry.meanings.length > 0) {
+      const firstMeaning = entry.meanings[0]
+      if (firstMeaning.definitions && firstMeaning.definitions.length > 0) {
+        word.meaning = firstMeaning.definitions[0].definition || ''
+      }
+    }
+
+    ElMessage.success(t('dailyWords.phoneticFound'))
+  } catch (error) {
+    window.logger.error('查询音标失败:', error)
+    ElMessage.error(t('dailyWords.phoneticQueryFailed'))
+  } finally {
+    word._phoneticLoading = false
+  }
+}
+
+const onWordBlur = (index) => {
+}
+
+const downloadImportTemplate = () => {
+  const wb = XLSX.utils.book_new()
+
+  const wsData = []
+
+  wsData.push([t('dailyWords.templateTitle')])
+  wsData.push([t('dailyWords.templateNote')])
+  wsData.push([])
+  wsData.push([t('dailyWords.grade'), t('dailyWords.templateGradeExample')])
+  wsData.push([t('dailyWords.date'), t('dailyWords.templateDateExample')])
+  wsData.push([])
+  wsData.push([t('dailyWords.wordList')])
+  wsData.push([
+    t('dailyWords.index'),
+    t('dailyWords.word'),
+    t('dailyWords.partOfSpeech'),
+    t('dailyWords.ukPhonetic'),
+    t('dailyWords.usPhonetic'),
+    t('dailyWords.meaning'),
+    t('dailyWords.masteryRequirement'),
+    t('dailyWords.remark'),
+    t('dailyWords.link'),
+  ])
+  wsData.push(['1', 'apple', 'noun', '/ˈæp.əl/', '/ˈæp.əl/', '苹果', 'full_mastery', '', ''])
+  wsData.push(['2', 'run', 'verb', '/rʌn/', '/rʌn/', '跑步', 'use', '', ''])
+  wsData.push([])
+  wsData.push([t('dailyWords.phraseList')])
+  wsData.push([
+    t('dailyWords.index'),
+    t('dailyWords.phraseContent'),
+    t('dailyWords.phraseType'),
+    t('dailyWords.syntacticRole'),
+    t('dailyWords.meaning'),
+    t('dailyWords.masteryRequirement'),
+    t('dailyWords.remark'),
+    t('dailyWords.link'),
+  ])
+  wsData.push(['1', 'take care of', 'verb_phrase', 'predicate', '照顾', 'full_mastery', '', ''])
+  wsData.push(['2', 'a lot of', 'adjective_phrase', 'determiner', '许多', 'use', '', ''])
+
+  const ws = XLSX.utils.aoa_to_sheet(wsData)
+
+  ws['!cols'] = [
+    { wch: 6 },
+    { wch: 18 },
+    { wch: 14 },
+    { wch: 16 },
+    { wch: 16 },
+    { wch: 20 },
+    { wch: 14 },
+    { wch: 16 },
+    { wch: 30 },
+  ]
+
+  XLSX.utils.book_append_sheet(wb, ws, t('dailyWords.importTemplate'))
+  XLSX.writeFile(wb, `${t('dailyWords.importTemplate')}.xlsx`)
+}
+
 onMounted(() => {
   fetchDailyWords()
   fetchGrades()
@@ -1058,6 +1187,9 @@ onMounted(() => {
   min-width: 180px;
 }
 .row-delete-btn {
+  flex-shrink: 0;
+}
+.row-lookup-btn {
   flex-shrink: 0;
 }
 @media (max-width: 1200px) {
