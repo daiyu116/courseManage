@@ -28,6 +28,46 @@ def get_hours_per_lesson(db: Session) -> float:
         return settings.hours_per_lesson
     return 2.0
 
+def _find_fee_with_parent_fallback(db: Session, student_id: int, course_id: int):
+    """查找学员课费项，支持父科目 fallback。
+    
+    先精确匹配 course_id，若找不到且该科目有父科目，则向上查找父科目。
+    用于消耗逻辑中：学员课费项挂在父科目"英语"下，子科目"初二英语"完训时也能匹配到。
+    """
+    fee = db.query(StudentFee).filter(
+        StudentFee.student_id == student_id,
+        StudentFee.course_id == course_id
+    ).first()
+    
+    if fee:
+        return fee
+    
+    course = db.query(Course).filter(Course.id == course_id).first()
+    if course and course.parent_course_id:
+        fee = db.query(StudentFee).filter(
+            StudentFee.student_id == student_id,
+            StudentFee.course_id == course.parent_course_id
+        ).first()
+    
+    return fee
+
+def _get_child_course_ids(db: Session, course_id: int):
+    """获取某个科目的所有子科目ID列表（包含自身）。
+    
+    如果该科目是父科目，返回其所有子科目的ID；如果该科目是子科目，通过父科目获取所有兄弟子科目。
+    用于新建课费项/手动触发消耗时，需要扫描父科目下所有子科目的完训课程。
+    """
+    course = db.query(Course).filter(Course.id == course_id).first()
+    if not course:
+        return [course_id]
+    
+    parent_id = course.parent_course_id or course.id
+    child_courses = db.query(Course).filter(Course.parent_course_id == parent_id).all()
+    ids = [c.id for c in child_courses]
+    if not ids:
+        ids = [course_id]
+    return ids
+
 def check_fee_manager_permission(db: Session, current_user: User):
     """检查用户是否有费用管理权限（管理员或费用管理导师）+ License 授权"""
     from routers.license import _check_premium_feature
@@ -351,9 +391,10 @@ def create_student_fee(
     db.add(log)
     db.commit()
     
-    # 检查是否有之前完训的课程安排，自动计算消耗
+    # 检查是否有之前完训的课程安排（含子科目），自动计算消耗
+    child_course_ids = _get_child_course_ids(db, fee.course_id)
     completed_schedules = db.query(Schedule).filter(
-        Schedule.course_id == fee.course_id,
+        Schedule.course_id.in_(child_course_ids),
         Schedule.execution_status == "completed"
     ).all()
     
@@ -455,9 +496,10 @@ def debug_auto_consume(
         "checks": []
     }
     
-    # 1. 查询该科目下所有完训的课程安排
+    # 1. 查询该科目及其子科目下所有完训的课程安排
+    child_course_ids = _get_child_course_ids(db, course_id)
     completed_schedules = db.query(Schedule).filter(
-        Schedule.course_id == course_id,
+        Schedule.course_id.in_(child_course_ids),
         Schedule.execution_status == "completed"
     ).all()
     
@@ -474,11 +516,8 @@ def debug_auto_consume(
         ]
     })
     
-    # 2. 查询学员的课费项
-    fee = db.query(StudentFee).filter(
-        StudentFee.student_id == student_id,
-        StudentFee.course_id == course_id
-    ).first()
+    # 2. 查询学员的课费项（含父科目fallback）
+    fee = _find_fee_with_parent_fallback(db, student_id, course_id)
     
     if not fee:
         result["checks"].append({
@@ -580,9 +619,10 @@ def trigger_auto_consume(
     student = db.query(Student).filter(Student.id == fee.student_id).first()
     course = db.query(Course).filter(Course.id == fee.course_id).first()
     
-    # 查询该科目下所有完训的课程安排
+    # 查询该科目及其子科目下所有完训的课程安排
+    child_course_ids = _get_child_course_ids(db, fee.course_id)
     completed_schedules = db.query(Schedule).filter(
-        Schedule.course_id == fee.course_id,
+        Schedule.course_id.in_(child_course_ids),
         Schedule.execution_status == "completed"
     ).all()
     
@@ -917,13 +957,10 @@ def consume_hours(
         student = db.query(Student).filter(Student.id == student_id).first()
         if not student:
             continue
-        fee = db.query(StudentFee).filter(
-            StudentFee.student_id == student.id,
-            StudentFee.course_id == schedule.course_id
-        ).first()
+        fee = _find_fee_with_parent_fallback(db, student.id, schedule.course_id)
         
         if not fee:
-            log_operation(db, "费用管理", "完训消耗课时", f"学员 {student.name} (ID: {student.id}) 没有找到科目ID {schedule.course_id} 的课时费记录，跳过", current_user.username, "WARNING")
+            log_operation(db, "费用管理", "完训消耗课时", f"学员 {student.name} (ID: {student.id}) 没有找到科目ID {schedule.course_id} 的课时费记录（含父科目fallback），跳过", current_user.username, "WARNING")
             continue
         
         if not fee.is_active:
@@ -1623,13 +1660,10 @@ def consume_hours_with_attendance(
         if not student:
             continue
         
-        fee = db.query(StudentFee).filter(
-            StudentFee.student_id == student.id,
-            StudentFee.course_id == schedule.course_id
-        ).first()
+        fee = _find_fee_with_parent_fallback(db, student.id, schedule.course_id)
         
         if not fee:
-            log_operation(db, "费用管理", "完训消耗课时", f"学员 {student.name} (ID: {student.id}) 没有找到科目ID {schedule.course_id} 的课时费记录，跳过", current_user.username, "WARNING")
+            log_operation(db, "费用管理", "完训消耗课时", f"学员 {student.name} (ID: {student.id}) 没有找到科目ID {schedule.course_id} 的课时费记录（含父科目fallback），跳过", current_user.username, "WARNING")
             continue
         
         if not fee.is_active:

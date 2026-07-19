@@ -237,13 +237,14 @@
             <el-option
               v-for="course in courses"
               :key="course.id"
-              :label="course.name"
+              :label="course.parent_course_name ? course.parent_course_name + ' > ' + course.name : course.name"
               :value="course.id"
             >
               <el-tooltip placement="right" :show-after="200">
                 <template #content>
                   <div style="min-width: 200px;">
                     <div><strong>{{ t('fee.course') }}：</strong>{{ course.name }}</div>
+                    <div v-if="course.parent_course_name"><strong>{{ t('courses.parentCourse') }}：</strong>{{ course.parent_course_name }}</div>
                     <div v-if="course.teachers && course.teachers.length > 0">
                       <strong>{{ t('fee.teacherLabel') }}：</strong>
                       <div v-for="teacher in course.teachers" :key="teacher.id" style="margin-left: 10px;">

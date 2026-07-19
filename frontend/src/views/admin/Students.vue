@@ -103,6 +103,11 @@
               <el-icon><Upload /></el-icon>
               {{ t('common.batchAdd') }}
             </el-button>
+            <el-button v-if="currentUser && currentUser.role !== 'teaching_assistant'" type="warning" @click="handleGradeUpgrade" :class="{ 'grade-upgrade-btn': canUpgradeGrade }">
+              <el-icon><Top /></el-icon>
+              {{ t('students.gradeUpgrade') }}
+              <el-badge v-if="canUpgradeGrade" :value="'!'" class="grade-upgrade-badge" />
+            </el-button>
           </div>
         </div>
       </template>
@@ -566,8 +571,9 @@ const defaultGradeOptions = computed(() => [
   t('students.gradePrimary', { n: 1 }), t('students.gradePrimary', { n: 2 }), t('students.gradePrimary', { n: 3 }), t('students.gradePrimary', { n: 4 }), t('students.gradePrimary', { n: 5 }), t('students.gradePrimary', { n: 6 }),
   t('students.gradeJunior', { n: 1 }), t('students.gradeJunior', { n: 2 }), t('students.gradeJunior', { n: 3 }),
   t('students.gradeSenior', { n: 1 }), t('students.gradeSenior', { n: 2 }), t('students.gradeSenior', { n: 3 }),
-  t('students.gradeCollege', { n: 1 }), t('students.gradeCollege', { n: 2 }), t('students.gradeCollege', { n: 3 }), t('students.gradeCollege', { n: 4 }),
-  t('students.gradeGraduate', { n: 1 }), t('students.gradeGraduate', { n: 2 }), t('students.gradeGraduate', { n: 3 })
+  t('students.gradeCollege', { n: 1 }), t('students.gradeCollege', { n: 2 }), t('students.gradeCollege', { n: 3 }), t('students.gradeCollege', { n: 4 }), t('students.gradeCollege', { n: 5 }),
+  t('students.gradeGraduate', { n: 1 }), t('students.gradeGraduate', { n: 2 }), t('students.gradeGraduate', { n: 3 }),
+  t('students.gradeDoctor', { n: 1 }), t('students.gradeDoctor', { n: 2 }), t('students.gradeDoctor', { n: 3 })
 ])
 const gradeOptions = ref([])
 
@@ -577,6 +583,32 @@ watch(defaultGradeOptions, (newVal) => {
 
 const goBack = () => {
   router.back()
+}
+
+const canUpgradeGrade = computed(() => {
+  const today = new Date()
+  return today.getMonth() >= 8 // 9月及之后（getMonth() 0-based）
+})
+
+const handleGradeUpgrade = () => {
+  if (!canUpgradeGrade.value) {
+    ElMessage.warning(t('students.gradeUpgradeBeforeSept'))
+    return
+  }
+  ElMessageBox.confirm(t('students.gradeUpgradeConfirm'), t('students.gradeUpgradeTitle'), {
+    confirmButtonText: t('common.confirm'),
+    cancelButtonText: t('common.cancel'),
+    type: 'warning'
+  }).then(async () => {
+    try {
+      const response = await api.post('/students/upgrade-grades')
+      const { upgraded, skipped } = response.data
+      ElMessage.success(t('students.gradeUpgradeSuccess', { upgraded, skipped }))
+      fetchStudents()
+    } catch (error) {
+      window.logger.error('年级升级失败:', error)
+    }
+  }).catch(() => {})
 }
 
 // 检查是否有权限访问费用管理

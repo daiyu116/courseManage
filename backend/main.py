@@ -382,6 +382,33 @@ def add_auto_backup_config_column():
 
 add_auto_backup_config_column()
 
+def add_parent_course_column():
+    """为 courses 表添加父科目字段"""
+    inspector = inspect(engine)
+    columns = [col['name'] for col in inspector.get_columns('courses')]
+    if 'parent_course_id' not in columns:
+        with engine.connect() as conn:
+            conn.execute(text("ALTER TABLE courses ADD COLUMN parent_course_id INTEGER REFERENCES courses(id)"))
+            conn.commit()
+        print("已添加字段 parent_course_id 到表 courses")
+    else:
+        print("字段 parent_course_id 已存在于表 courses")
+
+def add_grade_updated_year_column():
+    """为 students 表添加年级升级年份字段"""
+    inspector = inspect(engine)
+    columns = [col['name'] for col in inspector.get_columns('students')]
+    if 'grade_updated_year' not in columns:
+        with engine.connect() as conn:
+            conn.execute(text("ALTER TABLE students ADD COLUMN grade_updated_year INTEGER"))
+            conn.commit()
+        print("已添加字段 grade_updated_year 到表 students")
+    else:
+        print("字段 grade_updated_year 已存在于表 students")
+
+add_parent_course_column()
+add_grade_updated_year_column()
+
 def create_default_admin():
     from passlib.context import CryptContext
     pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")

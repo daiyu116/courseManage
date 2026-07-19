@@ -96,6 +96,7 @@
         <el-table-column prop="id" label="ID" width="70" sortable />
         <el-table-column prop="code" :label="t('courses.courseCode')" width="120" sortable />
         <el-table-column prop="name" :label="t('courses.courseName')" width="200" sortable />
+        <el-table-column prop="parent_course_name" :label="t('courses.parentCourse')" width="120" />
         <el-table-column prop="priority" :label="t('courses.priority')" width="100" sortable />
         <el-table-column :label="t('courses.teachingTeachers')" min-width="200">
           <template #default="{ row }">
@@ -142,6 +143,16 @@
         </el-form-item>
         <el-form-item :label="t('courses.priority')" prop="priority">
           <el-input-number v-model="form.priority" :min="0" :max="100" />
+        </el-form-item>
+        <el-form-item :label="t('courses.parentCourse')">
+          <el-select v-model="form.parent_course_id" filterable clearable :placeholder="t('courses.parentCoursePlaceholder')" style="width: 100%">
+            <el-option
+              v-for="course in parentCourseOptions"
+              :key="course.id"
+              :label="course.name"
+              :value="course.id"
+            />
+          </el-select>
         </el-form-item>
         <el-form-item :label="t('courses.teachingTeachers')" prop="teacher_ids">
           <el-select v-model="form.teacher_ids" multiple filterable :placeholder="t('courses.selectTeachers')" style="width: 100%">
@@ -246,6 +257,7 @@ const batchAddDialogVisible = ref(false)
 const batchAddText = ref('')
 const batchAddLoading = ref(false)
 const teachers = ref([])
+const parentCourseOptions = ref([])
 
 const pagination = ref({
   currentPage: 1,
@@ -293,6 +305,7 @@ const form = ref({
   code: '',
   name: '',
   priority: 0,
+  parent_course_id: null,
   teacher_ids: []
 })
 
@@ -301,6 +314,7 @@ const originalForm = ref({
   code: '',
   name: '',
   priority: 0,
+  parent_course_id: null,
   teacher_ids: []
 })
 
@@ -358,6 +372,15 @@ const fetchCourses = async () => {
   }
 }
 
+const fetchParentCourseOptions = async () => {
+  try {
+    const response = await api.get('/courses', { params: { skip: 0, limit: 100000 } })
+    parentCourseOptions.value = response.data.items || response.data
+  } catch (error) {
+    window.logger.error('获取父科目选项失败:', error)
+  }
+}
+
 const resetFilters = () => {
   searchKeyword.value = ''
   filterName.value = ''
@@ -370,6 +393,7 @@ const resetFilters = () => {
 
 const showAddDialog = () => {
   dialogTitle.value = t('courses.addCourseTitle')
+  fetchParentCourseOptions()
   
   // 检查是否有预填充数据
   const storageData = sessionStorage.getItem('smartCommandData')
@@ -388,6 +412,7 @@ const showAddDialog = () => {
     code: '',
     name: prefillData?.course_name || '',
     priority: prefillData?.priority || 0,
+    parent_course_id: prefillData?.parent_course_id || null,
     teacher_ids: prefillData?.teacher_id ? [parseInt(prefillData.teacher_id)] : []
   }
   dialogVisible.value = true
@@ -473,11 +498,13 @@ const handleBatchAddSubmit = async () => {
 
 const showEditDialog = (row) => {
   dialogTitle.value = t('courses.editCourseTitle')
+  fetchParentCourseOptions()
   originalForm.value = {
     id: row.id,
     code: row.code,
     name: row.name,
     priority: row.priority,
+    parent_course_id: row.parent_course_id || null,
     teacher_ids: row.teacher_ids || []
   }
   form.value = {
@@ -485,6 +512,7 @@ const showEditDialog = (row) => {
     code: row.code,
     name: row.name,
     priority: row.priority,
+    parent_course_id: row.parent_course_id || null,
     teacher_ids: row.teacher_ids || []
   }
   
@@ -522,6 +550,7 @@ const handleSubmit = async () => {
             form.value.code !== originalForm.value.code ||
             form.value.name !== originalForm.value.name ||
             form.value.priority !== originalForm.value.priority ||
+            form.value.parent_course_id !== originalForm.value.parent_course_id ||
             JSON.stringify(form.value.teacher_ids || []) !== JSON.stringify(originalForm.value.teacher_ids || [])
           
           if (!isChanged) {

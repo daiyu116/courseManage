@@ -72,11 +72,15 @@ def get_courses(
             teacher_ids = [t.id for t in course.teachers]
             teachers_list = [{"id": t.id, "name": t.name, "contact_phone": t.contact_phone} for t in course.teachers]
         
+        parent_course_name = course.parent.name if course.parent else None
+        
         result.append(CourseSchema(
             id=course.id,
             code=course.code,
             name=course.name,
             priority=course.priority,
+            parent_course_id=course.parent_course_id,
+            parent_course_name=parent_course_name,
             teacher_ids=teacher_ids,
             teachers=teachers_list,
             created_at=course.created_at,
@@ -97,11 +101,14 @@ def get_course(course_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="科目不存在")
     
     teacher_ids = [t.id for t in course.teachers]
+    parent_course_name = course.parent.name if course.parent else None
     return CourseSchema(
         id=course.id,
         code=course.code,
         name=course.name,
         priority=course.priority,
+        parent_course_id=course.parent_course_id,
+        parent_course_name=parent_course_name,
         teacher_ids=teacher_ids,
         created_at=course.created_at,
         updated_at=course.updated_at
@@ -121,7 +128,8 @@ def create_course(
     db_course = Course(
         code=course.code,
         name=course.name,
-        priority=course.priority
+        priority=course.priority,
+        parent_course_id=course.parent_course_id
     )
     db.add(db_course)
     db.commit()
@@ -136,11 +144,14 @@ def create_course(
         log_operation(db, "科目管理", "修改", f"成功更新科目: {db_course.code} - {db_course.name}", current_user.username)
     
     teacher_ids = [t.id for t in db_course.teachers]
+    parent_course_name = db_course.parent.name if db_course.parent else None
     return CourseSchema(
         id=db_course.id,
         code=db_course.code,
         name=db_course.name,
         priority=db_course.priority,
+        parent_course_id=db_course.parent_course_id,
+        parent_course_name=parent_course_name,
         teacher_ids=teacher_ids,
         created_at=db_course.created_at,
         updated_at=db_course.updated_at
@@ -162,6 +173,8 @@ def update_course(
         db_course.name = course.name
     if course.priority is not None:
         db_course.priority = course.priority
+    if course.parent_course_id is not None:
+        db_course.parent_course_id = course.parent_course_id
     
     if course.teacher_ids is not None:
         db_course.teachers = []
@@ -173,12 +186,15 @@ def update_course(
     db.refresh(db_course)
     
     teacher_ids = [t.id for t in db_course.teachers]
+    parent_course_name = db_course.parent.name if db_course.parent else None
     log_operation(db, "科目管理", "修改", f"成功更新科目: {db_course.code} - {db_course.name}", current_user.username)
     return CourseSchema(
         id=db_course.id,
         code=db_course.code,
         name=db_course.name,
         priority=db_course.priority,
+        parent_course_id=db_course.parent_course_id,
+        parent_course_name=parent_course_name,
         teacher_ids=teacher_ids,
         created_at=db_course.created_at,
         updated_at=db_course.updated_at

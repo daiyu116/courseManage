@@ -161,7 +161,8 @@
               <el-select v-model="word.part_of_speech" :placeholder="t('dailyWords.selectPartOfSpeech')" clearable class="row-field-select">
                 <el-option v-for="pos in partOfSpeechOptions" :key="pos.value" :label="pos.label" :value="pos.value" />
               </el-select>
-              <el-input v-model="word.phonetic" :placeholder="t('dailyWords.phonetic')" class="row-field-short" />
+              <el-input v-model="word.uk_phonetic" :placeholder="t('dailyWords.ukPhonetic')" class="row-field-short" />
+              <el-input v-model="word.us_phonetic" :placeholder="t('dailyWords.usPhonetic')" class="row-field-short" />
               <el-input v-model="word.meaning" :placeholder="t('dailyWords.meaning')" class="row-field-main" />
               <el-select v-model="word.mastery_requirement" :placeholder="t('dailyWords.masteryRequirement')" clearable class="row-field-select">
                 <el-option v-for="mr in masteryRequirementOptions" :key="mr.value" :label="mr.label" :value="mr.value" />
@@ -234,7 +235,8 @@
               {{ getPartOfSpeechLabel(row.part_of_speech) }}
             </template>
           </el-table-column>
-          <el-table-column prop="phonetic" :label="t('dailyWords.phonetic')" />
+          <el-table-column prop="uk_phonetic" :label="t('dailyWords.ukPhonetic')" />
+          <el-table-column prop="us_phonetic" :label="t('dailyWords.usPhonetic')" />
           <el-table-column prop="meaning" :label="t('dailyWords.meaning')" />
           <el-table-column prop="mastery_requirement" :label="t('dailyWords.masteryRequirement')" width="100">
             <template #default="{ row }">
@@ -344,7 +346,7 @@ const formRef = ref(null)
 const form = ref({
   grade: '',
   date: '',
-  words: [{ word: '', phonetic: '', meaning: '', part_of_speech: '', mastery_requirement: '', remark: '', link: '' }],
+  words: [{ word: '', uk_phonetic: '', us_phonetic: '', meaning: '', part_of_speech: '', mastery_requirement: '', remark: '', link: '' }],
   phrases: [{ phrase: '', meaning: '', phrase_type: [], syntactic_role: [], mastery_requirement: '', remark: '', link: '' }],
 })
 
@@ -381,8 +383,8 @@ const getPartOfSpeechLabel = (value) => {
 }
 
 const masteryRequirementOptions = computed(() => [
-  { value: 'recite', label: t('dailyWords.recite') },
-  { value: 'recognize', label: t('dailyWords.recognize') },
+  { value: 'full_mastery', label: t('dailyWords.fullMastery') },
+  { value: 'use', label: t('dailyWords.use') },
 ])
 
 const getMasteryRequirementLabel = (value) => {
@@ -505,7 +507,7 @@ const handleSizeChange = (size) => {
 }
 
 const addWord = () => {
-  form.value.words.push({ word: '', phonetic: '', meaning: '', part_of_speech: '', mastery_requirement: '', remark: '', link: '' })
+  form.value.words.push({ word: '', uk_phonetic: '', us_phonetic: '', meaning: '', part_of_speech: '', mastery_requirement: '', remark: '', link: '' })
 }
 
 const removeWord = (index) => {
@@ -530,7 +532,7 @@ const showAddDialog = () => {
   form.value = {
     grade: '',
     date: '',
-    words: [{ word: '', phonetic: '', meaning: '', part_of_speech: '', mastery_requirement: '', remark: '', link: '' }],
+    words: [{ word: '', uk_phonetic: '', us_phonetic: '', meaning: '', part_of_speech: '', mastery_requirement: '', remark: '', link: '' }],
     phrases: [{ phrase: '', meaning: '', phrase_type: [], syntactic_role: [], mastery_requirement: '', remark: '', link: '' }],
   }
   addDialogVisible.value = true
@@ -543,8 +545,8 @@ const showEditDialog = (row) => {
     grade: row.grade,
     date: row.date,
     words: row.words && row.words.length > 0
-      ? row.words.map(w => ({ word: w.word || '', phonetic: w.phonetic || '', meaning: w.meaning || '', part_of_speech: w.part_of_speech || '', mastery_requirement: w.mastery_requirement || '', remark: w.remark || '', link: w.link || '' }))
-      : [{ word: '', phonetic: '', meaning: '', part_of_speech: '', mastery_requirement: '', remark: '', link: '' }],
+      ? row.words.map(w => ({ word: w.word || '', uk_phonetic: w.uk_phonetic || w.phonetic || '', us_phonetic: w.us_phonetic || '', meaning: w.meaning || '', part_of_speech: w.part_of_speech || '', mastery_requirement: w.mastery_requirement || '', remark: w.remark || '', link: w.link || '' }))
+      : [{ word: '', uk_phonetic: '', us_phonetic: '', meaning: '', part_of_speech: '', mastery_requirement: '', remark: '', link: '' }],
     phrases: row.phrases && row.phrases.length > 0
       ? row.phrases.map(p => ({ phrase: p.phrase || '', meaning: p.meaning || '', phrase_type: Array.isArray(p.phrase_type) ? p.phrase_type : (p.phrase_type ? [p.phrase_type] : []), syntactic_role: Array.isArray(p.syntactic_role) ? p.syntactic_role : (p.syntactic_role ? [p.syntactic_role] : []), mastery_requirement: p.mastery_requirement || '', remark: p.remark || '', link: p.link || '' }))
       : [{ phrase: '', meaning: '', phrase_type: [], syntactic_role: [], mastery_requirement: '', remark: '', link: '' }],
@@ -567,6 +569,30 @@ const handleSubmit = async () => {
     if (validWords.length === 0 && validPhrases.length === 0) {
       ElMessage.warning(t('dailyWords.validation.addAtLeastOneWordOrPhrase'))
       return
+    }
+
+    for (let i = 0; i < validWords.length; i++) {
+      const w = validWords[i]
+      if (!w.word.trim()) {
+        ElMessage.warning(t('dailyWords.validation.wordRequired', { n: i + 1 }))
+        return
+      }
+      if (!w.part_of_speech) {
+        ElMessage.warning(t('dailyWords.validation.partOfSpeechRequired', { n: i + 1 }))
+        return
+      }
+      if (!w.uk_phonetic.trim()) {
+        ElMessage.warning(t('dailyWords.validation.ukPhoneticRequired', { n: i + 1 }))
+        return
+      }
+      if (!w.meaning.trim()) {
+        ElMessage.warning(t('dailyWords.validation.meaningRequired', { n: i + 1 }))
+        return
+      }
+      if (!w.mastery_requirement) {
+        ElMessage.warning(t('dailyWords.validation.masteryRequired', { n: i + 1 }))
+        return
+      }
     }
 
     try {
@@ -640,7 +666,8 @@ const exportDocument = (row) => {
       t('dailyWords.index'),
       t('dailyWords.word'),
       t('dailyWords.partOfSpeech'),
-      t('dailyWords.phonetic'),
+      t('dailyWords.ukPhonetic'),
+      t('dailyWords.usPhonetic'),
       t('dailyWords.meaning'),
       t('dailyWords.masteryRequirement'),
       t('dailyWords.remark'),
@@ -650,7 +677,8 @@ const exportDocument = (row) => {
         idx + 1,
         w.word || '',
         getPartOfSpeechLabel(w.part_of_speech),
-        w.phonetic || '',
+        w.uk_phonetic || w.phonetic || '',
+        w.us_phonetic || '',
         w.meaning || '',
         getMasteryRequirementLabel(w.mastery_requirement),
         w.remark || '',
@@ -752,7 +780,8 @@ const printDocument = (row) => {
       <th>${t('dailyWords.index')}</th>
       <th>${t('dailyWords.word')}</th>
       <th>${t('dailyWords.partOfSpeech')}</th>
-      <th>${t('dailyWords.phonetic')}</th>
+      <th>${t('dailyWords.ukPhonetic')}</th>
+      <th>${t('dailyWords.usPhonetic')}</th>
       <th>${t('dailyWords.meaning')}</th>
       <th>${t('dailyWords.masteryRequirement')}</th>
       <th>${t('dailyWords.remark')}</th>
@@ -762,7 +791,8 @@ const printDocument = (row) => {
         <td>${idx + 1}</td>
         <td>${w.word || ''}</td>
         <td>${getPartOfSpeechLabel(w.part_of_speech)}</td>
-        <td>${w.phonetic || ''}</td>
+        <td>${w.uk_phonetic || w.phonetic || ''}</td>
+        <td>${w.us_phonetic || ''}</td>
         <td>${w.meaning || ''}</td>
         <td>${getMasteryRequirementLabel(w.mastery_requirement)}</td>
         <td>${w.remark || ''}</td>
@@ -885,11 +915,12 @@ const handleImport = async () => {
               words.push({
                 word: String(row[1] || '').trim(),
                 part_of_speech: String(row[2] || '').trim(),
-                phonetic: String(row[3] || '').trim(),
-                meaning: String(row[4] || '').trim(),
-                mastery_requirement: String(row[5] || '').trim(),
-                remark: String(row[6] || '').trim(),
-                link: String(row[7] || '').trim(),
+                uk_phonetic: String(row[3] || '').trim(),
+                us_phonetic: String(row[4] || '').trim(),
+                meaning: String(row[5] || '').trim(),
+                mastery_requirement: String(row[6] || '').trim(),
+                remark: String(row[7] || '').trim(),
+                link: String(row[8] || '').trim(),
               })
             }
 

@@ -9,6 +9,7 @@ class CourseBase(BaseModel):
     code: str = Field(..., description="科目代码")
     name: str = Field(..., description="科目名称")
     priority: int = Field(default=0, description="优先级")
+    parent_course_id: Optional[int] = Field(None, description="父科目ID")
 
 class CourseCreate(CourseBase):
     teacher_ids: List[int] = Field(default=[], description="授课导师ID列表")
@@ -18,12 +19,14 @@ class CourseCreate(CourseBase):
 class CourseUpdate(BaseModel):
     name: Optional[str] = None
     priority: Optional[int] = None
+    parent_course_id: Optional[int] = None
     teacher_ids: Optional[List[int]] = None
 
 class Course(CourseBase):
     id: int
     teacher_ids: List[int] = []
     teachers: List[dict] = []
+    parent_course_name: Optional[str] = None
     created_at: datetime
     updated_at: datetime
 
@@ -991,9 +994,10 @@ class PaginatedEvaluationTemplateResponse(BaseModel):
 class WordItem(BaseModel):
     word: str = Field(..., description="单词")
     meaning: str = Field("", description="释义")
-    phonetic: str = Field("", description="音标")
+    uk_phonetic: str = Field("", description="英式音标")
+    us_phonetic: str = Field("", description="美式音标")
     part_of_speech: str = Field("", description="词性")
-    mastery_requirement: str = Field("", description="掌握要求：recite-会背, recognize-会认")
+    mastery_requirement: str = Field("", description="掌握要求：full_mastery-会背(听说读写用), use-会用")
     remark: str = Field("", description="备注")
     link: str = Field("", description="链接")
 
@@ -1002,7 +1006,7 @@ class PhraseItem(BaseModel):
     meaning: str = Field("", description="释义")
     phrase_type: List[str] = Field(default=[], description="短语类型")
     syntactic_role: List[str] = Field(default=[], description="可充当语素")
-    mastery_requirement: str = Field("", description="掌握要求：recite-会背, recognize-会认")
+    mastery_requirement: str = Field("", description="掌握要求：full_mastery-会背(听说读写用), use-会用")
     remark: str = Field("", description="备注")
     link: str = Field("", description="链接")
 

@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import asc, desc
 from typing import List, Optional
+from datetime import date
 from database import get_db
 from models import Student, Class, Schedule, Course, Teacher
 from schemas import StudentCreate, StudentUpdate, Student as StudentSchema, PaginatedStudentResponse
@@ -329,3 +330,66 @@ def delete_student(
     db.commit()
     log_operation(db, "学员管理", "删除", f"成功删除学员: {db_student.code} - {db_student.name}", current_user.username, "WARNING")
     return {"message": "删除成功"}
+
+# 年级升级映射表
+GRADE_UPGRADE_MAP = {
+    "小学1年级": "小学2年级", "小学2年级": "小学3年级", "小学3年级": "小学4年级",
+    "小学4年级": "小学5年级", "小学5年级": "小学6年级", "小学6年级": "初中1年级",
+    "初中1年级": "初中2年级", "初中2年级": "初中3年级", "初中3年级": "高中1年级",
+    "高中1年级": "高中2年级", "高中2年级": "高中3年级", "高中3年级": "大学1年级",
+    "大学1年级": "大学2年级", "大学2年级": "大学3年级", "大学3年级": "大学4年级",
+    "大学4年级": "大学5年级", "大学5年级": "研究生1年级",
+    "研究生1年级": "研究生2年级", "研究生2年级": "研究生3年级", "研究生3年级": "博士1年级",
+    "博士1年级": "博士2年级", "博士2年级": "博士3年级",
+}
+
+@router.post("/upgrade-grades")
+def upgrade_grades(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_course_admin_user)
+):
+    """每年9月1日后手动触发年级升级，将所有活跃学员升级到下一级"""
+    today = date.today()
+    current_year = today.year
+
+    if today < date(current_year, 9, 1):
+        raise HTTPException(status_code=400, detail="年级升级仅在每年9月1日后可用")
+
+    active_students = db.query(Student).filter(
+        Student.is_active == True,
+        (Student.grade_updated_year != current_year) | (Student.grade_updated_year == None)
+    ).all()
+
+    upgraded = []
+    skipped = []
+
+    for student in active_students:
+        if student.grade in GRADE_UPGRADE_MAP:
+            new_grade = GRADE_UPGRADE_MAP[student.grade]
+            old_grade = student.grade
+            student.grade = new_grade
+            student.grade_updated_year = current_year
+            upgraded.append({
+                "id": student.id,
+                "name": student.name,
+                "old_grade": old_grade,
+                "new_grade": new_grade
+            })
+        else:
+            skipped.append({
+                "id": student.id,
+                "name": student.name,
+                "grade": student.grade,
+                "reason": "已为终态年级或不在升级映射表中"
+            })
+
+    if upgraded:
+        db.commit()
+        log_operation(db, "学员管理", "年级升级", f"成功升级 {len(upgraded)} 名学员的年级，跳过 {len(skipped)} 名", current_user.username)
+
+    return {
+        "upgraded_count": len(upgraded),
+        "skipped_count": len(skipped),
+        "upgraded": upgraded,
+        "skipped": skipped
+    }
