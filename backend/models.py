@@ -31,6 +31,7 @@ schedule_student = Table(
     Column('makeup_status', String(20), nullable=True, comment="补课状态：pending-待补课, completed-已补课, declined-不补课"),
     Column('makeup_schedule_id', Integer, nullable=True, comment="补课课程ID（关联到schedules表的id）"),
     Column('declined_reason', Text, nullable=True, comment="不补课原因"),
+    Column('is_extra', Boolean, default=False, comment="是否为临时增员学员"),
     Column('created_at', DateTime, default=datetime.now, comment="记录创建时间")
 )
 

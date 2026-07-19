@@ -1670,6 +1670,17 @@
     "notifyNowConfirm": "Are you sure you want to send a notification for the current status of this schedule?",
     "notifyNowSuccess": "Notification sent successfully",
     "notifyNowFail": "Failed to send notification",
+    "extraStudent": "Extra Student",
+    "extraStudentManage": "Extra Student Management",
+    "currentExtraStudents": "Current Extra Students",
+    "noExtraStudents": "No extra students",
+    "addExtraStudents": "Add Extra Students",
+    "selectStudents": "Select Students",
+    "selectStudentsPlaceholder": "Please select students to add",
+    "confirmAddExtra": "Confirm Add",
+    "extraStudentAdded": "Successfully added {count} extra students",
+    "extraStudentSkipped": "Some students skipped: {names}",
+    "extraStudentRemoved": "Extra student removed",
     "homeworkInstructions": "Homework Instructions",
     "classHomeworkDesc": "Class Homework: From completion feedback, editable",
     "regularHomeworkDesc": "Regular Homework: Filled by teacher",
@@ -2583,6 +2594,8 @@
     "notifyNowConfirm": "Are you sure you want to send a notification for the current status of this schedule?",
     "notifyNowSuccess": "Notification sent successfully",
     "notifyNowFail": "Failed to send notification",
+    "extraStudent": "Extra Student",
+    "extraStudentManage": "Extra Student Management",
     "feedback": "Feedback",
     "getClassStudentsFailed": "Failed to get class students",
     "getConflictFailed": "Failed to get conflict courses",
@@ -2744,6 +2757,8 @@
     "notifyNowConfirm": "Are you sure you want to send a notification for the current status of this schedule?",
     "notifyNowSuccess": "Notification sent successfully",
     "notifyNowFail": "Failed to send notification",
+    "extraStudent": "Extra Student",
+    "extraStudentManage": "Extra Student Management",
     "studentMakeup": "Student Makeup",
     "delete": "Delete",
     "close": "Close",
@@ -2876,7 +2891,8 @@
       "selectCourse": "Please select course",
       "selectTeacher": "Please select teacher",
       "selectClass": "Please select class"
-    }
+    },
+    "wordCheck": "Word Check"
   },
   "floatingSphere": {
     "title": "Quick Actions",
@@ -2893,13 +2909,7 @@
     "thisFeature": "This feature",
     "licenseRequiredFeature": "{feature} is a licensed feature, please activate it in License Management",
     "jumpingTo": "Jumping to {label}",
-    "opening": "Opening {label}",
-    "wordCheck": "Word Check",
-    "studentName": "Student Name",
-    "studentGrade": "Grade",
-    "completionStatus": "Completion Status",
-    "noDailyWordsForGrade": "No daily words for this grade",
-    "save": "Save"
+    "opening": "Opening {label}"
   },
   "smartCommand": {
     "title": "Smart Command",

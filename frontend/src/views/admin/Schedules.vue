@@ -383,6 +383,7 @@
                           </template>
                           <span style="cursor: pointer; color: #409eff; flex: 1;">{{ student.name }}</span>
                         </el-tooltip>
+                        <el-tag v-if="student.is_extra" type="warning" size="small" effect="dark">{{ t('schedules.extraStudent') }}</el-tag>
                         <el-tag 
                           :type="student.attendance_status === 'present' ? 'success' : student.attendance_status === 'leave' ? 'warning' : 'danger'"
                           size="small"
@@ -577,13 +578,14 @@
                     </template>
                 </el-table-column>
                 
-                <el-table-column :label="t('common.operation')" width="135" fixed="right">
+                <el-table-column :label="t('common.operation')" width="175" fixed="right">
                   <template #default="{ row }">
                     <div style="display: flex; gap: 3px; flex-wrap: wrap;">
                       <el-button v-if="canEditSchedule(row)" size="small" @click="showEditDialog(row)">{{ t('schedules.edit') }}</el-button>
                       <el-button v-if="currentUser && currentUser.role !== 'teaching_assistant'" size="small" type="primary" @click="showCopyDialog(row)">{{ t('schedules.copy') }}</el-button>
                       <el-button v-if="currentUser && currentUser.role !== 'teaching_assistant'" size="small" type="success" @click="showCompleteDialog(row)" :disabled="row.has_conflict || row.execution_status !== 'pending'">{{ t('schedules.completed') }}</el-button>
                       <el-button v-if="currentUser && currentUser.role !== 'teaching_assistant'" size="small" type="warning" @click="showPostponeDialog(row)" :disabled="row.has_conflict || row.execution_status !== 'pending'">{{ t('schedules.postponed') }}</el-button>
+                      <el-button v-if="currentUser && currentUser.role !== 'teaching_assistant'" size="small" type="info" @click="showExtraStudentDialog(row)" :disabled="row.execution_status !== 'pending'">{{ t('schedules.extraStudent') }}</el-button>
                       <el-button size="small" type="success" @click="showHomeworkDialog(row)" :disabled="row.execution_status !== 'completed'">{{ t('schedules.homeworkNotify') }}</el-button>
                       <el-button size="small" type="primary" @click="showWordCheckDialog(row)" :disabled="row.execution_status !== 'completed'">{{ t('schedules.wordCheck') }}</el-button>
                       <el-button v-if="currentUser && currentUser.role !== 'teaching_assistant'" size="small" type="primary" @click="showMakeupDialog(row)" :disabled="row.execution_status !== 'completed' || !hasStudentsNeedingMakeup(row)">{{ t('schedules.studentMakeup') }}</el-button>
@@ -1747,6 +1749,51 @@
         <el-button type="primary" @click="handleWordCheckSave(true)" :loading="wordCheckLoading">{{ t('schedules.saveAndNotifyNow') }}</el-button>
       </template>
     </el-dialog>
+
+    <!-- 临时增员对话框 -->
+    <el-dialog v-model="extraStudentDialogVisible" :title="t('schedules.extraStudentManage')" width="650px" draggable>
+      <div v-if="extraStudentSchedule" style="margin-bottom: 15px;">
+        <el-descriptions :column="2" border size="small">
+          <el-descriptions-item :label="t('schedules.course')">{{ getCourseName(extraStudentSchedule.course_id) }}</el-descriptions-item>
+          <el-descriptions-item :label="t('schedules.class')">{{ getClassName(extraStudentSchedule.class_id) }}</el-descriptions-item>
+          <el-descriptions-item :label="t('schedules.date')">{{ extraStudentSchedule.start_date }} {{ extraStudentSchedule.start_time }}-{{ extraStudentSchedule.end_time }}</el-descriptions-item>
+          <el-descriptions-item :label="t('schedules.teacher')">{{ getTeacherName(extraStudentSchedule.teacher_id) }}</el-descriptions-item>
+        </el-descriptions>
+      </div>
+
+      <el-divider content-position="left">{{ t('schedules.currentExtraStudents') }}</el-divider>
+      <div v-if="currentExtraStudents.length > 0" style="margin-bottom: 15px;">
+        <el-tag v-for="student in currentExtraStudents" :key="student.id" closable type="warning" size="large" style="margin: 3px;" @close="removeExtraStudent(student.id)">
+          {{ student.name }}
+        </el-tag>
+      </div>
+      <div v-else style="color: #909399; margin-bottom: 15px;">{{ t('schedules.noExtraStudents') }}</div>
+
+      <el-divider content-position="left">{{ t('schedules.addExtraStudents') }}</el-divider>
+      <el-form label-width="80px">
+        <el-form-item :label="t('schedules.selectStudents')">
+          <el-select
+            v-model="selectedExtraStudentIds"
+            multiple
+            filterable
+            :placeholder="t('schedules.selectStudentsPlaceholder')"
+            style="width: 100%;"
+          >
+            <el-option
+              v-for="student in availableExtraStudents"
+              :key="student.id"
+              :label="`${student.name} (${student.code || 'N/A'})`"
+              :value="student.id"
+            />
+          </el-select>
+        </el-form-item>
+      </el-form>
+
+      <template #footer>
+        <el-button @click="extraStudentDialogVisible = false">{{ t('common.cancel') }}</el-button>
+        <el-button type="primary" @click="handleAddExtraStudents" :loading="extraStudentLoading" :disabled="selectedExtraStudentIds.length === 0">{{ t('schedules.confirmAddExtra') }}</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -2028,6 +2075,14 @@ const wordCheckLoading = ref(false)
 const wordCheckData = ref(null)
 const wordCheckNoWords = ref(false)
 const currentWordCheckSchedule = ref(null)
+
+// 临时增员相关
+const extraStudentDialogVisible = ref(false)
+const extraStudentLoading = ref(false)
+const extraStudentSchedule = ref(null)
+const selectedExtraStudentIds = ref([])
+const currentExtraStudents = ref([])
+const availableExtraStudents = ref([])
 const wordCheckCommonWords = computed(() => {
   if (!wordCheckData.value || !wordCheckData.value.checks || wordCheckData.value.checks.length === 0) return []
   const firstCheck = wordCheckData.value.checks.find(c => c.words && c.words.length > 0)
@@ -3970,6 +4025,89 @@ const screenshotWordCheck = async () => {
   } catch (error) {
     window.logger.error('截图失败:', error)
     ElMessage.error(t('schedules.wordCheckScreenshotFailed'))
+  }
+}
+
+// 临时增员相关函数
+const showExtraStudentDialog = async (schedule) => {
+  extraStudentSchedule.value = schedule
+  selectedExtraStudentIds.value = []
+  extraStudentLoading.value = false
+  extraStudentDialogVisible.value = true
+
+  // 获取当前已添加的临时增员学员
+  const extraStudents = (schedule.scheduled_students || []).filter(s => s.is_extra)
+  currentExtraStudents.value = extraStudents
+
+  try {
+    // 获取所有学员作为可选列表
+    const response = await api.get('/students/')
+    const allStudents = response.data
+    // 获取班级学员ID集合
+    const classStudentIds = new Set()
+    if (schedule.class_id) {
+      const classResponse = await api.get(`/classes/${schedule.class_id}`)
+      if (classResponse.data && classResponse.data.students) {
+        classResponse.data.students.forEach(s => classStudentIds.add(s.id))
+      }
+    }
+    // 已排课学员ID集合
+    const scheduledStudentIds = new Set((schedule.scheduled_students || []).map(s => s.id))
+    // 可选的学员：不在班级中且不在已排课列表中的学员
+    availableExtraStudents.value = allStudents.filter(s => 
+      !classStudentIds.has(s.id) && !scheduledStudentIds.has(s.id)
+    )
+  } catch (error) {
+    window.logger.error('获取学员列表失败:', error)
+    ElMessage.error(t('common.operationFailedNetwork'))
+  }
+}
+
+const handleAddExtraStudents = async () => {
+  if (selectedExtraStudentIds.value.length === 0) return
+  extraStudentLoading.value = true
+  try {
+    const response = await api.post(`/schedules/${extraStudentSchedule.value.id}/extra-students`, selectedExtraStudentIds.value)
+    const result = response.data
+    if (result.added_students && result.added_students.length > 0) {
+      ElMessage.success(t('schedules.extraStudentAdded', { count: result.added_students.length }))
+    }
+    if (result.skipped_students && result.skipped_students.length > 0) {
+      const skippedNames = result.skipped_students.map(s => `${s.name || s.student_id}(${s.reason})`).join(', ')
+      ElMessage.warning(t('schedules.extraStudentSkipped', { names: skippedNames }))
+    }
+    selectedExtraStudentIds.value = []
+    // 刷新当前课程安排的学员列表
+    const scheduleResponse = await api.get(`/schedules/${extraStudentSchedule.value.id}`)
+    if (scheduleResponse.data) {
+      const extraStudents = (scheduleResponse.data.scheduled_students || []).filter(s => s.is_extra)
+      currentExtraStudents.value = extraStudents
+      // 更新可用学员列表
+      const scheduledStudentIds = new Set((scheduleResponse.data.scheduled_students || []).map(s => s.id))
+      availableExtraStudents.value = availableExtraStudents.value.filter(s => !scheduledStudentIds.has(s.id))
+    }
+    // 刷新页面数据
+    fetchSchedules()
+  } catch (error) {
+    window.logger.error('添加临时增员学员失败:', error)
+    ElMessage.error(t('common.operationFailedNetwork'))
+  } finally {
+    extraStudentLoading.value = false
+  }
+}
+
+const removeExtraStudent = async (studentId) => {
+  try {
+    await api.delete(`/schedules/${extraStudentSchedule.value.id}/extra-students/${studentId}`)
+    ElMessage.success(t('schedules.extraStudentRemoved'))
+    currentExtraStudents.value = currentExtraStudents.value.filter(s => s.id !== studentId)
+    // 将移除的学员加回可选列表
+    const student = currentExtraStudents.value.find(s => s.id === studentId)
+    // refresh from API
+    fetchSchedules()
+  } catch (error) {
+    window.logger.error('移除临时增员学员失败:', error)
+    ElMessage.error(t('common.operationFailedNetwork'))
   }
 }
 

@@ -1678,6 +1678,17 @@
     "notifyNowConfirm": "确定要立即发送该课程当前状态的通知吗？",
     "notifyNowSuccess": "通知发送成功",
     "notifyNowFail": "通知发送失败",
+    "extraStudent": "临时增员",
+    "extraStudentManage": "临时增员管理",
+    "currentExtraStudents": "当前临时增员学员",
+    "noExtraStudents": "暂无临时增员学员",
+    "addExtraStudents": "添加临时增员学员",
+    "selectStudents": "选择学员",
+    "selectStudentsPlaceholder": "请选择要临时增员的学员",
+    "confirmAddExtra": "确认添加",
+    "extraStudentAdded": "成功添加 {count} 名临时学员",
+    "extraStudentSkipped": "部分学员未添加: {names}",
+    "extraStudentRemoved": "临时增员学员已移除",
     "homeworkInstructions": "作业说明",
     "classHomeworkDesc": "随堂作业：从完训课程反馈中获取，可修改",
     "regularHomeworkDesc": "常规作业：由导师填写",
@@ -2591,6 +2602,8 @@
     "notifyNowConfirm": "确定要立即发送该课程当前状态的通知吗？",
     "notifyNowSuccess": "通知发送成功",
     "notifyNowFail": "通知发送失败",
+    "extraStudent": "临时增员",
+    "extraStudentManage": "临时增员管理",
     "feedback": "反馈",
     "getClassStudentsFailed": "获取班级学员失败",
     "getConflictFailed": "获取冲突课程失败",
@@ -2752,6 +2765,8 @@
     "notifyNowConfirm": "确定要立即发送该课程当前状态的通知吗？",
     "notifyNowSuccess": "通知发送成功",
     "notifyNowFail": "通知发送失败",
+    "extraStudent": "临时增员",
+    "extraStudentManage": "临时增员管理",
     "studentMakeup": "学员补课",
     "delete": "删除",
     "close": "关闭",
@@ -2884,7 +2899,8 @@
       "selectCourse": "请选择科目",
       "selectTeacher": "请选择导师",
       "selectClass": "请选择班级"
-    }
+    },
+    "wordCheck": "单词检查"
   },
   "floatingSphere": {
     "title": "快捷操作",
@@ -2901,13 +2917,7 @@
     "thisFeature": "该功能",
     "licenseRequiredFeature": "{feature}为授权功能，请在系统授权管理中激活",
     "jumpingTo": "正在跳转到{label}",
-    "opening": "正在打开{label}",
-    "wordCheck": "单词检查",
-    "studentName": "学员姓名",
-    "studentGrade": "年级",
-    "completionStatus": "完成状态",
-    "noDailyWordsForGrade": "该年级暂无每日单词",
-    "save": "保存"
+    "opening": "正在打开{label}"
   },
   "smartCommand": {
     "title": "智能指令",

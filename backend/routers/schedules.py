@@ -556,7 +556,8 @@ def get_schedules(
             schedule_student.c.attendance_status,
             schedule_student.c.makeup_status,
             schedule_student.c.makeup_schedule_id,
-            schedule_student.c.declined_reason
+            schedule_student.c.declined_reason,
+            schedule_student.c.is_extra
         ).where(
             schedule_student.c.schedule_id == schedule.id
         )
@@ -571,7 +572,8 @@ def get_schedules(
                     "attendance_status": row[1] if row[1] else 'pending',
                     "makeup_status": row[2],
                     "makeup_schedule_id": row[3],
-                    "declined_reason": row[4]
+                    "declined_reason": row[4],
+                    "is_extra": row[5] if row[5] else False
                 })
         
         # 2. 安全地构建字典，严格匹配 Schedule Schema 的字段类型
@@ -1066,7 +1068,8 @@ def create_schedule(
         schedule_student.c.attendance_status,
         schedule_student.c.makeup_status,
         schedule_student.c.makeup_schedule_id,
-        schedule_student.c.declined_reason
+        schedule_student.c.declined_reason,
+        schedule_student.c.is_extra
     ).where(
         schedule_student.c.schedule_id == db_schedule.id
     )
@@ -1081,7 +1084,8 @@ def create_schedule(
                 "attendance_status": row[1] if row[1] else 'pending',
                 "makeup_status": row[2],
                 "makeup_schedule_id": row[3],
-                "declined_reason": row[4]
+                "declined_reason": row[4],
+                "is_extra": row[5] if row[5] else False
             })
     
     # 构建符合 Schema 的字典
@@ -1302,7 +1306,8 @@ def get_schedule(schedule_id: int, db: Session = Depends(get_db), current_user: 
         schedule_student.c.attendance_status,
         schedule_student.c.makeup_status,
         schedule_student.c.makeup_schedule_id,
-        schedule_student.c.declined_reason
+        schedule_student.c.declined_reason,
+        schedule_student.c.is_extra
     ).where(
         schedule_student.c.schedule_id == schedule_id
     )
@@ -1317,7 +1322,8 @@ def get_schedule(schedule_id: int, db: Session = Depends(get_db), current_user: 
                 "attendance_status": row[1] if row[1] else 'pending',
                 "makeup_status": row[2],
                 "makeup_schedule_id": row[3],
-                "declined_reason": row[4]
+                "declined_reason": row[4],
+                "is_extra": row[5] if row[5] else False
             })
     
     # 构建符合 Schema 的字典
@@ -1434,10 +1440,11 @@ def update_schedule(
         
         # 只有当班级ID真正改变时才更新学员关联
         if old_class_id != schedule.class_id:
-            # 删除旧的学员关联记录
+            # 只删除非临时增员的学员关联记录（保留临时增员学员）
             from sqlalchemy import delete as sql_delete
             delete_stmt = sql_delete(schedule_student).where(
-                schedule_student.c.schedule_id == schedule_id
+                (schedule_student.c.schedule_id == schedule_id) &
+                (schedule_student.c.is_extra == False)
             )
             db.execute(delete_stmt)
             
@@ -1453,7 +1460,7 @@ def update_schedule(
                     )
                     db.execute(association)
                 
-                log_operation(db, "课程安排", "更新", f"课程安排ID{schedule_id}的班级从{old_class_id}变更为{schedule.class_id}，已同步更新学员关联记录", current_user.username, "INFO")
+                log_operation(db, "课程安排", "更新", f"课程安排ID{schedule_id}的班级从{old_class_id}变更为{schedule.class_id}，已同步更新学员关联记录（保留临时增员学员）", current_user.username, "INFO")
     if schedule.room_id is not None:
         db_schedule.room_id = schedule.room_id
     if schedule.room_id is not None:
@@ -1588,7 +1595,8 @@ def update_schedule(
         schedule_student.c.attendance_status,
         schedule_student.c.makeup_status,
         schedule_student.c.makeup_schedule_id,
-        schedule_student.c.declined_reason
+        schedule_student.c.declined_reason,
+        schedule_student.c.is_extra
     ).where(
         schedule_student.c.schedule_id == schedule_id
     )
@@ -1603,7 +1611,8 @@ def update_schedule(
                 "attendance_status": row[1] if row[1] else 'pending',
                 "makeup_status": row[2],
                 "makeup_schedule_id": row[3],
-                "declined_reason": row[4]
+                "declined_reason": row[4],
+                "is_extra": row[5] if row[5] else False
             })
     
     # 构建符合 Schema 的字典返回
@@ -2036,6 +2045,43 @@ def complete_schedule(
                     absence_reason='已有请假记录' if student_leave else None
                 )
                 db.execute(association)
+        
+        # 处理临时增员学员：设置默认出勤状态为出席
+        from sqlalchemy import exists as sql_exists
+        from sqlalchemy import update as sql_update
+        extra_students_stmt = select(
+            schedule_student.c.student_id
+        ).where(
+            (schedule_student.c.schedule_id == schedule_id) &
+            (schedule_student.c.is_extra == True)
+        )
+        extra_students_result = db.execute(extra_students_stmt)
+        extra_student_ids = [row[0] for row in extra_students_result]
+        
+        active_student_ids = {s.id for s in active_students}
+        for extra_student_id in extra_student_ids:
+            if extra_student_id not in active_student_ids:
+                extra_student = db.query(Student).filter(Student.id == extra_student_id).first()
+                if extra_student:
+                    # 检查请假记录
+                    start_datetime = dt_datetime.combine(db_schedule.start_date, dt_datetime.min.time())
+                    end_datetime = dt_datetime.combine(db_schedule.end_date, dt_datetime.max.time())
+                    student_leave = db.query(Leave).filter(
+                        Leave.leave_type == "student",
+                        Leave.student_id == extra_student_id,
+                        Leave.start_date <= end_datetime,
+                        Leave.end_date >= start_datetime
+                    ).first()
+                    default_status = 'leave' if student_leave else 'present'
+                    
+                    stmt = sql_update(schedule_student).where(
+                        (schedule_student.c.schedule_id == schedule_id) & 
+                        (schedule_student.c.student_id == extra_student_id)
+                    ).values(
+                        attendance_status=default_status,
+                        absence_reason='已有请假记录' if student_leave else None
+                    )
+                    db.execute(stmt)
     
     db.commit()
     
@@ -3431,3 +3477,110 @@ def notify_schedule_status(
     except Exception as e:
         log_operation(db, "课程安排", "立即通知", f"课程ID{schedule_id}通知发送失败: {str(e)}", current_user.username, "ERROR")
         raise HTTPException(status_code=500, detail=f"通知发送失败: {str(e)}")
+
+
+@router.post("/{schedule_id}/extra-students")
+def add_extra_students(
+    schedule_id: int,
+    student_ids: List[int],
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_course_admin_user)
+):
+    """
+    为课程安排临时增加学员（临时增员）
+    这些学员不属于该课程安排的班级，仅临时参与本次课程
+    完训后课程消耗记录正常，班级成员关系不变
+    """
+    db_schedule = db.query(Schedule).filter(Schedule.id == schedule_id).first()
+    if not db_schedule:
+        raise HTTPException(status_code=404, detail="课程安排不存在")
+    
+    if db_schedule.execution_status != "pending":
+        raise HTTPException(status_code=400, detail="只能为待执行的课程安排添加临时增员")
+    
+    class_ = db.query(Class).filter(Class.id == db_schedule.class_id).first()
+    if not class_:
+        raise HTTPException(status_code=404, detail="班级不存在")
+    
+    class_student_ids = {s.id for s in get_students_by_class(db, class_.id)}
+    
+    added_students = []
+    skipped_students = []
+    
+    for student_id in student_ids:
+        student = db.query(Student).filter(Student.id == student_id).first()
+        if not student:
+            skipped_students.append({"student_id": student_id, "reason": "学员不存在"})
+            continue
+        
+        if student_id in class_student_ids:
+            skipped_students.append({"student_id": student_id, "name": student.name, "reason": "该学员已属于此班级"})
+            continue
+        
+        # 检查是否已存在
+        from sqlalchemy import exists
+        existing = db.execute(
+            select(exists().where(
+                (schedule_student.c.schedule_id == schedule_id) &
+                (schedule_student.c.student_id == student_id)
+            ))
+        ).scalar()
+        
+        if existing:
+            skipped_students.append({"student_id": student_id, "name": student.name, "reason": "该学员已在课程安排中"})
+            continue
+        
+        association = schedule_student.insert().values(
+            schedule_id=schedule_id,
+            student_id=student_id,
+            attendance_status='pending',
+            is_extra=True
+        )
+        db.execute(association)
+        added_students.append({"student_id": student_id, "name": student.name})
+    
+    db.commit()
+    
+    log_operation(db, "课程安排", "临时增员", f"课程ID{schedule_id}临时增加{len(added_students)}名学员: {', '.join([s['name'] for s in added_students])}", current_user.username, "INFO")
+    
+    return {
+        "message": f"成功添加{len(added_students)}名临时学员",
+        "added_students": added_students,
+        "skipped_students": skipped_students
+    }
+
+
+@router.delete("/{schedule_id}/extra-students/{student_id}")
+def remove_extra_student(
+    schedule_id: int,
+    student_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_course_admin_user)
+):
+    """
+    移除课程安排中的临时增员学员
+    """
+    db_schedule = db.query(Schedule).filter(Schedule.id == schedule_id).first()
+    if not db_schedule:
+        raise HTTPException(status_code=404, detail="课程安排不存在")
+    
+    if db_schedule.execution_status != "pending":
+        raise HTTPException(status_code=400, detail="只能为待执行的课程安排移除临时增员")
+    
+    from sqlalchemy import delete as sql_delete
+    stmt = sql_delete(schedule_student).where(
+        (schedule_student.c.schedule_id == schedule_id) &
+        (schedule_student.c.student_id == student_id) &
+        (schedule_student.c.is_extra == True)
+    )
+    result = db.execute(stmt)
+    
+    if result.rowcount == 0:
+        raise HTTPException(status_code=404, detail="未找到该临时增员学员记录")
+    
+    db.commit()
+    
+    student = db.query(Student).filter(Student.id == student_id).first()
+    log_operation(db, "课程安排", "移除临时增员", f"课程ID{schedule_id}移除临时学员: {student.name if student else student_id}", current_user.username, "INFO")
+    
+    return {"message": "临时增员学员已移除"}
