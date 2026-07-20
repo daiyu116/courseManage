@@ -95,8 +95,13 @@ def get_license_status(db: Session = Depends(get_db)):
                     features_from_db = {f: True for f in data}
             except (json.JSONDecodeError, TypeError):
                 pass
+        license_features = {f: True for f in result.get("features", [])}
         if not features_from_db:
-            features_from_db = {f: True for f in result.get("features", [])}
+            features_from_db = license_features
+        else:
+            for f in result.get("features", []):
+                if f not in features_from_db:
+                    features_from_db[f] = True
         deactivated_licenses = _load_deactivated_licenses(settings, db=db)
         return LicenseStatusResponse(
             activated=True,

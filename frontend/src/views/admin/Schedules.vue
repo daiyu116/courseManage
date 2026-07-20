@@ -4035,9 +4035,17 @@ const showExtraStudentDialog = async (schedule) => {
   extraStudentLoading.value = false
   extraStudentDialogVisible.value = true
 
-  // 获取当前已添加的临时增员学员
-  const extraStudents = (schedule.scheduled_students || []).filter(s => s.is_extra)
-  currentExtraStudents.value = extraStudents
+  try {
+    const scheduleResponse = await api.get(`/schedules/${schedule.id}`)
+    const freshSchedule = scheduleResponse.data
+    extraStudentSchedule.value = freshSchedule
+    const extraStudents = (freshSchedule.scheduled_students || []).filter(s => s.is_extra)
+    currentExtraStudents.value = extraStudents
+  } catch (error) {
+    window.logger.error('获取课程安排详情失败:', error)
+    const extraStudents = (schedule.scheduled_students || []).filter(s => s.is_extra)
+    currentExtraStudents.value = extraStudents
+  }
 
   try {
     // 获取所有学员作为可选列表

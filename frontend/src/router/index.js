@@ -159,7 +159,10 @@ router.beforeEach((to, from, next) => {
   } else if (to.meta.requiresAuth && token && isTokenExpired(token)) {
     clearAuthAndRedirect('/admin/login')
   } else if (to.meta.requiresLicense) {
-    import('@/utils/license.js').then(({ licenseState, FEATURE_NAMES }) => {
+    import('@/utils/license.js').then(async ({ licenseState, FEATURE_NAMES, loadLicenseStatus }) => {
+      if (!licenseState.loaded) {
+        await loadLicenseStatus()
+      }
       if (!licenseState.activated || !licenseState.features[to.meta.licenseFeature]) {
         const featureName = FEATURE_NAMES[to.meta.licenseFeature] || t('common.licenseRequiredShort')
         import('element-plus').then(({ ElMessage }) => {

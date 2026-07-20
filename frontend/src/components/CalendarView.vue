@@ -2711,8 +2711,17 @@ const showExtraStudentDialog = async () => {
   extraStudentLoading.value = false
   extraStudentDialogVisible.value = true
 
-  const extraStudents = (currentSchedule.value.scheduled_students || []).filter(s => s.is_extra)
-  currentExtraStudents.value = extraStudents
+  try {
+    const scheduleResponse = await api.get(`/schedules/${currentSchedule.value.id}`)
+    const freshSchedule = scheduleResponse.data
+    currentSchedule.value = freshSchedule
+    const extraStudents = (freshSchedule.scheduled_students || []).filter(s => s.is_extra)
+    currentExtraStudents.value = extraStudents
+  } catch (error) {
+    window.logger.error('获取课程安排详情失败:', error)
+    const extraStudents = (currentSchedule.value.scheduled_students || []).filter(s => s.is_extra)
+    currentExtraStudents.value = extraStudents
+  }
 
   try {
     const response = await api.get('/students')
