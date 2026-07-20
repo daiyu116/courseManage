@@ -4042,9 +4042,11 @@ const showExtraStudentDialog = async (schedule) => {
     const extraStudents = (freshSchedule.scheduled_students || []).filter(s => s.is_extra)
     currentExtraStudents.value = extraStudents
   } catch (error) {
-    window.logger.error('获取课程安排详情失败:', error)
-    const extraStudents = (schedule.scheduled_students || []).filter(s => s.is_extra)
-    currentExtraStudents.value = extraStudents
+    // 不重置currentExtraStudents，保留之前handleAddExtraStudents中设置的值
+    if (currentExtraStudents.value.length === 0) {
+      const extraStudents = (schedule.scheduled_students || []).filter(s => s.is_extra)
+      currentExtraStudents.value = extraStudents
+    }
   }
 
   try {
@@ -4085,19 +4087,26 @@ const handleAddExtraStudents = async () => {
       ElMessage.warning(t('schedules.extraStudentSkipped', { names: skippedNames }))
     }
     selectedExtraStudentIds.value = []
-    // 刷新当前课程安排的学员列表
-    const scheduleResponse = await api.get(`/schedules/${extraStudentSchedule.value.id}`)
-    if (scheduleResponse.data) {
-      const extraStudents = (scheduleResponse.data.scheduled_students || []).filter(s => s.is_extra)
-      currentExtraStudents.value = extraStudents
-      // 更新可用学员列表
-      const scheduledStudentIds = new Set((scheduleResponse.data.scheduled_students || []).map(s => s.id))
-      availableExtraStudents.value = availableExtraStudents.value.filter(s => !scheduledStudentIds.has(s.id))
+    const addedStudents = (result.added_students || []).map(s => ({
+      ...s,
+      id: s.student_id,
+      is_extra: true,
+      attendance_status: 'pending'
+    }))
+    currentExtraStudents.value = [...currentExtraStudents.value, ...addedStudents]
+    try {
+      const scheduleResponse = await api.get(`/schedules/${extraStudentSchedule.value.id}`)
+      if (scheduleResponse.data) {
+        const extraStudents = (scheduleResponse.data.scheduled_students || []).filter(s => s.is_extra)
+        currentExtraStudents.value = extraStudents
+        const scheduledStudentIds = new Set((scheduleResponse.data.scheduled_students || []).map(s => s.id))
+        availableExtraStudents.value = availableExtraStudents.value.filter(s => !scheduledStudentIds.has(s.id))
+      }
+    } catch (refreshError) {
+      // API刷新失败时保留本地数据，不清空
     }
-    // 刷新页面数据
     fetchSchedules()
   } catch (error) {
-    window.logger.error('添加临时增员学员失败:', error)
     ElMessage.error(t('common.operationFailedNetwork'))
   } finally {
     extraStudentLoading.value = false

@@ -164,12 +164,19 @@ router.beforeEach((to, from, next) => {
         await loadLicenseStatus()
       }
       if (!licenseState.activated || !licenseState.features[to.meta.licenseFeature]) {
-        const featureName = FEATURE_NAMES[to.meta.licenseFeature] || t('common.licenseRequiredShort')
-        import('element-plus').then(({ ElMessage }) => {
-          ElMessage.warning(t('router.licenseFeatureRequired', { feature: featureName }))
-        })
-        next('/admin/dashboard')
-      } else if (to.meta.requiresAdmin && (!user || !['super_admin', 'system_admin'].includes(user.role))) {
+        if (licenseState.activated && (!licenseState.features || Object.keys(licenseState.features).length === 0)) {
+          await loadLicenseStatus()
+        }
+        if (!licenseState.activated || !licenseState.features[to.meta.licenseFeature]) {
+          const featureName = FEATURE_NAMES[to.meta.licenseFeature] || t('common.licenseRequiredShort')
+          import('element-plus').then(({ ElMessage }) => {
+            ElMessage.warning(t('router.licenseFeatureRequired', { feature: featureName }))
+          })
+          next('/admin/dashboard')
+          return
+        }
+      }
+      if (to.meta.requiresAdmin && (!user || !['super_admin', 'system_admin'].includes(user.role))) {
         next('/admin/dashboard')
       } else if (to.path === '/admin/feemanagement' && user && user.teacher_id && !['super_admin', 'system_admin'].includes(user.role)) {
         const feeManagersStr = localStorage.getItem('fee_managers')

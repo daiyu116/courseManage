@@ -164,7 +164,6 @@ export async function loadLicenseStatus() {
     }
     Object.assign(licenseState, mapped)
   } catch (error) {
-    console.error('加载 License 状态失败:', error)
     licenseState.loaded = true
   }
 }
