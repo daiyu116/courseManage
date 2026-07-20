@@ -406,6 +406,7 @@
     </el-dialog>
     <!-- 站点参数对话框 -->
     <el-dialog v-model="siteSettingsDialogVisible" :title="t('dashboard.siteGlobalSettings')" width="800px" draggable>
+        <div style="max-height: 70vh; overflow-y: auto; padding-right: 10px;">
         <el-tabs type="border-card">
           <el-tab-pane :label="t('dashboard.projectIntro')">
             <div style="padding: 10px 0;">
@@ -484,6 +485,8 @@
                         <li>{{ t('dashboard.featureManualScheduleCreate') }}</li>
                         <li>{{ t('dashboard.featureScheduleQuery') }}</li>
                         <li>{{ t('dashboard.featureLeaveAdjustment') }}</li>
+                        <li>{{ t('dashboard.featureDailyWord') }}</li>
+                        <li>{{ t('dashboard.featureGradeUpgrade') }}</li>
                       </ul>
                     </div>
                   </el-col>
@@ -1433,6 +1436,7 @@
           </el-tab-pane>
           
         </el-tabs>
+        </div>
         <template #footer>
           <el-button @click="siteSettingsDialogVisible = false">{{ t('common.cancel') }}</el-button>
           <el-button type="primary" @click="handleSiteSettingsSave">{{ t('dashboard.saveAllConfig') }}</el-button>

@@ -345,6 +345,8 @@
     "featureManualScheduleCreate": "手动排课：灵活创建课程安排",
     "featureScheduleQuery": "排课查询：按条件筛选查看排课记录",
     "featureLeaveAdjustment": "请假/调课：便捷处理临时变动",
+    "featureDailyWord": "每日单词发布及检查：每日单词推送与学习检查",
+    "featureGradeUpgrade": "年级升级提示：自动检测并提示年级升级",
     "featureSmartScheduling": "🧠 智能算法排课",
     "featureGeneticAlgorithm": "遗传算法：适合大规模排课场景，全局搜索较优解",
     "featureBacktrackAlgorithm": "回溯算法：精确搜索最优解，适合中小规模",

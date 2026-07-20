@@ -117,7 +117,30 @@
       <el-form :model="addForm" :rules="addFormRules" ref="addFormRef" label-width="100px">
         <el-form-item :label="t('calendar.course')" prop="course_id">
           <el-select v-model="addForm.course_id" filterable :placeholder="t('calendar.selectCourse')" style="width: 100%">
-            <el-option v-for="course in courses" :key="course.id" :label="course.name" :value="course.id" />
+            <el-option v-for="course in courses" :key="course.id" :label="course.name" :value="course.id">
+              <el-tooltip placement="right" :show-after="200" v-if="getCourseTeachers(course.id).length > 0">
+                <template #content>
+                  <div style="min-width: 200px;">
+                    <div><strong>{{ t('calendar.course') }}：</strong>{{ course.name }}</div>
+                    <div v-if="course.code"><strong>{{ t('calendar.code') }}：</strong>{{ course.code }}</div>
+                    <div>
+                      <div style="font-weight: bold; margin-top: 8px; margin-bottom: 4px;">{{ t('calendar.courseTeachers') }}</div>
+                      <div v-for="teacher in getCourseTeachers(course.id)" :key="teacher.id" style="margin-left: 10px; margin-bottom: 4px;">
+                        {{ teacher.name }}
+                        <div v-if="teacher.contact_phone" style="font-size: 12px; color: #909399;">
+                          📱 {{ teacher.contact_phone }}
+                        </div>
+                        <div v-if="teacher.email" style="font-size: 12px; color: #909399;">
+                          📧 {{ teacher.email }}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </template>
+                <span>{{ course.name }}</span>
+              </el-tooltip>
+              <span v-else>{{ course.name }}</span>
+            </el-option>
           </el-select>
         </el-form-item>
         <el-form-item :label="t('calendar.courseType')" prop="schedule_type">
@@ -128,12 +151,54 @@
         </el-form-item>
         <el-form-item :label="t('calendar.teacher')" prop="teacher_id">
           <el-select v-model="addForm.teacher_id" filterable :placeholder="t('calendar.selectTeacher')" style="width: 100%">
-            <el-option v-for="teacher in teachers" :key="teacher.id" :label="teacher.name" :value="teacher.id" />
+            <el-option v-for="teacher in teachers" :key="teacher.id" :label="teacher.name" :value="teacher.id">
+              <el-tooltip placement="right" :show-after="200" v-if="teacher.contact_phone || teacher.email">
+                <template #content>
+                  <div style="min-width: 200px;">
+                    <div><strong>{{ t('calendar.teacher') }}：</strong>{{ teacher.name }}</div>
+                    <div v-if="teacher.code"><strong>{{ t('calendar.code') }}：</strong>{{ teacher.code }}</div>
+                    <div v-if="teacher.department"><strong>{{ t('calendar.department') }}：</strong>{{ teacher.department }}</div>
+                    <div v-if="teacher.contact_phone">
+                      <div style="margin-top: 8px;"><strong>{{ t('calendar.contactPhone') }}：</strong></div>
+                      <div>{{ teacher.contact_phone }}</div>
+                    </div>
+                    <div v-if="teacher.email">
+                      <div style="margin-top: 8px;"><strong>{{ t('calendar.email') }}：</strong></div>
+                      <div>{{ teacher.email }}</div>
+                    </div>
+                  </div>
+                </template>
+                <span>{{ teacher.name }}</span>
+              </el-tooltip>
+              <span v-else>{{ teacher.name }}</span>
+            </el-option>
           </el-select>
         </el-form-item>
         <el-form-item :label="t('calendar.class')" prop="class_id">
           <el-select v-model="addForm.class_id" filterable :placeholder="t('calendar.selectClass')" style="width: 100%">
-            <el-option v-for="cls in classes" :key="cls.id" :label="cls.name" :value="cls.id" />
+            <el-option v-for="cls in classes" :key="cls.id" :label="cls.name" :value="cls.id">
+              <el-tooltip placement="right" :show-after="200" v-if="getActiveClassStudents(cls.id).length > 0 || getInactiveClassStudents(cls.id).length > 0">
+                <template #content>
+                  <div v-if="getActiveClassStudents(cls.id).length > 0">
+                    <div style="font-weight: bold; margin-bottom: 8px; color: #67c23a;">{{ t('calendar.activeStudents') }}：</div>
+                    <div v-for="student in getActiveClassStudents(cls.id)" :key="student.id" style="margin-bottom: 4px;">
+                      {{ student.name }}
+                    </div>
+                  </div>
+                  <div v-if="getInactiveClassStudents(cls.id).length > 0">
+                    <div style="font-weight: bold; margin-bottom: 8px; margin-top: 12px; color: #909399;">{{ t('calendar.inactiveStudents') }}：</div>
+                    <div v-for="student in getInactiveClassStudents(cls.id)" :key="student.id" style="margin-bottom: 4px;">
+                      {{ student.name }}
+                    </div>
+                  </div>
+                  <div v-if="getActiveClassStudents(cls.id).length === 0 && getInactiveClassStudents(cls.id).length === 0">
+                    {{ t('calendar.noStudent') }}
+                  </div>
+                </template>
+                <span>{{ cls.name }}</span>
+              </el-tooltip>
+              <span v-else>{{ cls.name }}</span>
+            </el-option>
           </el-select>
         </el-form-item>
         <el-form-item :label="t('calendar.roomType')" prop="room_type">
@@ -144,7 +209,29 @@
         </el-form-item>
         <el-form-item v-if="addForm.room_type === 'offline_physical'" :label="t('calendar.room')" prop="room_id">
           <el-select v-model="addForm.room_id" filterable :placeholder="t('calendar.selectRoom')" style="width: 100%">
-            <el-option v-for="room in rooms" :key="room.id" :label="room.name" :value="room.id" />
+            <el-option v-for="room in rooms" :key="room.id" :label="room.name" :value="room.id">
+              <el-tooltip placement="right" :show-after="200" v-if="room.location || room.capacity || room.facilities">
+                <template #content>
+                  <div v-if="room.location">
+                    <div style="font-weight: bold;">{{ t('calendar.location') }}:</div>
+                    <div>{{ room.location }}</div>
+                  </div>
+                  <div v-if="room.capacity">
+                    <div style="font-weight: bold; margin-top: 8px;">{{ t('calendar.capacity') }}:</div>
+                    <div>{{ room.capacity }}{{ t('calendar.peopleUnit') }}</div>
+                  </div>
+                  <div v-if="room.facilities">
+                    <div style="font-weight: bold; margin-top: 8px;">{{ t('calendar.facilities') }}:</div>
+                    <div>{{ room.facilities }}</div>
+                  </div>
+                  <div v-if="!room.location && !room.capacity && !room.facilities">
+                    {{ t('calendar.noDetailInfo') }}
+                  </div>
+                </template>
+                <span>{{ room.name }}</span>
+              </el-tooltip>
+              <span v-else>{{ room.name }}</span>
+            </el-option>
           </el-select>
         </el-form-item>
         <el-form-item v-else :label="t('calendar.meetingLink')" prop="meeting_link">

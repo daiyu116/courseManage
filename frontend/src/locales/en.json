@@ -345,6 +345,8 @@
     "featureManualScheduleCreate": "Manual Scheduling: Flexible creation of course schedules",
     "featureScheduleQuery": "Schedule Query: Filter and view scheduling records by conditions",
     "featureLeaveAdjustment": "Leave/Rescheduling: Convenient handling of temporary changes",
+    "featureDailyWord": "Daily Word Release & Check: Daily word push and learning check",
+    "featureGradeUpgrade": "Grade Upgrade Reminder: Auto-detect and prompt grade upgrade",
     "featureSmartScheduling": "🧠 Smart Algorithm Scheduling",
     "featureGeneticAlgorithm": "Genetic Algorithm: Suitable for large-scale scheduling scenarios, global search for better solutions",
     "featureBacktrackAlgorithm": "Backtracking Algorithm: Exact search for optimal solution, suitable for small and medium scale",
