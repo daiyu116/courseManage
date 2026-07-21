@@ -201,10 +201,26 @@ class LicenseService:
                     ),
                     hashes.SHA256(),
                 )
-            except Exception:
+            except Exception as sig_err:
+                logger.error(
+                    f"[License] RSA签名验证失败: {sig_err}"
+                    f" | 当前服务器机器码: {machine_code}"
+                    f" | License中机器码: {payload.get('machine_code', 'N/A')}"
+                    f" | License类型: {payload.get('license_type', 'N/A')}"
+                    f" | 签发时间: {payload.get('issued_at', 'N/A')}"
+                    f" | 过期时间: {payload.get('expiry_date', 'N/A')}"
+                    f" | 功能列表: {payload.get('features', [])}"
+                )
                 return None
             
-            if payload.get("machine_code") != machine_code:
+            license_machine_code = payload.get("machine_code", "")
+            if license_machine_code != machine_code:
+                logger.error(
+                    f"[License] 机器码不匹配!"
+                    f" | License中机器码: '{license_machine_code}'"
+                    f" | 当前服务器机器码: '{machine_code}'"
+                    f" | 两者长度: license={len(license_machine_code)}, server={len(machine_code)}"
+                )
                 return None
             
             if payload.get("expiry_date"):
@@ -213,6 +229,11 @@ class LicenseService:
                     expiry = expiry.replace(tzinfo=timezone.utc)
                 now_utc = datetime.now(timezone.utc)
                 if now_utc > expiry:
+                    logger.error(
+                        f"[License] License已过期!"
+                        f" | 过期时间: {expiry.isoformat()}"
+                        f" | 当前时间: {now_utc.isoformat()}"
+                    )
                     return None
             
             return {
@@ -229,7 +250,8 @@ class LicenseService:
                 "rebate_percent": payload.get("referral_rebate", 0),
                 "license_price": payload.get("license_price", 0),
             }
-        except Exception:
+        except Exception as outer_err:
+            logger.error(f"[License] License解析失败: {outer_err} | 原始Key前50字符: {license_key[:50] if license_key else 'N/A'}")
             return None
     
     @staticmethod

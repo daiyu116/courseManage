@@ -78,7 +78,7 @@ import {
   DataAnalysis, View, Monitor, Lock
 } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
-import { hasFeature, FEATURES, FEATURE_NAMES } from '@/utils/license'
+import { hasFeature, FEATURES, FEATURE_NAMES, licenseState } from '@/utils/license'
 import { useI18n } from 'vue-i18n'
 
 
@@ -217,8 +217,15 @@ const visibleMenuItems = computed(() => {
   return menuItems.filter(item => {
     // 特殊处理运营大屏模块
     if (item.key === 'dashboardview') {
+      console.log('[FloatingSphere] 运营大屏可见性检查:', {
+        role: user.role,
+        isAdmin: ['super_admin', 'system_admin'].includes(user.role),
+        teacher_id: user.teacher_id,
+        hasOperationManagers: !!localStorage.getItem('operation_managers')
+      })
       // 1. 超级管理员和系统管理员直接拥有权限
       if (['super_admin', 'system_admin'].includes(user.role)) {
+        console.log('[FloatingSphere] 运营大屏按钮: 可见 (管理员)')
         return true
       }
       // 2. 检查是否是运营管理导师
@@ -471,8 +478,17 @@ const getItemTooltip = (item) => {
 // 菜单项点击处理
 const handleMenuClick = (item) => {
   console.log('[FloatingSphere] 菜单项点击:', item.key, item.label)
-  if (item.requiresLicense && item.licenseFeature && !hasFeature(item.licenseFeature)) {
+  // 超级管理员和系统管理员可以绕过license功能检查
+  const isAdmin = currentUser.value && ['super_admin', 'system_admin'].includes(currentUser.value.role)
+  if (item.requiresLicense && item.licenseFeature && !isAdmin && !hasFeature(item.licenseFeature)) {
     const featureName = FEATURE_NAMES[item.licenseFeature] ? t(FEATURE_NAMES[item.licenseFeature]) : t('floatingSphere.thisFeature')
+    console.log('[FloatingSphere] License功能检查失败:', {
+      feature: item.licenseFeature,
+      activated: licenseState.activated,
+      features: licenseState.features,
+      hasFeature: hasFeature(item.licenseFeature),
+      isAdmin: isAdmin
+    })
     ElMessage.warning(t('floatingSphere.licenseRequired', { feature: featureName }))
     return
   }

@@ -165,14 +165,22 @@ def activate_license(
     result = LicenseService.verify_license(request.license_key, machine_code)
 
     if not result:
+        license_machine_code = "N/A"
+        try:
+            import base64
+            license_data = json.loads(base64.urlsafe_b64decode(request.license_key.encode()).decode())
+            license_machine_code = license_data.get("payload", {}).get("machine_code", "N/A")
+        except Exception:
+            pass
+        
         log_operation(
             db, "系统授权", "激活失败",
-            f"License验证失败，机器码: {machine_code}",
+            f"License验证失败 | 服务器机器码: {machine_code} | License中机器码: {license_machine_code}",
             current_user.username, "ERROR",
         )
         raise HTTPException(
             status_code=400,
-            detail="License Key 无效、已过期或与当前服务器不匹配。请联系供应商获取正确的 License Key。"
+            detail=f"License Key 无效、已过期或与当前服务器不匹配。服务器机器码: {machine_code}，License中机器码: {license_machine_code}。请联系供应商获取正确的 License Key。"
         )
 
     settings = db.query(Settings).first()

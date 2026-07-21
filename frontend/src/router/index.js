@@ -164,6 +164,12 @@ router.beforeEach((to, from, next) => {
     clearAuthAndRedirect('/admin/login')
   } else if (to.meta.requiresLicense) {
     console.log('[Router] 需要license检查, feature:', to.meta.licenseFeature)
+    // 超级管理员和系统管理员可以绕过license功能检查直接访问运营大屏
+    if (to.path === '/admin/dashboard-view' && user && ['super_admin', 'system_admin'].includes(user.role)) {
+      console.log('[Router] 超级管理员/系统管理员，绕过license检查直接进入运营大屏')
+      next()
+      return
+    }
     import('@/utils/license.js').then(async ({ licenseState, FEATURE_NAMES, loadLicenseStatus }) => {
       console.log('[Router] license模块加载成功, loaded:', licenseState.loaded, 'activated:', licenseState.activated)
       if (!licenseState.loaded) {

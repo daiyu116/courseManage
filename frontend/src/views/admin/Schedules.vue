@@ -582,7 +582,7 @@
                     </template>
                 </el-table-column>
                 
-                <el-table-column v-if="!isScreenshotting" :label="t('common.operation')" width="175" fixed="right">
+                <el-table-column v-if="!isScreenshotting" :label="t('common.operation')" width="150" fixed="right">
                   <template #default="{ row }">
                     <div style="display: flex; gap: 3px; flex-wrap: wrap;">
                       <el-button v-if="canEditSchedule(row)" size="small" @click="showEditDialog(row)">{{ t('schedules.edit') }}</el-button>
@@ -3612,27 +3612,74 @@ const handleScreenshot = async () => {
     
     const tableEl = mainTableRef.value.$el
     
-    // 临时移除表格的滚动限制，确保完整截图
+    const headerWrapper = tableEl.querySelector('.el-table__header-wrapper')
     const bodyWrapper = tableEl.querySelector('.el-table__body-wrapper')
-    const originalOverflow = bodyWrapper ? bodyWrapper.style.overflow : ''
-    const originalMaxHeight = bodyWrapper ? bodyWrapper.style.maxHeight : ''
+    const fixedRight = tableEl.querySelector('.el-table__fixed-right')
+    const fixedRightPatch = tableEl.querySelector('.el-table__fixed-right-patch')
+    const scrollbarWrap = tableEl.querySelector('.el-scrollbar__wrap')
+    
+    const originalStyles = {
+      headerOverflow: headerWrapper ? headerWrapper.style.overflow : '',
+      headerOverflowX: headerWrapper ? headerWrapper.style.overflowX : '',
+      bodyOverflow: bodyWrapper ? bodyWrapper.style.overflow : '',
+      bodyOverflowX: bodyWrapper ? bodyWrapper.style.overflowX : '',
+      bodyMaxHeight: bodyWrapper ? bodyWrapper.style.maxHeight : '',
+      scrollbarOverflow: scrollbarWrap ? scrollbarWrap.style.overflow : '',
+      scrollbarOverflowX: scrollbarWrap ? scrollbarWrap.style.overflowX : '',
+      fixedRightDisplay: fixedRight ? fixedRight.style.display : '',
+      fixedRightPatchDisplay: fixedRightPatch ? fixedRightPatch.style.display : '',
+    }
+    
+    if (headerWrapper) {
+      headerWrapper.style.overflow = 'visible'
+      headerWrapper.style.overflowX = 'visible'
+    }
     if (bodyWrapper) {
       bodyWrapper.style.overflow = 'visible'
+      bodyWrapper.style.overflowX = 'visible'
       bodyWrapper.style.maxHeight = 'none'
     }
+    if (scrollbarWrap) {
+      scrollbarWrap.style.overflow = 'visible'
+      scrollbarWrap.style.overflowX = 'visible'
+    }
+    if (fixedRight) {
+      fixedRight.style.display = 'none'
+    }
+    if (fixedRightPatch) {
+      fixedRightPatch.style.display = 'none'
+    }
+    
+    await nextTick()
     
     const canvas = await html2canvas(tableEl, {
       scale: 2,
       useCORS: true,
       backgroundColor: '#ffffff',
+      scrollX: -window.scrollX,
+      scrollY: -window.scrollY,
       windowWidth: tableEl.scrollWidth,
       windowHeight: tableEl.scrollHeight
     })
     
-    // 恢复滚动样式
+    if (headerWrapper) {
+      headerWrapper.style.overflow = originalStyles.headerOverflow
+      headerWrapper.style.overflowX = originalStyles.headerOverflowX
+    }
     if (bodyWrapper) {
-      bodyWrapper.style.overflow = originalOverflow
-      bodyWrapper.style.maxHeight = originalMaxHeight
+      bodyWrapper.style.overflow = originalStyles.bodyOverflow
+      bodyWrapper.style.overflowX = originalStyles.bodyOverflowX
+      bodyWrapper.style.maxHeight = originalStyles.bodyMaxHeight
+    }
+    if (scrollbarWrap) {
+      scrollbarWrap.style.overflow = originalStyles.scrollbarOverflow
+      scrollbarWrap.style.overflowX = originalStyles.scrollbarOverflowX
+    }
+    if (fixedRight) {
+      fixedRight.style.display = originalStyles.fixedRightDisplay
+    }
+    if (fixedRightPatch) {
+      fixedRightPatch.style.display = originalStyles.fixedRightPatchDisplay
     }
     
     const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'))

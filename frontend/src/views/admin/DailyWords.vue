@@ -164,7 +164,8 @@
               </el-select>
               <el-input v-model="word.uk_phonetic" :placeholder="t('dailyWords.ukPhonetic')" class="row-field-short" />
               <el-input v-model="word.us_phonetic" :placeholder="t('dailyWords.usPhonetic')" class="row-field-short" />
-              <el-input v-model="word.meaning" :placeholder="t('dailyWords.meaning')" class="row-field-main" />
+              <el-input v-model="word.meaning" :placeholder="t('dailyWords.englishMeaning')" class="row-field-main" />
+              <el-input v-model="word.chinese_meaning" :placeholder="t('dailyWords.chineseMeaning')" class="row-field-main" />
               <el-select v-model="word.mastery_requirement" :placeholder="t('dailyWords.masteryRequirement')" clearable class="row-field-select">
                 <el-option v-for="mr in masteryRequirementOptions" :key="mr.value" :label="mr.label" :value="mr.value" />
               </el-select>
@@ -238,7 +239,8 @@
           </el-table-column>
           <el-table-column prop="uk_phonetic" :label="t('dailyWords.ukPhonetic')" />
           <el-table-column prop="us_phonetic" :label="t('dailyWords.usPhonetic')" />
-          <el-table-column prop="meaning" :label="t('dailyWords.meaning')" />
+          <el-table-column prop="meaning" :label="t('dailyWords.englishMeaning')" />
+          <el-table-column prop="chinese_meaning" :label="t('dailyWords.chineseMeaning')" />
           <el-table-column prop="mastery_requirement" :label="t('dailyWords.masteryRequirement')" width="100">
             <template #default="{ row }">
               {{ getMasteryRequirementLabel(row.mastery_requirement) }}
@@ -353,7 +355,7 @@ const formRef = ref(null)
 const form = ref({
   grade: '',
   date: '',
-  words: [{ word: '', uk_phonetic: '', us_phonetic: '', meaning: '', part_of_speech: '', mastery_requirement: 'full_mastery', remark: '', link: '' }],
+  words: [{ word: '', uk_phonetic: '', us_phonetic: '', meaning: '', chinese_meaning: '', part_of_speech: '', mastery_requirement: 'full_mastery', remark: '', link: '' }],
   phrases: [{ phrase: '', meaning: '', phrase_type: [], syntactic_role: [], mastery_requirement: 'full_mastery', remark: '', link: '' }],
 })
 
@@ -514,7 +516,7 @@ const handleSizeChange = (size) => {
 }
 
 const addWord = () => {
-  form.value.words.push({ word: '', uk_phonetic: '', us_phonetic: '', meaning: '', part_of_speech: '', mastery_requirement: 'full_mastery', remark: '', link: '', _phoneticLoading: false })
+  form.value.words.push({ word: '', uk_phonetic: '', us_phonetic: '', meaning: '', chinese_meaning: '', part_of_speech: '', mastery_requirement: 'full_mastery', remark: '', link: '', _phoneticLoading: false })
 }
 
 const removeWord = (index) => {
@@ -539,7 +541,7 @@ const showAddDialog = () => {
   form.value = {
     grade: '',
     date: '',
-    words: [{ word: '', uk_phonetic: '', us_phonetic: '', meaning: '', part_of_speech: '', mastery_requirement: 'full_mastery', remark: '', link: '', _phoneticLoading: false }],
+    words: [{ word: '', uk_phonetic: '', us_phonetic: '', meaning: '', chinese_meaning: '', part_of_speech: '', mastery_requirement: 'full_mastery', remark: '', link: '', _phoneticLoading: false }],
     phrases: [{ phrase: '', meaning: '', phrase_type: [], syntactic_role: [], mastery_requirement: 'full_mastery', remark: '', link: '' }],
   }
   addDialogVisible.value = true
@@ -552,8 +554,8 @@ const showEditDialog = (row) => {
     grade: row.grade,
     date: row.date,
     words: row.words && row.words.length > 0
-      ? row.words.map(w => ({ word: w.word || '', uk_phonetic: w.uk_phonetic || w.phonetic || '', us_phonetic: w.us_phonetic || '', meaning: w.meaning || '', part_of_speech: w.part_of_speech || '', mastery_requirement: w.mastery_requirement || 'full_mastery', remark: w.remark || '', link: w.link || '', _phoneticLoading: false }))
-      : [{ word: '', uk_phonetic: '', us_phonetic: '', meaning: '', part_of_speech: '', mastery_requirement: 'full_mastery', remark: '', link: '', _phoneticLoading: false }],
+      ? row.words.map(w => ({ word: w.word || '', uk_phonetic: w.uk_phonetic || w.phonetic || '', us_phonetic: w.us_phonetic || '', meaning: w.meaning || '', chinese_meaning: w.chinese_meaning || '', part_of_speech: w.part_of_speech || '', mastery_requirement: w.mastery_requirement || 'full_mastery', remark: w.remark || '', link: w.link || '', _phoneticLoading: false }))
+      : [{ word: '', uk_phonetic: '', us_phonetic: '', meaning: '', chinese_meaning: '', part_of_speech: '', mastery_requirement: 'full_mastery', remark: '', link: '', _phoneticLoading: false }],
     phrases: row.phrases && row.phrases.length > 0
       ? row.phrases.map(p => ({ phrase: p.phrase || '', meaning: p.meaning || '', phrase_type: Array.isArray(p.phrase_type) ? p.phrase_type : (p.phrase_type ? [p.phrase_type] : []), syntactic_role: Array.isArray(p.syntactic_role) ? p.syntactic_role : (p.syntactic_role ? [p.syntactic_role] : []), mastery_requirement: p.mastery_requirement || 'full_mastery', remark: p.remark || '', link: p.link || '' }))
       : [{ phrase: '', meaning: '', phrase_type: [], syntactic_role: [], mastery_requirement: 'full_mastery', remark: '', link: '' }],
@@ -675,7 +677,8 @@ const exportDocument = (row) => {
       t('dailyWords.partOfSpeech'),
       t('dailyWords.ukPhonetic'),
       t('dailyWords.usPhonetic'),
-      t('dailyWords.meaning'),
+      t('dailyWords.englishMeaning'),
+      t('dailyWords.chineseMeaning'),
       t('dailyWords.masteryRequirement'),
       t('dailyWords.remark'),
     ])
@@ -687,6 +690,7 @@ const exportDocument = (row) => {
         w.uk_phonetic || w.phonetic || '',
         w.us_phonetic || '',
         w.meaning || '',
+        w.chinese_meaning || '',
         getMasteryRequirementLabel(w.mastery_requirement),
         w.remark || '',
       ])
@@ -789,7 +793,8 @@ const printDocument = (row) => {
       <th>${t('dailyWords.partOfSpeech')}</th>
       <th>${t('dailyWords.ukPhonetic')}</th>
       <th>${t('dailyWords.usPhonetic')}</th>
-      <th>${t('dailyWords.meaning')}</th>
+      <th>${t('dailyWords.englishMeaning')}</th>
+      <th>${t('dailyWords.chineseMeaning')}</th>
       <th>${t('dailyWords.masteryRequirement')}</th>
       <th>${t('dailyWords.remark')}</th>
     </tr></thead><tbody>`
@@ -801,6 +806,7 @@ const printDocument = (row) => {
         <td>${w.uk_phonetic || w.phonetic || ''}</td>
         <td>${w.us_phonetic || ''}</td>
         <td>${w.meaning || ''}</td>
+        <td>${w.chinese_meaning || ''}</td>
         <td>${getMasteryRequirementLabel(w.mastery_requirement)}</td>
         <td>${w.remark || ''}</td>
       </tr>`
@@ -925,9 +931,10 @@ const handleImport = async () => {
                 uk_phonetic: String(row[3] || '').trim(),
                 us_phonetic: String(row[4] || '').trim(),
                 meaning: String(row[5] || '').trim(),
-                mastery_requirement: String(row[6] || 'full_mastery').trim(),
-                remark: String(row[7] || '').trim(),
-                link: String(row[8] || '').trim(),
+                chinese_meaning: String(row[6] || '').trim(),
+                mastery_requirement: String(row[7] || 'full_mastery').trim(),
+                remark: String(row[8] || '').trim(),
+                link: String(row[9] || '').trim(),
               })
             }
 
@@ -1058,6 +1065,22 @@ const fetchPhonetic = async (index) => {
       }
     }
 
+    if (!word.chinese_meaning.trim() && word.meaning.trim()) {
+      try {
+        const translateResponse = await fetch(
+          `https://api.mymemory.translated.net/get?q=${encodeURIComponent(word.meaning.trim())}&langpair=en|zh`
+        )
+        if (translateResponse.ok) {
+          const translateData = await translateResponse.json()
+          if (translateData.responseData && translateData.responseData.translatedText) {
+            word.chinese_meaning = translateData.responseData.translatedText
+          }
+        }
+      } catch (translateError) {
+        window.logger.warn('翻译中文释义失败:', translateError)
+      }
+    }
+
     ElMessage.success(t('dailyWords.phoneticFound'))
   } catch (error) {
     window.logger.error('查询音标失败:', error)
@@ -1088,13 +1111,14 @@ const downloadImportTemplate = () => {
     t('dailyWords.partOfSpeech'),
     t('dailyWords.ukPhonetic'),
     t('dailyWords.usPhonetic'),
-    t('dailyWords.meaning'),
+    t('dailyWords.englishMeaning'),
+    t('dailyWords.chineseMeaning'),
     t('dailyWords.masteryRequirement'),
     t('dailyWords.remark'),
     t('dailyWords.link'),
   ])
-  wsData.push(['1', 'apple', 'noun', '/ˈæp.əl/', '/ˈæp.əl/', '苹果', 'full_mastery', '', ''])
-  wsData.push(['2', 'run', 'verb', '/rʌn/', '/rʌn/', '跑步', 'use', '', ''])
+  wsData.push(['1', 'apple', 'noun', '/ˈæp.əl/', '/ˈæp.əl/', 'A round fruit with red or green skin', '苹果', 'full_mastery', '', ''])
+  wsData.push(['2', 'run', 'verb', '/rʌn/', '/rʌn/', 'To move quickly on foot', '跑步', 'use', '', ''])
   wsData.push([])
   wsData.push([t('dailyWords.phraseList')])
   wsData.push([
@@ -1118,6 +1142,7 @@ const downloadImportTemplate = () => {
     { wch: 14 },
     { wch: 16 },
     { wch: 16 },
+    { wch: 20 },
     { wch: 20 },
     { wch: 14 },
     { wch: 16 },
@@ -1184,8 +1209,8 @@ onMounted(() => {
   min-width: 100px;
 }
 .row-field-select {
-  flex: 0 0 140px;
-  min-width: 140px;
+  flex: 0 0 100px;
+  min-width: 100px;
 }
 .row-field-remark {
   flex: 0 0 120px;
@@ -1207,8 +1232,8 @@ onMounted(() => {
     min-width: 70px;
   }
   .row-field-select {
-    flex: 0 0 120px;
-    min-width: 120px;
+    flex: 0 0 90px;
+    min-width: 90px;
   }
   .row-field-remark {
     flex: 0 0 100px;

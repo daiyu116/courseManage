@@ -2668,19 +2668,23 @@ def export_to_excel(schedules: List[Schedule], db: Session, lang: str = "zh-CN")
     _t_map = {
         "zh-CN": {
             "sheet": "课程安排",
-            "headers": ['ID', '科目', '导师', '班级', '课程类型', '教室类型', '教室', '会议室链接', '星期', '开始时间', '结束时间', '开始日期', '结束日期', '冲突状态', '执行状态', '课程反馈', '延期原因', '取消原因'],
+            "headers": ['ID', '科目', '导师', '班级', '课程类型', '教室类型', '教室', '会议室链接', '星期', '开始时间', '结束时间', '开始日期', '结束日期', '冲突状态', '执行状态', '课程反馈', '延期原因', '取消原因', '学员考勤'],
             "trial": "试听课", "formal": "正式课",
             "offline": "线下物理", "online": "线上虚拟",
             "conflict": "冲突", "no_conflict": "无冲突",
             "completed": "完训", "postponed": "延期", "cancelled": "取消", "pending": "待执行",
+            "present": "出席", "absent": "缺席", "leave": "请假",
+            "no_attendance": "未记录",
         },
         "en": {
             "sheet": "Course Schedules",
-            "headers": ['ID', 'Course', 'Teacher', 'Class', 'Schedule Type', 'Room Type', 'Room', 'Meeting Link', 'Day of Week', 'Start Time', 'End Time', 'Start Date', 'End Date', 'Conflict', 'Status', 'Feedback', 'Postpone Reason', 'Cancel Reason'],
+            "headers": ['ID', 'Course', 'Teacher', 'Class', 'Schedule Type', 'Room Type', 'Room', 'Meeting Link', 'Day of Week', 'Start Time', 'End Time', 'Start Date', 'End Date', 'Conflict', 'Status', 'Feedback', 'Postpone Reason', 'Cancel Reason', 'Student Attendance'],
             "trial": "Trial", "formal": "Formal",
             "offline": "Offline", "online": "Online",
             "conflict": "Conflict", "no_conflict": "No Conflict",
             "completed": "Completed", "postponed": "Postponed", "cancelled": "Cancelled", "pending": "Pending",
+            "present": "Present", "absent": "Absent", "leave": "Leave",
+            "no_attendance": "Not Recorded",
         },
     }
     t = _t_map.get(lang, _t_map["zh-CN"])
@@ -2696,6 +2700,25 @@ def export_to_excel(schedules: List[Schedule], db: Session, lang: str = "zh-CN")
     teacher_names = {tc.id: tc.name for tc in db.query(Teacher).all()}
     class_names = {cl.id: cl.name for cl in db.query(Class).all()}
     rooms = {r.id: r.name for r in db.query(Room).all()}
+    student_names = {s.id: s.name for s in db.query(Student).all()}
+    
+    schedule_ids = [s.id for s in schedules]
+    attendance_map = {}
+    if schedule_ids:
+        attendance_query = select(
+            schedule_student.c.schedule_id,
+            schedule_student.c.student_id,
+            schedule_student.c.attendance_status
+        ).where(schedule_student.c.schedule_id.in_(schedule_ids))
+        for row in db.execute(attendance_query).fetchall():
+            sid = row[0]
+            if sid not in attendance_map:
+                attendance_map[sid] = []
+            student_name = student_names.get(row[1], str(row[1]))
+            status_text = t.get(row[2], t['no_attendance'])
+            attendance_map[sid].append(f"{student_name}({status_text})")
+    
+    attendance_text_map = {k: ', '.join(v) for k, v in attendance_map.items()}
     
     for schedule in schedules:
         room_type_text = t['offline'] if schedule.room_type == 'offline_physical' else t['online']
@@ -2723,7 +2746,8 @@ def export_to_excel(schedules: List[Schedule], db: Session, lang: str = "zh-CN")
             exec_status,
             schedule.content_feedback or '',
             schedule.postpone_reason or '',
-            schedule.cancel_reason or ''
+            schedule.cancel_reason or '',
+            attendance_text_map.get(schedule.id, '')
         ]
         ws.append(row)
     
@@ -2743,18 +2767,22 @@ def export_to_csv(schedules: List[Schedule], db: Session, lang: str = "zh-CN"):
     
     _t_map = {
         "zh-CN": {
-            "headers": ['ID', '科目', '导师', '班级', '课程类型', '教室类型', '教室', '会议室链接', '星期', '开始时间', '结束时间', '开始日期', '结束日期', '冲突状态', '执行状态', '课程反馈', '延期原因', '取消原因'],
+            "headers": ['ID', '科目', '导师', '班级', '课程类型', '教室类型', '教室', '会议室链接', '星期', '开始时间', '结束时间', '开始日期', '结束日期', '冲突状态', '执行状态', '课程反馈', '延期原因', '取消原因', '学员考勤'],
             "trial": "试听课", "formal": "正式课",
             "offline": "线下物理", "online": "线上虚拟",
             "conflict": "冲突", "no_conflict": "无冲突",
             "completed": "完训", "postponed": "延期", "cancelled": "取消", "pending": "待执行",
+            "present": "出席", "absent": "缺席", "leave": "请假",
+            "no_attendance": "未记录",
         },
         "en": {
-            "headers": ['ID', 'Course', 'Teacher', 'Class', 'Schedule Type', 'Room Type', 'Room', 'Meeting Link', 'Day of Week', 'Start Time', 'End Time', 'Start Date', 'End Date', 'Conflict', 'Status', 'Feedback', 'Postpone Reason', 'Cancel Reason'],
+            "headers": ['ID', 'Course', 'Teacher', 'Class', 'Schedule Type', 'Room Type', 'Room', 'Meeting Link', 'Day of Week', 'Start Time', 'End Time', 'Start Date', 'End Date', 'Conflict', 'Status', 'Feedback', 'Postpone Reason', 'Cancel Reason', 'Student Attendance'],
             "trial": "Trial", "formal": "Formal",
             "offline": "Offline", "online": "Online",
             "conflict": "Conflict", "no_conflict": "No Conflict",
             "completed": "Completed", "postponed": "Postponed", "cancelled": "Cancelled", "pending": "Pending",
+            "present": "Present", "absent": "Absent", "leave": "Leave",
+            "no_attendance": "Not Recorded",
         },
     }
     t = _t_map.get(lang, _t_map["zh-CN"])
@@ -2766,6 +2794,25 @@ def export_to_csv(schedules: List[Schedule], db: Session, lang: str = "zh-CN"):
     teacher_names = {tc.id: tc.name for tc in db.query(Teacher).all()}
     class_names = {cl.id: cl.name for cl in db.query(Class).all()}
     rooms = {r.id: r.name for r in db.query(Room).all()}
+    student_names = {s.id: s.name for s in db.query(Student).all()}
+    
+    schedule_ids = [s.id for s in schedules]
+    attendance_map = {}
+    if schedule_ids:
+        attendance_query = select(
+            schedule_student.c.schedule_id,
+            schedule_student.c.student_id,
+            schedule_student.c.attendance_status
+        ).where(schedule_student.c.schedule_id.in_(schedule_ids))
+        for row in db.execute(attendance_query).fetchall():
+            sid = row[0]
+            if sid not in attendance_map:
+                attendance_map[sid] = []
+            student_name = student_names.get(row[1], str(row[1]))
+            status_text = t.get(row[2], t['no_attendance'])
+            attendance_map[sid].append(f"{student_name}({status_text})")
+    
+    attendance_text_map = {k: ', '.join(v) for k, v in attendance_map.items()}
     
     headers = t["headers"]
     writer.writerow(headers)
@@ -2795,7 +2842,8 @@ def export_to_csv(schedules: List[Schedule], db: Session, lang: str = "zh-CN"):
             exec_status,
             schedule.content_feedback or '',
             schedule.postpone_reason or '',
-            schedule.cancel_reason or ''
+            schedule.cancel_reason or '',
+            attendance_text_map.get(schedule.id, '')
         ]
         writer.writerow(row)
     
@@ -2826,19 +2874,23 @@ def export_to_pdf(schedules: List[Schedule], db: Session, lang: str = "zh-CN"):
     _t_map = {
         "zh-CN": {
             "title": "课程安排表",
-            "headers": ['ID', '科目', '导师', '班级', '教室类型', '教室', '会议室链接', '星期', '开始时间', '结束时间', '开始日期', '结束日期', '冲突状态', '执行状态', '课程类型', '课程反馈', '延期原因', '取消原因'],
+            "headers": ['ID', '科目', '导师', '班级', '教室类型', '教室', '会议室链接', '星期', '开始时间', '结束时间', '开始日期', '结束日期', '冲突状态', '执行状态', '课程类型', '课程反馈', '延期原因', '取消原因', '学员考勤'],
             "trial": "试听课", "formal": "正式课",
             "offline": "线下物理", "online": "线上虚拟",
             "conflict": "冲突", "no_conflict": "无",
             "completed": "完训", "postponed": "延期", "cancelled": "取消", "pending": "待执行",
+            "present": "出席", "absent": "缺席", "leave": "请假",
+            "no_attendance": "未记录",
         },
         "en": {
             "title": "Course Schedule",
-            "headers": ['ID', 'Course', 'Teacher', 'Class', 'Room Type', 'Room', 'Meeting Link', 'Day', 'Start', 'End', 'Start Date', 'End Date', 'Conflict', 'Status', 'Type', 'Feedback', 'Postpone Reason', 'Cancel Reason'],
+            "headers": ['ID', 'Course', 'Teacher', 'Class', 'Room Type', 'Room', 'Meeting Link', 'Day', 'Start', 'End', 'Start Date', 'End Date', 'Conflict', 'Status', 'Type', 'Feedback', 'Postpone Reason', 'Cancel Reason', 'Student Attendance'],
             "trial": "Trial", "formal": "Formal",
             "offline": "Offline", "online": "Online",
             "conflict": "Conflict", "no_conflict": "No",
             "completed": "Completed", "postponed": "Postponed", "cancelled": "Cancelled", "pending": "Pending",
+            "present": "Present", "absent": "Absent", "leave": "Leave",
+            "no_attendance": "Not Recorded",
         },
     }
     t = _t_map.get(lang, _t_map["zh-CN"])
@@ -2893,28 +2945,48 @@ def export_to_pdf(schedules: List[Schedule], db: Session, lang: str = "zh-CN"):
     teacher_names = {tc.id: tc.name for tc in db.query(Teacher).all()}
     class_names = {cl.id: cl.name for cl in db.query(Class).all()}
     rooms = {r.id: r.name for r in db.query(Room).all()}
+    student_names = {s.id: s.name for s in db.query(Student).all()}
+    
+    schedule_ids = [s.id for s in schedules]
+    attendance_map = {}
+    if schedule_ids:
+        attendance_query = select(
+            schedule_student.c.schedule_id,
+            schedule_student.c.student_id,
+            schedule_student.c.attendance_status
+        ).where(schedule_student.c.schedule_id.in_(schedule_ids))
+        for row in db.execute(attendance_query).fetchall():
+            sid = row[0]
+            if sid not in attendance_map:
+                attendance_map[sid] = []
+            student_name = student_names.get(row[1], str(row[1]))
+            status_text = t.get(row[2], t['no_attendance'])
+            attendance_map[sid].append(f"{student_name}({status_text})")
+    
+    attendance_text_map = {k: ', '.join(v) for k, v in attendance_map.items()}
     
     # 2. & 4. 优化列宽和位置，防止“班级”盖住“教室”，并为长文本留出空间
-    # 重新分配列宽（单位：英寸，自适应）
+    # 重新分配列宽（单位：英寸，自适应A4横向 ~10.5英寸可用宽度）
     col_widths = [
-        0.28,  # ID
-        0.70,  # 科目
-        0.50,  # 导师
-        0.65,  # 班级
-        0.55,  # 教室类型
-        0.70,  # 教室
-        0.90,  # 会议室链接
-        0.32,  # 星期
-        0.42,  # 开始时间
-        0.42,  # 结束时间
-        0.65,  # 开始日期
-        0.65,  # 结束日期
-        0.45,  # 冲突状态
-        0.45,  # 执行状态
-        0.45,  # 课程类型
-        0.90,  # 课程反馈
-        0.90,  # 延期原因
-        0.90   # 取消原因
+        0.22,  # ID
+        0.55,  # 科目
+        0.40,  # 导师
+        0.52,  # 班级
+        0.44,  # 教室类型
+        0.55,  # 教室
+        0.70,  # 会议室链接
+        0.26,  # 星期
+        0.34,  # 开始时间
+        0.34,  # 结束时间
+        0.52,  # 开始日期
+        0.52,  # 结束日期
+        0.36,  # 冲突状态
+        0.36,  # 执行状态
+        0.36,  # 课程类型
+        0.72,  # 课程反馈
+        0.72,  # 延期原因
+        0.72,  # 取消原因
+        0.96,  # 学员考勤
     ]
     
     # 计算每列的起始 X 坐标（转换为点）
@@ -2926,8 +2998,8 @@ def export_to_pdf(schedules: List[Schedule], db: Session, lang: str = "zh-CN"):
     y_position = page_height - margin_top - 50
     
     # 绘制表头
-    c.setFont(data_font, 8)
-    header_height = 20
+    c.setFont(data_font, 7)
+    header_height = 16
     for i, header in enumerate(headers):
         c.drawString(x_positions[i], y_position, header)
     
@@ -2989,7 +3061,8 @@ def export_to_pdf(schedules: List[Schedule], db: Session, lang: str = "zh-CN"):
             schedule_type_text,
             schedule.content_feedback or '',
             schedule.postpone_reason or '',
-            schedule.cancel_reason or ''
+            schedule.cancel_reason or '',
+            attendance_text_map.get(schedule.id, '')
         ]
         
         # 计算当前行需要的最大高度（用于自动调整行高）
@@ -2997,8 +3070,8 @@ def export_to_pdf(schedules: List[Schedule], db: Session, lang: str = "zh-CN"):
         paragraph_objects = []
         
         for i, cell_content in enumerate(row_data):
-            # 对于需要换行的列 (3=班级, 6=教室, 15=课程反馈, 16=延期原因, 17=取消原因)
-            if i in [3, 6, 15, 16, 17] and cell_content:
+            # 对于需要换行的列 (3=班级, 6=教室, 15=课程反馈, 16=延期原因, 17=取消原因, 18=学员考勤)
+            if i in [3, 6, 15, 16, 17, 18] and cell_content:
                 available_width = (x_positions[i + 1] - x_positions[i]) - 4
                 
                 # 创建 Paragraph 对象
@@ -3015,7 +3088,7 @@ def export_to_pdf(schedules: List[Schedule], db: Session, lang: str = "zh-CN"):
                     max_height_in_row = 12
         
         # 3. 自动调整行高：根据内容最高的那个单元格决定这一行占多少空间
-        row_height = max(max_height_in_row + 8, 15)
+        row_height = max(max_height_in_row + 6, 12)
         
         # 检查是否需要分页
         if y_position - row_height < margin_bottom:
@@ -3026,7 +3099,7 @@ def export_to_pdf(schedules: List[Schedule], db: Session, lang: str = "zh-CN"):
             c.drawString((page_width - title_width) / 2, page_height - margin_top - 20, title_text)
             
             y_position = page_height - margin_top - 50
-            c.setFont(data_font, 8)
+            c.setFont(data_font, 7)
             for i, header in enumerate(headers):
                 c.drawString(x_positions[i], y_position, header)
             c.line(margin_left, y_position - 5, page_width - margin_right, y_position - 5)
