@@ -194,7 +194,12 @@ def check_teacher_availability(db: Session, teacher_id: int, day_of_week: int, s
     
     # 检查是否有包含或被包含的时间段
     for available_slot in available_time_slots:
-        available_start, available_end = available_slot.split('-')
+        parts = available_slot.split('-')
+        if len(parts) != 2:
+            continue
+        available_start, available_end = parts
+        available_start = available_start.strip()
+        available_end = available_end.strip()
         
         # 检查是否完全匹配
         if time_slot == available_slot:
@@ -226,7 +231,12 @@ def check_class_availability(db: Session, class_id: int, day_of_week: int, start
         # 检查是否有包含或被包含的时间段
         has_available_slot = False
         for available_slot in available_time_slots:
-            available_start, available_end = available_slot.split('-')
+            parts = available_slot.split('-')
+            if len(parts) != 2:
+                continue
+            available_start, available_end = parts
+            available_start = available_start.strip()
+            available_end = available_end.strip()
             
             # 检查是否完全匹配
             if time_slot == available_slot:
@@ -280,7 +290,12 @@ def check_class_availability_with_details(db: Session, class_id: int, day_of_wee
                 has_available_slot = False
                 for available_slot in available_time_slots:
                     try:
-                        available_start, available_end = available_slot.split('-')
+                        parts = available_slot.split('-')
+                        if len(parts) != 2:
+                            continue
+                        available_start, available_end = parts
+                        available_start = available_start.strip()
+                        available_end = available_end.strip()
                         
                         # 检查是否完全匹配
                         if time_slot == available_slot:
