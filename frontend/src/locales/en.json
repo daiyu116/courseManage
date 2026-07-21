@@ -3045,7 +3045,8 @@
     "multipleErrors": "{n} errors occurred, please check your network connection"
   },
   "router": {
-    "licenseFeatureRequired": "{feature} is a licensed feature, please activate it in License Management"
+    "licenseFeatureRequired": "{feature} is a licensed feature, please activate it in License Management",
+    "operationManagerRequired": "Operation dashboard is only available to operation managers. Please contact administrator."
   },
   "conditions": {
     "title": "Condition Management",

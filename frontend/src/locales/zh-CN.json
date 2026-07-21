@@ -3053,7 +3053,8 @@
     "multipleErrors": "发生 {n} 个错误，请检查网络连接"
   },
   "router": {
-    "licenseFeatureRequired": "{feature}为授权功能，请在系统授权管理中激活"
+    "licenseFeatureRequired": "{feature}为授权功能，请在系统授权管理中激活",
+    "operationManagerRequired": "运营大屏仅限运营管理导师访问，请联系管理员"
   },
   "conditions": {
     "title": "条件管理",

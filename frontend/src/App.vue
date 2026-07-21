@@ -255,7 +255,12 @@ const goToScheduleView = () => {
 }
 
 const goToDashboardView = () => {
-  router.push('/admin/dashboard-view')
+  console.log('[App] 点击运营大屏按钮, 开始导航到 /admin/dashboard-view')
+  router.push('/admin/dashboard-view').then(() => {
+    console.log('[App] 导航完成')
+  }).catch(err => {
+    console.error('[App] 导航失败:', err)
+  })
 }
 </script>
 

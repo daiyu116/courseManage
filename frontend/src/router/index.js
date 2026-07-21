@@ -154,20 +154,31 @@ router.beforeEach((to, from, next) => {
   const userStr = localStorage.getItem('user')
   const user = userStr ? JSON.parse(userStr) : null
   
+  console.log('[Router] 导航到:', to.path, 'meta:', to.meta)
+  
   if (to.meta.requiresAuth && !token) {
+    console.log('[Router] 未登录，重定向到登录页')
     next('/admin/login')
   } else if (to.meta.requiresAuth && token && isTokenExpired(token)) {
+    console.log('[Router] token过期，清除认证信息')
     clearAuthAndRedirect('/admin/login')
   } else if (to.meta.requiresLicense) {
+    console.log('[Router] 需要license检查, feature:', to.meta.licenseFeature)
     import('@/utils/license.js').then(async ({ licenseState, FEATURE_NAMES, loadLicenseStatus }) => {
+      console.log('[Router] license模块加载成功, loaded:', licenseState.loaded, 'activated:', licenseState.activated)
       if (!licenseState.loaded) {
+        console.log('[Router] license未加载，正在加载...')
         await loadLicenseStatus()
+        console.log('[Router] license加载完成, loaded:', licenseState.loaded, 'activated:', licenseState.activated, 'features:', licenseState.features)
       }
       if (!licenseState.activated || !licenseState.features[to.meta.licenseFeature]) {
         if (licenseState.activated && (!licenseState.features || Object.keys(licenseState.features).length === 0)) {
+          console.log('[Router] license已激活但features为空，重新加载...')
           await loadLicenseStatus()
+          console.log('[Router] 重新加载后 features:', licenseState.features)
         }
         if (!licenseState.activated || !licenseState.features[to.meta.licenseFeature]) {
+          console.log('[Router] license检查失败，重定向到dashboard')
           const featureName = FEATURE_NAMES[to.meta.licenseFeature] || t('common.licenseRequiredShort')
           import('element-plus').then(({ ElMessage }) => {
             ElMessage.warning(t('router.licenseFeatureRequired', { feature: featureName }))
@@ -176,6 +187,7 @@ router.beforeEach((to, from, next) => {
           return
         }
       }
+      console.log('[Router] license检查通过')
       if (to.meta.requiresAdmin && (!user || !['super_admin', 'system_admin'].includes(user.role))) {
         next('/admin/dashboard')
       } else if (to.path === '/admin/feemanagement' && user && user.teacher_id && !['super_admin', 'system_admin'].includes(user.role)) {
@@ -207,23 +219,34 @@ router.beforeEach((to, from, next) => {
         }
         next('/admin/dashboard')
       } else if (to.path === '/admin/dashboard-view' && user && user.teacher_id && !['super_admin', 'system_admin'].includes(user.role)) {
+        console.log('[Router] 检查运营管理权限, teacher_id:', user.teacher_id)
         const operationManagersStr = localStorage.getItem('operation_managers')
+        console.log('[Router] operation_managers localStorage:', operationManagersStr)
         if (operationManagersStr) {
           try {
             const operationManagers = JSON.parse(operationManagersStr)
             if (Array.isArray(operationManagers) && operationManagers.includes(user.teacher_id)) {
+              console.log('[Router] 运营管理权限检查通过')
               next()
               return
             }
+            console.log('[Router] 用户不在运营管理列表中')
           } catch (e) {
             window.logger.error('Failed to parse operation managers:', e)
           }
         }
+        console.log('[Router] 运营管理权限不足，重定向到dashboard')
+        import('element-plus').then(({ ElMessage }) => {
+          ElMessage.warning(t('router.operationManagerRequired'))
+        })
         next('/admin/dashboard')
       } else {
+        console.log('[Router] 导航允许')
         next()
       }
-    }).catch(() => {
+    }).catch((error) => {
+      console.error('[Router] license检查异常:', error)
+      window.logger.error('Router license check failed:', error)
       next('/admin/dashboard')
     })
   } else if (to.meta.requiresAdmin && (!user || !['super_admin', 'system_admin'].includes(user.role))) {

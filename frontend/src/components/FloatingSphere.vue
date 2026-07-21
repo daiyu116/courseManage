@@ -217,8 +217,8 @@ const visibleMenuItems = computed(() => {
   return menuItems.filter(item => {
     // 特殊处理运营大屏模块
     if (item.key === 'dashboardview') {
-      // 1. 超级管理员直接拥有权限
-      if (['super_admin'].includes(user.role)) {
+      // 1. 超级管理员和系统管理员直接拥有权限
+      if (['super_admin', 'system_admin'].includes(user.role)) {
         return true
       }
       // 2. 检查是否是运营管理导师
@@ -462,7 +462,7 @@ const handleMouseLeave = () => {
 // 获取菜单项的tooltip内容
 const getItemTooltip = (item) => {
   if (item.requiresLicense && item.licenseFeature && !hasFeature(item.licenseFeature)) {
-    const featureName = FEATURE_NAMES[item.licenseFeature] ? FEATURE_NAMES[item.licenseFeature]() : t('floatingSphere.thisFeature')
+    const featureName = FEATURE_NAMES[item.licenseFeature] ? t(FEATURE_NAMES[item.licenseFeature]) : t('floatingSphere.thisFeature')
     return t('floatingSphere.licenseRequired', { feature: featureName })
   }
   return item.label
@@ -470,13 +470,15 @@ const getItemTooltip = (item) => {
 
 // 菜单项点击处理
 const handleMenuClick = (item) => {
+  console.log('[FloatingSphere] 菜单项点击:', item.key, item.label)
   if (item.requiresLicense && item.licenseFeature && !hasFeature(item.licenseFeature)) {
-    const featureName = FEATURE_NAMES[item.licenseFeature] ? FEATURE_NAMES[item.licenseFeature]() : t('floatingSphere.thisFeature')
+    const featureName = FEATURE_NAMES[item.licenseFeature] ? t(FEATURE_NAMES[item.licenseFeature]) : t('floatingSphere.thisFeature')
     ElMessage.warning(t('floatingSphere.licenseRequired', { feature: featureName }))
     return
   }
   // '课费管理\仪表盘\课程视图\运营大屏'直接跳转，不自动打开新增对话框
   if (item.key === 'fees' || item.key === 'dashboard'|| item.key === 'scheduleview' || item.key === 'dashboardview') {
+    console.log('[FloatingSphere] 跳转到:', item.path)
     router.push(item.path)
     ElMessage.success(t('floatingSphere.jumpingTo', { label: item.label }))
   } else {

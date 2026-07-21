@@ -2960,8 +2960,11 @@ watch(locale, () => {
 
 // 初始化
 onMounted(async () => {
+  console.log('[DashboardView] 组件已挂载，开始初始化')
   await nextTick()
+  console.log('[DashboardView] nextTick完成，开始刷新数据')
   await refreshData()
+  console.log('[DashboardView] 数据刷新完成')
   
   // 设置30分钟自动刷新
   refreshTimer = setInterval(refreshData, 30 * 60 * 1000)
