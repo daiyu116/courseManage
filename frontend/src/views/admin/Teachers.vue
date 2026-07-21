@@ -266,6 +266,9 @@
                     </div>
                     <div style="margin-bottom: 5px;">
                       <el-checkbox value="18:30-20:30" :class="{ 'overlapping-slot': isOverlappingSlot('18:30-20:30') }">18:30-20:30</el-checkbox>
+                    </div>
+                    <div style="margin-bottom: 5px;">
+                      <el-checkbox value="19:00-21:00" :class="{ 'overlapping-slot': isOverlappingSlot('19:00-21:00') }">19:00-21:00</el-checkbox>
                     </div>                    
                     <div style="margin-bottom: 5px;">
                       <el-checkbox value="19:30-21:30" :class="{ 'overlapping-slot': isOverlappingSlot('19:30-21:30') }">19:30-21:30</el-checkbox>
@@ -354,6 +357,7 @@
             <el-option label="17:30-19:30" value="17:30-19:30" />
             <el-option label="18:00-20:00" value="18:00-20:00" />
             <el-option label="18:30-20:30" value="18:30-20:30" />
+            <el-option label="19:00-21:00" value="19:00-21:00" />
             <el-option label="19:30-21:30" value="19:30-21:30" />
             <el-option label="20:00-22:00" value="20:00-22:00" />
             <el-option label="20:30-22:30" value="20:30-22:30" />
@@ -470,7 +474,7 @@ const form = ref({
   email: '',
   max_weekly_hours: 40,
   available_days: [1, 2, 3, 4, 5, 6, 7],
-  available_time_slots: ['08:00-10:00', '10:00-12:00', '13:30-15:30', '15:30-17:30', '17:30-19:30', '19:30-21:30', '14:00-16:00', '16:00-18:00', '18:00-20:00', '20:00-22:00', '14:30-16:30', '16:30-18:30', '18:30-20:30', '20:30-22:30'],
+  available_time_slots: ['08:00-10:00', '10:00-12:00', '13:30-15:30', '15:30-17:30', '17:30-19:30', '19:00-21:00', '19:30-21:30', '14:00-16:00', '16:00-18:00', '18:00-20:00', '20:00-22:00', '14:30-16:30', '16:30-18:30', '18:30-20:30', '20:30-22:30'],
   allow_holiday_scheduling: true,
   no_feedback_required: false,
   is_active: true,
@@ -488,7 +492,7 @@ const originalForm = ref({
   email: '',
   max_weekly_hours: 40,
   available_days: [1, 2, 3, 4, 5, 6, 7],
-  available_time_slots: ['08:00-10:00', '10:00-12:00', '13:30-15:30', '15:30-17:30', '17:30-19:30', '19:30-21:30', '14:00-16:00', '16:00-18:00', '18:00-20:00', '20:00-22:00', '14:30-16:30', '16:30-18:30', '18:30-20:30', '20:30-22:30'],
+  available_time_slots: ['08:00-10:00', '10:00-12:00', '13:30-15:30', '15:30-17:30', '17:30-19:30', '19:00-21:00', '19:30-21:30', '14:00-16:00', '16:00-18:00', '18:00-20:00', '20:00-22:00', '14:30-16:30', '16:30-18:30', '18:30-20:30', '20:30-22:30'],
   allow_holiday_scheduling: true,
   no_feedback_required: false,
   is_active: true,
@@ -773,7 +777,7 @@ const handleBatchAddSubmit = async () => {
       email: parts[6] || '',
       max_weekly_hours: parts[7] ? parseInt(parts[7]) : 40,
       available_days: parts.slice(8).filter(p => p).join(',') || '6,7',
-      available_time_slots: selectedBatchTimeSlots.value.length > 0 ? selectedBatchTimeSlots.value.join(',') : '08:00-10:00,10:00-12:00,13:30-15:30,15:30-17:30,17:30-19:30,19:30-21:30',
+      available_time_slots: selectedBatchTimeSlots.value.length > 0 ? selectedBatchTimeSlots.value.join(',') : '08:00-10:00,10:00-12:00,13:30-15:30,15:30-17:30,17:30-19:30,19:00-21:00,19:30-21:30',
       allow_holiday_scheduling: true,
       no_feedback_required: false,
       is_active: true

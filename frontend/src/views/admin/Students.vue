@@ -382,6 +382,9 @@
                     </div>
                     <div style="margin-bottom: 5px;">
                       <el-checkbox value="18:30-20:30" :class="{ 'overlapping-slot': isOverlappingSlot('18:30-20:30') }">18:30-20:30</el-checkbox>
+                    </div>
+                    <div style="margin-bottom: 5px;">
+                      <el-checkbox value="19:00-21:00" :class="{ 'overlapping-slot': isOverlappingSlot('19:00-21:00') }">19:00-21:00</el-checkbox>
                     </div>                    
                     <div style="margin-bottom: 5px;">
                       <el-checkbox value="19:30-21:30" :class="{ 'overlapping-slot': isOverlappingSlot('19:30-21:30') }">19:30-21:30</el-checkbox>
@@ -484,6 +487,7 @@
             <el-option label="17:30-19:30" value="17:30-19:30" />
             <el-option label="18:00-20:00" value="18:00-20:00" />
             <el-option label="18:30-20:30" value="18:30-20:30" />
+            <el-option label="19:00-21:00" value="19:00-21:00" />
             <el-option label="19:30-21:30" value="19:30-21:30" />
             <el-option label="20:00-22:00" value="20:00-22:00" />
             <el-option label="20:30-22:30" value="20:30-22:30" />
@@ -890,7 +894,7 @@ const form = ref({
   enrollment_date: null,
   class_ids: [],
   available_days: '1,2,3,4,5,6,7',
-  available_time_slots: '08:00-10:00,10:00-12:00,13:30-15:30,15:30-17:30,17:30-19:30,19:30-21:30,14:00-16:00,16:00-18:00,18:00-20:00,20:00-22:00,14:30-16:30,16:30-18:30,18:30-20:30,20:30-22:30',
+  available_time_slots: '08:00-10:00,10:00-12:00,13:30-15:30,15:30-17:30,17:30-19:30,19:00-21:00,19:30-21:30,14:00-16:00,16:00-18:00,18:00-20:00,20:00-22:00,14:30-16:30,16:30-18:30,18:30-20:30,20:30-22:30',
   allow_holiday_scheduling: true,
   contact_person: '',
   contact_phone: '',
@@ -899,15 +903,18 @@ const form = ref({
   end_date: null
 })
 
+// 表单数据备份储存
 const originalForm = ref({
   code: '',
   name: '',
+  gender: 'male',
+  phone: '',
   school: '',
   grade: '',
   enrollment_date: null,
   class_ids: [],
   available_days: '1,2,3,4,5,6,7',
-  available_time_slots: '08:00-10:00,10:00-12:00,13:30-15:30,15:30-17:30,17:30-19:30,19:30-21:30,14:00-16:00,16:00-18:00,18:00-20:00,20:00-22:00,14:30-16:30,16:30-18:30,18:30-20:30,20:30-22:30',
+  available_time_slots: '08:00-10:00,10:00-12:00,13:30-15:30,15:30-17:30,17:30-19:30,19:00-21:00,19:30-21:30,14:00-16:00,16:00-18:00,18:00-20:00,20:00-22:00,14:30-16:30,16:30-18:30,18:30-20:30,20:30-22:30',
   allow_holiday_scheduling: true,
   contact_person: '',
   contact_phone: '',
@@ -1105,7 +1112,7 @@ const showAddDialog = async () => {
     enrollment_date: new Date().toISOString().split('T')[0],
     class_ids: prefillData?.class_id ? [prefillData.class_id] : [],
     available_days: '1,2,3,4,5,6,7',
-    available_time_slots: '08:00-10:00,10:00-12:00,13:30-15:30,15:30-17:30,17:30-19:30,19:30-21:30,14:00-16:00,16:00-18:00,18:00-20:00,20:00-22:00,14:30-16:30,16:30-18:30,18:30-20:30,20:30-22:30',
+    available_time_slots: '08:00-10:00,10:00-12:00,13:30-15:30,15:30-17:30,17:30-19:30,19:00-21:00,19:30-21:30,14:00-16:00,16:00-18:00,18:00-20:00,20:00-22:00,14:30-16:30,16:30-18:30,18:30-20:30,20:30-22:30',
     allow_holiday_scheduling: true,
     contact_person: prefillData?.contact_person || '',
     contact_phone: prefillData?.contact_phone || '',
@@ -1116,7 +1123,7 @@ const showAddDialog = async () => {
   
   // 初始化 selectedDays 和 selectedTimeSlots
   selectedDays.value = [1, 2, 3, 4, 5, 6, 7]
-  selectedTimeSlots.value = ['08:00-10:00', '10:00-12:00', '13:30-15:30', '15:30-17:30', '17:30-19:30', '19:30-21:30']
+  selectedTimeSlots.value = ['08:00-10:00', '10:00-12:00', '13:30-15:30', '15:30-17:30', '17:30-19:30', '19:00-21:00', '19:30-21:30']
   
   dialogVisible.value = true
 }
@@ -1157,7 +1164,7 @@ const handleBatchAddSubmit = async () => {
       contact_phone: parts[6] || '',
       email: parts[7] || '',
       available_days: parts.slice(8).filter(p => p).join(',') || '6,7',
-      available_time_slots: selectedBatchTimeSlots.value.length > 0 ? selectedBatchTimeSlots.value.join(',') : '08:00-10:00,10:00-12:00,13:30-15:30,15:30-17:30,17:30-19:30,19:30-21:30',
+      available_time_slots: selectedBatchTimeSlots.value.length > 0 ? selectedBatchTimeSlots.value.join(',') : '08:00-10:00,10:00-12:00,13:30-15:30,15:30-17:30,17:30-19:30,19:00-21:00,19:30-21:30',
       allow_holiday_scheduling: true,
       class_ids: selectedBatchClassIds.value || [],
       is_active: true
@@ -1242,7 +1249,7 @@ const showEditDialog = async (row) => {
     enrollment_date: row.enrollment_date ? new Date(row.enrollment_date).toISOString().split('T')[0] : null,
     class_ids: row.class_ids || [],
     available_days: row.available_days || '1,2,3,4,5,6,7',
-    available_time_slots: row.available_time_slots || '08:00-10:00,10:00-12:00,13:30-15:30,15:30-17:30,17:30-19:30,19:30-21:30,14:00-16:00,16:00-18:00,18:00-20:00,20:00-22:00,14:30-16:30,16:30-18:30,18:30-20:30,20:30-22:30',
+    available_time_slots: row.available_time_slots || '08:00-10:00,10:00-12:00,13:30-15:30,15:30-17:30,17:30-19:30,19:00-21:00,19:30-21:30,14:00-16:00,16:00-18:00,18:00-20:00,20:00-22:00,14:30-16:30,16:30-18:30,18:30-20:30,20:30-22:30',
     allow_holiday_scheduling: row.allow_holiday_scheduling !== undefined ? row.allow_holiday_scheduling : true,
     contact_person: row.contact_person || '',
     contact_phone: row.contact_phone || '',

@@ -353,8 +353,8 @@ const formRef = ref(null)
 const form = ref({
   grade: '',
   date: '',
-  words: [{ word: '', uk_phonetic: '', us_phonetic: '', meaning: '', part_of_speech: '', mastery_requirement: '', remark: '', link: '' }],
-  phrases: [{ phrase: '', meaning: '', phrase_type: [], syntactic_role: [], mastery_requirement: '', remark: '', link: '' }],
+  words: [{ word: '', uk_phonetic: '', us_phonetic: '', meaning: '', part_of_speech: '', mastery_requirement: 'full_mastery', remark: '', link: '' }],
+  phrases: [{ phrase: '', meaning: '', phrase_type: [], syntactic_role: [], mastery_requirement: 'full_mastery', remark: '', link: '' }],
 })
 
 const defaultGradeOptions = computed(() => [
@@ -514,7 +514,7 @@ const handleSizeChange = (size) => {
 }
 
 const addWord = () => {
-  form.value.words.push({ word: '', uk_phonetic: '', us_phonetic: '', meaning: '', part_of_speech: '', mastery_requirement: '', remark: '', link: '', _phoneticLoading: false })
+  form.value.words.push({ word: '', uk_phonetic: '', us_phonetic: '', meaning: '', part_of_speech: '', mastery_requirement: 'full_mastery', remark: '', link: '', _phoneticLoading: false })
 }
 
 const removeWord = (index) => {
@@ -526,7 +526,7 @@ const removeWord = (index) => {
 }
 
 const addPhrase = () => {
-  form.value.phrases.push({ phrase: '', meaning: '', phrase_type: [], syntactic_role: [], mastery_requirement: '', remark: '', link: '' })
+  form.value.phrases.push({ phrase: '', meaning: '', phrase_type: [], syntactic_role: [], mastery_requirement: 'full_mastery', remark: '', link: '' })
 }
 
 const removePhrase = (index) => {
@@ -539,8 +539,8 @@ const showAddDialog = () => {
   form.value = {
     grade: '',
     date: '',
-    words: [{ word: '', uk_phonetic: '', us_phonetic: '', meaning: '', part_of_speech: '', mastery_requirement: '', remark: '', link: '', _phoneticLoading: false }],
-    phrases: [{ phrase: '', meaning: '', phrase_type: [], syntactic_role: [], mastery_requirement: '', remark: '', link: '' }],
+    words: [{ word: '', uk_phonetic: '', us_phonetic: '', meaning: '', part_of_speech: '', mastery_requirement: 'full_mastery', remark: '', link: '', _phoneticLoading: false }],
+    phrases: [{ phrase: '', meaning: '', phrase_type: [], syntactic_role: [], mastery_requirement: 'full_mastery', remark: '', link: '' }],
   }
   addDialogVisible.value = true
 }
@@ -552,11 +552,11 @@ const showEditDialog = (row) => {
     grade: row.grade,
     date: row.date,
     words: row.words && row.words.length > 0
-      ? row.words.map(w => ({ word: w.word || '', uk_phonetic: w.uk_phonetic || w.phonetic || '', us_phonetic: w.us_phonetic || '', meaning: w.meaning || '', part_of_speech: w.part_of_speech || '', mastery_requirement: w.mastery_requirement || '', remark: w.remark || '', link: w.link || '', _phoneticLoading: false }))
-      : [{ word: '', uk_phonetic: '', us_phonetic: '', meaning: '', part_of_speech: '', mastery_requirement: '', remark: '', link: '', _phoneticLoading: false }],
+      ? row.words.map(w => ({ word: w.word || '', uk_phonetic: w.uk_phonetic || w.phonetic || '', us_phonetic: w.us_phonetic || '', meaning: w.meaning || '', part_of_speech: w.part_of_speech || '', mastery_requirement: w.mastery_requirement || 'full_mastery', remark: w.remark || '', link: w.link || '', _phoneticLoading: false }))
+      : [{ word: '', uk_phonetic: '', us_phonetic: '', meaning: '', part_of_speech: '', mastery_requirement: 'full_mastery', remark: '', link: '', _phoneticLoading: false }],
     phrases: row.phrases && row.phrases.length > 0
-      ? row.phrases.map(p => ({ phrase: p.phrase || '', meaning: p.meaning || '', phrase_type: Array.isArray(p.phrase_type) ? p.phrase_type : (p.phrase_type ? [p.phrase_type] : []), syntactic_role: Array.isArray(p.syntactic_role) ? p.syntactic_role : (p.syntactic_role ? [p.syntactic_role] : []), mastery_requirement: p.mastery_requirement || '', remark: p.remark || '', link: p.link || '' }))
-      : [{ phrase: '', meaning: '', phrase_type: [], syntactic_role: [], mastery_requirement: '', remark: '', link: '' }],
+      ? row.phrases.map(p => ({ phrase: p.phrase || '', meaning: p.meaning || '', phrase_type: Array.isArray(p.phrase_type) ? p.phrase_type : (p.phrase_type ? [p.phrase_type] : []), syntactic_role: Array.isArray(p.syntactic_role) ? p.syntactic_role : (p.syntactic_role ? [p.syntactic_role] : []), mastery_requirement: p.mastery_requirement || 'full_mastery', remark: p.remark || '', link: p.link || '' }))
+      : [{ phrase: '', meaning: '', phrase_type: [], syntactic_role: [], mastery_requirement: 'full_mastery', remark: '', link: '' }],
   }
   addDialogVisible.value = true
 }
@@ -925,7 +925,7 @@ const handleImport = async () => {
                 uk_phonetic: String(row[3] || '').trim(),
                 us_phonetic: String(row[4] || '').trim(),
                 meaning: String(row[5] || '').trim(),
-                mastery_requirement: String(row[6] || '').trim(),
+                mastery_requirement: String(row[6] || 'full_mastery').trim(),
                 remark: String(row[7] || '').trim(),
                 link: String(row[8] || '').trim(),
               })
@@ -949,7 +949,7 @@ const handleImport = async () => {
                 phrase_type: phraseTypeArr,
                 syntactic_role: syntacticRoleArr,
                 meaning: String(row[4] || '').trim(),
-                mastery_requirement: String(row[5] || '').trim(),
+                mastery_requirement: String(row[5] || 'full_mastery').trim(),
                 remark: String(row[6] || '').trim(),
                 link: String(row[7] || '').trim(),
               })
@@ -1046,6 +1046,15 @@ const fetchPhonetic = async (index) => {
       const firstMeaning = entry.meanings[0]
       if (firstMeaning.definitions && firstMeaning.definitions.length > 0) {
         word.meaning = firstMeaning.definitions[0].definition || ''
+      }
+    }
+
+    if (!word.part_of_speech && entry.meanings && entry.meanings.length > 0) {
+      const firstMeaning = entry.meanings[0]
+      const pos = (firstMeaning.partOfSpeech || '').toLowerCase()
+      const validPos = partOfSpeechOptions.value.find(o => o.value === pos)
+      if (validPos) {
+        word.part_of_speech = validPos.value
       }
     }
 

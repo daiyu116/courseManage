@@ -99,6 +99,10 @@
               <el-icon><Upload /></el-icon>
               {{ t('schedules.import') }}
             </el-button>
+            <el-button type="warning" @click="handleScreenshot" :loading="isScreenshotting">
+              <el-icon><Camera /></el-icon>
+              {{ t('schedules.screenshot') }}
+            </el-button>
             <el-dropdown @command="handleExport" split-button type="success">
               <el-icon><Download /></el-icon>
               {{ t('schedules.export') }}
@@ -578,7 +582,7 @@
                     </template>
                 </el-table-column>
                 
-                <el-table-column :label="t('common.operation')" width="175" fixed="right">
+                <el-table-column v-if="!isScreenshotting" :label="t('common.operation')" width="175" fixed="right">
                   <template #default="{ row }">
                     <div style="display: flex; gap: 3px; flex-wrap: wrap;">
                       <el-button v-if="canEditSchedule(row)" size="small" @click="showEditDialog(row)">{{ t('schedules.edit') }}</el-button>
@@ -1812,6 +1816,7 @@ import { useI18n } from 'vue-i18n'
 
 const { t, locale } = useI18n()
 const mainTableRef = ref(null)
+const isScreenshotting = ref(false)
 const topScrollbarRef = ref(null)
 const scrollbarWidth = ref(0)
 let scrollHandler = null
@@ -3591,6 +3596,62 @@ const handleExport = async (format) => {
   } catch (error) {
     window.logger.error('导出失败:', error)
     ElMessage.error(t('schedules.message.exportFailed'))
+  }
+}
+
+const handleScreenshot = async () => {
+  if (!mainTableRef.value) {
+    ElMessage.warning(t('schedules.screenshotNoData'))
+    return
+  }
+
+  isScreenshotting.value = true
+  
+  try {
+    await nextTick()
+    
+    const tableEl = mainTableRef.value.$el
+    
+    // 临时移除表格的滚动限制，确保完整截图
+    const bodyWrapper = tableEl.querySelector('.el-table__body-wrapper')
+    const originalOverflow = bodyWrapper ? bodyWrapper.style.overflow : ''
+    const originalMaxHeight = bodyWrapper ? bodyWrapper.style.maxHeight : ''
+    if (bodyWrapper) {
+      bodyWrapper.style.overflow = 'visible'
+      bodyWrapper.style.maxHeight = 'none'
+    }
+    
+    const canvas = await html2canvas(tableEl, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: '#ffffff',
+      windowWidth: tableEl.scrollWidth,
+      windowHeight: tableEl.scrollHeight
+    })
+    
+    // 恢复滚动样式
+    if (bodyWrapper) {
+      bodyWrapper.style.overflow = originalOverflow
+      bodyWrapper.style.maxHeight = originalMaxHeight
+    }
+    
+    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'))
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    const timestamp = dayjs().format('YYYYMMDD_HHmmss')
+    link.download = `course_schedules_${timestamp}.png`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    window.URL.revokeObjectURL(url)
+    
+    ElMessage.success(t('schedules.screenshotSuccess'))
+  } catch (error) {
+    window.logger.error('截图失败:', error)
+    ElMessage.error(t('schedules.screenshotFailed'))
+  } finally {
+    isScreenshotting.value = false
   }
 }
 

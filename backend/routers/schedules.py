@@ -2516,6 +2516,7 @@ async def export_schedules(
     id: Optional[int] = None,
     teacher_id: Optional[int] = None,
     teacher_ids: Optional[str] = None,
+    student_ids: Optional[str] = None,
     class_id: Optional[int] = None,
     class_ids: Optional[str] = None,
     course_id: Optional[int] = None,
@@ -2526,6 +2527,8 @@ async def export_schedules(
     days_of_week: Optional[str] = None,
     has_conflict: Optional[bool] = None,
     execution_status: Optional[str] = None,
+    schedule_type: Optional[str] = None,
+    has_absent_students: Optional[bool] = None,
     lang: str = "zh-CN",
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
@@ -2536,6 +2539,22 @@ async def export_schedules(
     # 如果指定了ID，直接按ID过滤（最高优先级）
     if id:
         query = query.filter(Schedule.id == id)
+    
+    # 学员查询逻辑：直接查询 schedule_student 表中该学员参与的课程安排
+    if student_ids:
+        try:
+            student_id_list = [int(id.strip()) for id in student_ids.split(',')]
+            stmt = select(schedule_student.c.schedule_id).where(
+                schedule_student.c.student_id.in_(student_id_list)
+            )
+            result = db.execute(stmt)
+            schedule_id_list = [row[0] for row in result.fetchall()]
+            if not schedule_id_list:
+                query = query.filter(Schedule.id == -1)  # 返回空结果
+            else:
+                query = query.filter(Schedule.id.in_(schedule_id_list))
+        except ValueError:
+            pass
         
     if start_date:
         try:
@@ -2605,7 +2624,29 @@ async def export_schedules(
         query = query.filter(Schedule.has_conflict == has_conflict)
     
     if execution_status and execution_status.strip():
-        query = query.filter(Schedule.execution_status == execution_status)
+        # 支持多个执行状态，用逗号分隔
+        status_list = [status.strip() for status in execution_status.split(',') if status.strip()]
+        if len(status_list) == 1:
+            query = query.filter(Schedule.execution_status == status_list[0])
+        elif len(status_list) > 1:
+            query = query.filter(Schedule.execution_status.in_(status_list))
+    
+    if schedule_type and schedule_type.strip():
+        query = query.filter(Schedule.schedule_type == schedule_type)
+    
+    if has_absent_students is not None:
+        if has_absent_students:
+            # 过滤出有缺席或请假学员的课程（未全员出席）
+            subquery = db.query(schedule_student.c.schedule_id).filter(
+                schedule_student.c.attendance_status.in_(['leave', 'absent'])
+            ).distinct()
+            query = query.filter(Schedule.id.in_(subquery))
+        else:
+            # 过滤出全员出席的课程
+            subquery = db.query(schedule_student.c.schedule_id).filter(
+                schedule_student.c.attendance_status.in_(['leave', 'absent'])
+            ).distinct()
+            query = query.filter(~Schedule.id.in_(subquery))
     
     schedules = query.order_by(Schedule.start_date, Schedule.start_time).all()
     
@@ -2878,7 +2919,7 @@ def export_to_pdf(schedules: List[Schedule], db: Session, lang: str = "zh-CN"):
     
     # 计算每列的起始 X 坐标（转换为点）
     x_positions = [margin_left]
-    for w in col_widths[:-1]:
+    for w in col_widths:
         x_positions.append(x_positions[-1] + w * inch)
     
     # 起始 Y 坐标（标题下方）

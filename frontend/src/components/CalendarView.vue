@@ -152,7 +152,7 @@
         <el-form-item :label="t('calendar.teacher')" prop="teacher_id">
           <el-select v-model="addForm.teacher_id" filterable :placeholder="t('calendar.selectTeacher')" style="width: 100%">
             <el-option v-for="teacher in teachers" :key="teacher.id" :label="teacher.name" :value="teacher.id">
-              <el-tooltip placement="right" :show-after="200" v-if="teacher.contact_phone || teacher.email">
+              <el-tooltip placement="right" :show-after="200">
                 <template #content>
                   <div style="min-width: 200px;">
                     <div><strong>{{ t('calendar.teacher') }}：</strong>{{ teacher.name }}</div>
@@ -170,7 +170,6 @@
                 </template>
                 <span>{{ teacher.name }}</span>
               </el-tooltip>
-              <span v-else>{{ teacher.name }}</span>
             </el-option>
           </el-select>
         </el-form-item>
@@ -1075,7 +1074,7 @@ const rooms = ref([])
 const courses = ref([])
 const detailDialogVisible = ref(false)
 const currentSchedule = ref(null)
-const timeSlots = ['08:00', '10:00', '12:00', '13:30', '14:00', '14:30', '15:30', '16:00', '16:30', '17:30', '18:00', '18:30', '19:30', '20:00', '20:30', '21:30', '22:00', '22:30']
+const timeSlots = ['08:00', '10:00', '12:00', '13:30', '14:00', '14:30', '15:30', '16:00', '16:30', '17:30', '18:00', '18:30', '19:00', '19:30', '20:00', '20:30', '21:00', '21:30', '22:00', '22:30']
 const homeworkFormRef = ref(null)
 const makeupFormRef = ref(null)
 const copyLoading = ref(false)
