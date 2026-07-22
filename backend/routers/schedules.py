@@ -2485,11 +2485,41 @@ async def get_schedule_conflicts(schedule_id: int, db: Session = Depends(get_db)
     ).all()
     
     for s in all_schedules:
+        conflict_types = []
+        conflict_details = []
+        
         # 检查是否冲突（同一教室、同一导师或同一班级）
-        if (s.room_id == schedule.room_id or 
-            s.teacher_id == schedule.teacher_id or 
-            s.class_id == schedule.class_id):
-            conflicts.append(s)
+        if s.room_id == schedule.room_id:
+            conflict_types.append("room")
+            room = db.query(Room).filter(Room.id == schedule.room_id).first()
+            conflict_details.append(f"教室: {room.name if room else '未知'}")
+        if s.teacher_id == schedule.teacher_id:
+            conflict_types.append("teacher")
+            teacher = db.query(Teacher).filter(Teacher.id == schedule.teacher_id).first()
+            conflict_details.append(f"导师: {teacher.name if teacher else '未知'}")
+        if s.class_id == schedule.class_id:
+            conflict_types.append("class")
+            cls = db.query(Class).filter(Class.id == schedule.class_id).first()
+            conflict_details.append(f"班级: {cls.name if cls else '未知'}")
+        
+        if conflict_types:
+            # 将冲突信息附加到课程对象上
+            s_dict = {
+                "id": s.id,
+                "course_id": s.course_id,
+                "teacher_id": s.teacher_id,
+                "class_id": s.class_id,
+                "room_id": s.room_id,
+                "start_date": s.start_date.isoformat() if s.start_date else None,
+                "end_date": s.end_date.isoformat() if s.end_date else None,
+                "start_time": str(s.start_time) if s.start_time else None,
+                "end_time": str(s.end_time) if s.end_time else None,
+                "day_of_week": s.day_of_week,
+                "conflict_type": conflict_types[0],
+                "conflict_types": conflict_types,
+                "conflict_detail": "; ".join(conflict_details),
+            }
+            conflicts.append(s_dict)
     
     return conflicts
 

@@ -111,6 +111,7 @@
             <div v-if="row.words && row.words.length > 0">
               <el-tag v-for="(w, idx) in row.words.slice(0, 5)" :key="idx" size="small" style="margin: 2px;">
                 {{ w.word }}
+                <span v-if="w.chinese_meaning" style="color: #909399; margin-left: 4px;">{{ w.chinese_meaning }}</span>
               </el-tag>
               <span v-if="row.words.length > 5" style="color: #909399; margin-left: 4px;">
                 ...+{{ row.words.length - 5 }}
@@ -143,7 +144,7 @@
       />
     </el-card>
 
-    <el-dialog v-model="addDialogVisible" :title="isEditing ? t('dailyWords.editDailyWord') : t('dailyWords.addDailyWord')" width="90%" top="5vh" draggable>
+    <el-dialog v-model="addDialogVisible" :title="isEditing ? t('dailyWords.editDailyWord') : t('dailyWords.addDailyWord')" width="98%" top="2vh" draggable>
       <div class="dialog-scroll-body">
       <el-form :model="form" :rules="formRules" ref="formRef" label-width="100px">
         <el-form-item :label="t('dailyWords.grade')" prop="grade">
@@ -1195,10 +1196,14 @@ onMounted(() => {
 }
 .word-phrase-row {
   display: flex;
+  flex-wrap: wrap;
   gap: 6px;
   margin-bottom: 8px;
   align-items: center;
-  min-width: max-content;
+  padding: 6px 8px;
+  border: 1px dashed #e0e0e0;
+  border-radius: 6px;
+  background: #fafafa;
 }
 .row-field-short {
   flex: 0 0 80px;
@@ -1249,8 +1254,7 @@ onMounted(() => {
     max-height: 60vh;
   }
   .word-phrase-row {
-    flex-wrap: wrap;
-    min-width: unset;
+    gap: 4px;
   }
   .row-field-short,
   .row-field-main,

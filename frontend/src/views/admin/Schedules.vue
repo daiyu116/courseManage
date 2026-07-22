@@ -545,8 +545,11 @@
                                 <el-tag type="danger" style="cursor: pointer;">{{ t('schedules.conflict') }}</el-tag>
                             </template>
                             <div v-loading="conflictLoading">
-                                <div v-if="conflictSchedules.length > 0">
-                                    <el-table :data="conflictSchedules" stripe style="width: 100%">
+                                <div v-if="popoverConflictSchedules.length > 0">
+                                    <div style="margin-bottom: 8px; color: #f56c6c; font-weight: bold;">
+                                        ⚠️ {{ t('schedules.conflictWithFollowing') }}
+                                    </div>
+                                    <el-table :data="popoverConflictSchedules" stripe style="width: 100%">
                                         <el-table-column prop="id" label="ID" width="80" />
                                         <el-table-column :label="t('schedules.course')" width="120">
                                             <template #default="{ row: conflictRow }">
@@ -571,6 +574,14 @@
                                         <el-table-column :label="t('schedules.time')" width="160">
                                             <template #default="{ row: conflictRow }">
                                                 {{ formatDate(conflictRow.start_date) }} {{ conflictRow.start_time }}-{{ conflictRow.end_time }}
+                                            </template>
+                                        </el-table-column>
+                                        <el-table-column :label="t('schedules.conflictReason')" min-width="200">
+                                            <template #default="{ row: conflictRow }">
+                                                <el-tag v-if="conflictRow.conflict_type === 'teacher'" type="warning" size="small">{{ t('schedules.teacherConflict') }}</el-tag>
+                                                <el-tag v-if="conflictRow.conflict_type === 'room'" type="danger" size="small">{{ t('schedules.roomConflict') }}</el-tag>
+                                                <el-tag v-if="conflictRow.conflict_type === 'class'" type="info" size="small">{{ t('schedules.classConflict') }}</el-tag>
+                                                <span style="color: #f56c6c; font-size: 12px; margin-left: 4px;">{{ conflictRow.conflict_detail }}</span>
                                             </template>
                                         </el-table-column>
                                     </el-table>
@@ -1879,6 +1890,7 @@ const dialogTitle = ref('')
 const formRef = ref(null)
 const autoScheduleFormRef = ref(null)
 const conflictLoading = ref(false)
+const popoverConflictSchedules = ref([])
 
 const filterStartDate = ref('')
 const filterEndDate = ref('')
@@ -2604,7 +2616,7 @@ const loadConflictSchedules = async (schedule) => {
   conflictLoading.value = true
   try {
     const response = await api.get(`/schedules/${schedule.id}/conflicts`)
-    conflictSchedules.value = response.data
+    popoverConflictSchedules.value = response.data
   } catch (error) {
     window.logger.error('获取冲突课程失败:', error)
     ElMessage.error(t('schedules.message.getConflictFailed'))
@@ -3612,46 +3624,6 @@ const handleScreenshot = async () => {
     
     const tableEl = mainTableRef.value.$el
     
-    const headerWrapper = tableEl.querySelector('.el-table__header-wrapper')
-    const bodyWrapper = tableEl.querySelector('.el-table__body-wrapper')
-    const fixedRight = tableEl.querySelector('.el-table__fixed-right')
-    const fixedRightPatch = tableEl.querySelector('.el-table__fixed-right-patch')
-    const scrollbarWrap = tableEl.querySelector('.el-scrollbar__wrap')
-    
-    const originalStyles = {
-      headerOverflow: headerWrapper ? headerWrapper.style.overflow : '',
-      headerOverflowX: headerWrapper ? headerWrapper.style.overflowX : '',
-      bodyOverflow: bodyWrapper ? bodyWrapper.style.overflow : '',
-      bodyOverflowX: bodyWrapper ? bodyWrapper.style.overflowX : '',
-      bodyMaxHeight: bodyWrapper ? bodyWrapper.style.maxHeight : '',
-      scrollbarOverflow: scrollbarWrap ? scrollbarWrap.style.overflow : '',
-      scrollbarOverflowX: scrollbarWrap ? scrollbarWrap.style.overflowX : '',
-      fixedRightDisplay: fixedRight ? fixedRight.style.display : '',
-      fixedRightPatchDisplay: fixedRightPatch ? fixedRightPatch.style.display : '',
-    }
-    
-    if (headerWrapper) {
-      headerWrapper.style.overflow = 'visible'
-      headerWrapper.style.overflowX = 'visible'
-    }
-    if (bodyWrapper) {
-      bodyWrapper.style.overflow = 'visible'
-      bodyWrapper.style.overflowX = 'visible'
-      bodyWrapper.style.maxHeight = 'none'
-    }
-    if (scrollbarWrap) {
-      scrollbarWrap.style.overflow = 'visible'
-      scrollbarWrap.style.overflowX = 'visible'
-    }
-    if (fixedRight) {
-      fixedRight.style.display = 'none'
-    }
-    if (fixedRightPatch) {
-      fixedRightPatch.style.display = 'none'
-    }
-    
-    await nextTick()
-    
     const canvas = await html2canvas(tableEl, {
       scale: 2,
       useCORS: true,
@@ -3659,28 +3631,76 @@ const handleScreenshot = async () => {
       scrollX: -window.scrollX,
       scrollY: -window.scrollY,
       windowWidth: tableEl.scrollWidth,
-      windowHeight: tableEl.scrollHeight
+      windowHeight: tableEl.scrollHeight,
+      onclone: (clonedDoc) => {
+        const clonedTable = clonedDoc.querySelector('.el-table')
+        if (!clonedTable) return
+        
+        const clonedFixedRight = clonedTable.querySelector('.el-table__fixed-right')
+        if (clonedFixedRight) clonedFixedRight.remove()
+        const clonedFixedRightPatch = clonedTable.querySelector('.el-table__fixed-right-patch')
+        if (clonedFixedRightPatch) clonedFixedRightPatch.remove()
+        
+        const clonedHeader = clonedTable.querySelector('.el-table__header-wrapper')
+        const clonedBody = clonedTable.querySelector('.el-table__body-wrapper')
+        const clonedScrollbar = clonedTable.querySelector('.el-scrollbar__wrap')
+        
+        if (clonedHeader) {
+          clonedHeader.style.overflow = 'visible'
+          clonedHeader.style.overflowX = 'visible'
+        }
+        if (clonedBody) {
+          clonedBody.style.overflow = 'visible'
+          clonedBody.style.overflowX = 'visible'
+          clonedBody.style.maxHeight = 'none'
+        }
+        if (clonedScrollbar) {
+          clonedScrollbar.style.overflow = 'visible'
+          clonedScrollbar.style.overflowX = 'visible'
+        }
+        
+        const allTags = clonedTable.querySelectorAll('.el-tag')
+        allTags.forEach(tag => {
+          const span = clonedDoc.createElement('span')
+          span.textContent = tag.textContent
+          span.style.display = 'inline-block'
+          span.style.padding = '2px 8px'
+          span.style.borderRadius = '4px'
+          span.style.fontSize = '12px'
+          span.style.lineHeight = '20px'
+          span.style.border = '1px solid'
+          span.style.whiteSpace = 'nowrap'
+          
+          if (tag.classList.contains('el-tag--success')) {
+            span.style.backgroundColor = '#f0f9eb'
+            span.style.borderColor = '#e1f3d8'
+            span.style.color = '#67c23a'
+          } else if (tag.classList.contains('el-tag--warning')) {
+            span.style.backgroundColor = '#fdf6ec'
+            span.style.borderColor = '#faecd8'
+            span.style.color = '#e6a23c'
+          } else if (tag.classList.contains('el-tag--info')) {
+            span.style.backgroundColor = '#f4f4f5'
+            span.style.borderColor = '#e9e9eb'
+            span.style.color = '#909399'
+          } else if (tag.classList.contains('el-tag--danger')) {
+            span.style.backgroundColor = '#fef0f0'
+            span.style.borderColor = '#fde2e2'
+            span.style.color = '#f56c6c'
+          } else if (tag.classList.contains('el-tag--primary')) {
+            span.style.backgroundColor = '#ecf5ff'
+            span.style.borderColor = '#d9ecff'
+            span.style.color = '#409eff'
+          } else {
+            span.style.backgroundColor = '#f4f4f5'
+            span.style.borderColor = '#e9e9eb'
+            span.style.color = '#909399'
+          }
+          
+          tag.parentNode.replaceChild(span, tag)
+        })
+      }
     })
-    
-    if (headerWrapper) {
-      headerWrapper.style.overflow = originalStyles.headerOverflow
-      headerWrapper.style.overflowX = originalStyles.headerOverflowX
-    }
-    if (bodyWrapper) {
-      bodyWrapper.style.overflow = originalStyles.bodyOverflow
-      bodyWrapper.style.overflowX = originalStyles.bodyOverflowX
-      bodyWrapper.style.maxHeight = originalStyles.bodyMaxHeight
-    }
-    if (scrollbarWrap) {
-      scrollbarWrap.style.overflow = originalStyles.scrollbarOverflow
-      scrollbarWrap.style.overflowX = originalStyles.scrollbarOverflowX
-    }
-    if (fixedRight) {
-      fixedRight.style.display = originalStyles.fixedRightDisplay
-    }
-    if (fixedRightPatch) {
-      fixedRightPatch.style.display = originalStyles.fixedRightPatchDisplay
-    }
     
     const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'))
     const url = window.URL.createObjectURL(blob)

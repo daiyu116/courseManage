@@ -67,29 +67,33 @@
         </div>
       </template>
 
-      <div class="calendar-container">
-        <div class="time-column">
-          <div class="time-header">{{ t('calendar.time') }}</div>
-          <div v-for="time in timeSlots" :key="time" class="time-cell">
-            {{ time }}
-          </div>
+      <div class="calendar-wrapper">
+        <div class="top-scrollbar" ref="topScrollbarRef" @scroll="onTopScroll">
+          <div class="top-scrollbar-inner" :style="{ width: scrollContentWidth + 'px' }"></div>
         </div>
-
-        <div class="dates-column">
-          <div class="date-header-row">
-            <div v-for="date in displayDates" :key="date.dateStr" class="date-header">
-              <div class="date-name">{{ date.dayName }}</div>
-              <div class="date-num" :class="{ 'is-today': date.isToday }">{{ date.dateNum }}</div>
-              <div v-if="date.lunarDate" class="date-lunar">{{ date.lunarDate }}</div>
+        <div class="calendar-container" ref="calendarContainerRef" @scroll="onCalendarScroll">
+          <div class="time-column">
+            <div class="time-header">{{ t('calendar.time') }}</div>
+            <div v-for="time in timeSlots" :key="time" class="time-cell">
+              {{ time }}
             </div>
           </div>
 
-          <div v-for="time in timeSlots" :key="time" class="time-row">
-            <div v-for="date in displayDates" :key="`${date.dateStr}-${time}`"
-              class="schedule-cell"
-              :class="{ 'empty-slot-clickable': currentUser && (currentUser.role === 'super_admin' || currentUser.role === 'course_admin') && getSchedulesForSlot(date, time).length === 0 }"
-              @click="getSchedulesForSlot(date, time).length === 0 && handleEmptySlotClick(date, time)"
-            >
+          <div class="dates-column">
+            <div class="date-header-row">
+              <div v-for="date in displayDates" :key="date.dateStr" class="date-header">
+                <div class="date-name">{{ date.dayName }}</div>
+                <div class="date-num" :class="{ 'is-today': date.isToday }">{{ date.dateNum }}</div>
+                <div v-if="date.lunarDate" class="date-lunar">{{ date.lunarDate }}</div>
+              </div>
+            </div>
+
+            <div v-for="time in timeSlots" :key="time" class="time-row">
+              <div v-for="date in displayDates" :key="`${date.dateStr}-${time}`"
+                class="schedule-cell"
+                :class="{ 'empty-slot-clickable': currentUser && (currentUser.role === 'super_admin' || currentUser.role === 'course_admin') && getSchedulesForSlot(date, time).length === 0 }"
+                @click="getSchedulesForSlot(date, time).length === 0 && handleEmptySlotClick(date, time)"
+              >
               <div
                 v-for="schedule in getSchedulesForSlot(date, time)"
                 :key="schedule.id"
@@ -109,6 +113,7 @@
               </div>
             </div>
           </div>
+        </div>
         </div>
       </div>
     </el-card>
@@ -1027,7 +1032,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { ChatDotRound, User, Plus } from '@element-plus/icons-vue'
 import api from '@/utils/api'
@@ -1042,6 +1047,9 @@ dayjs.locale('zh-cn')
 
 const { t } = useI18n()
 const currentUser = ref(null)
+const calendarContainerRef = ref(null)
+const topScrollbarRef = ref(null)
+const scrollContentWidth = ref(0)
 
 const props = defineProps({
   dateRange: {
@@ -1266,6 +1274,10 @@ watch(() => props.dateRange, (newVal) => {
 
 watch(() => props.viewType, (newVal) => {
   viewType.value = newVal
+})
+
+watch(displayDates, () => {
+  nextTick(() => updateScrollbarWidth())
 })
 
 // 农历转换函数（使用 lunar-javascript 库）
@@ -2130,11 +2142,9 @@ const handleNextWeek = () => {
   fetchSchedules()
 }
 
-const handleToday = () => {
+const handleToday = async () => {
   const today = dayjs()
-  // 获取本周日（使用 endOf('week')）
   const thisSunday = today.endOf('week')
-  // 上周六 = 本周日 - 8天
   const lastSaturday = thisSunday.subtract(8, 'day')
   
   dateRange.value = [
@@ -2143,7 +2153,38 @@ const handleToday = () => {
   ]
   
   handleDateRangeChange()
-  fetchSchedules()
+  await fetchSchedules()
+  
+  await nextTick()
+  scrollToToday()
+}
+
+const scrollToToday = () => {
+  if (!calendarContainerRef.value) return
+  
+  const container = calendarContainerRef.value
+  const todayHeader = container.querySelector('.date-header .is-today')
+  
+  if (!todayHeader) return
+  
+  const todayCol = todayHeader.closest('.date-header')
+  if (!todayCol) return
+  
+  const containerRect = container.getBoundingClientRect()
+  const todayRect = todayCol.getBoundingClientRect()
+  const timeColWidth = container.querySelector('.time-column')?.offsetWidth || 80
+  
+  let scrollLeft = todayRect.left - containerRect.left + container.scrollLeft - (containerRect.width - todayRect.width) / 2 + timeColWidth / 2
+  scrollLeft = Math.max(0, scrollLeft)
+  
+  container.scrollTo({
+    left: scrollLeft,
+    behavior: 'smooth'
+  })
+  
+  if (topScrollbarRef.value) {
+    topScrollbarRef.value.scrollLeft = scrollLeft
+  }
 }
 
 const initDateRange = () => {
@@ -2180,10 +2221,29 @@ onMounted(async () => {
   if (dateRange.value.length === 0) {
     initDateRange()
   } else {
-    // 如果已有日期范围，直接获取课程安排
     fetchSchedules()
-   }
+  }
+  await nextTick()
+  updateScrollbarWidth()
 })
+
+const updateScrollbarWidth = () => {
+  if (calendarContainerRef.value) {
+    scrollContentWidth.value = calendarContainerRef.value.scrollWidth
+  }
+}
+
+const onTopScroll = () => {
+  if (calendarContainerRef.value && topScrollbarRef.value) {
+    calendarContainerRef.value.scrollLeft = topScrollbarRef.value.scrollLeft
+  }
+}
+
+const onCalendarScroll = () => {
+  if (topScrollbarRef.value && calendarContainerRef.value) {
+    topScrollbarRef.value.scrollLeft = calendarContainerRef.value.scrollLeft
+  }
+}
  
 const handleEditRoomTypeChange = () => {
   if (editForm.value.room_type === 'online_virtual') {
@@ -2839,10 +2899,28 @@ const removeExtraStudent = async (studentId) => {
   }
 }
 
+.calendar-wrapper {
+  position: relative;
+}
+
+.top-scrollbar {
+  overflow-x: auto;
+  overflow-y: hidden;
+  height: 12px;
+  border: 1px solid #EBEEF5;
+  border-bottom: none;
+  background: #f5f7fa;
+}
+
+.top-scrollbar-inner {
+  height: 1px;
+}
+
 .calendar-container {
   display: flex;
   overflow-x: auto;
   border: 1px solid #EBEEF5;
+  border-top: none;
 }
 
 .date-lunar {
@@ -2859,6 +2937,9 @@ const removeExtraStudent = async (studentId) => {
 }
 
 .time-column {
+  position: sticky;
+  left: 0;
+  z-index: 10;
   display: flex;
   flex-direction: column;
   min-width: 80px;
