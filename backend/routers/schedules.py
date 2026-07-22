@@ -51,9 +51,10 @@ def check_conflicts(db: Session, schedule: Schedule, exclude_id: int = None, cla
         Schedule.start_time < schedule.end_time,
         Schedule.end_time > schedule.start_time,
         Schedule.start_date <= schedule.end_date,
-        Schedule.end_date >= schedule.start_date
+        Schedule.end_date >= schedule.start_date,
+        Schedule.execution_status.notin_(['postponed', 'cancelled'])
     )
-    
+
     if exclude_id:
         query = query.filter(Schedule.id != exclude_id)
     
@@ -2481,7 +2482,8 @@ async def get_schedule_conflicts(schedule_id: int, db: Session = Depends(get_db)
         Schedule.end_date >= schedule.start_date,
         Schedule.day_of_week == schedule.day_of_week,
         Schedule.start_time < schedule.end_time,
-        Schedule.end_time > schedule.start_time
+        Schedule.end_time > schedule.start_time,
+        Schedule.execution_status.notin_(['postponed', 'cancelled'])
     ).all()
     
     # 预加载当前课程的学生ID集合（用于学生冲突检测）
