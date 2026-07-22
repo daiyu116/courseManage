@@ -1276,10 +1276,6 @@ watch(() => props.viewType, (newVal) => {
   viewType.value = newVal
 })
 
-watch(displayDates, () => {
-  nextTick(() => updateScrollbarWidth())
-})
-
 // 农历转换函数（使用 lunar-javascript 库）
 const getLunarDate = (year, month, day) => {
   try {
@@ -1393,6 +1389,10 @@ const displayDates = computed(() => {
   }
   
   return dates
+})
+
+watch(displayDates, () => {
+  nextTick(() => updateScrollbarWidth())
 })
 
 const fetchSchedules = async () => {
