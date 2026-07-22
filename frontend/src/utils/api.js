@@ -88,22 +88,48 @@ api.interceptors.response.use(
   response => {
     return response
   },
-  error => {
+  async error => {
     if (error.response) {
       const { status, data } = error.response
-      if (status === 401) {
+      if (status === 401 && !error.config._retry) {
         const currentPath = window.location.pathname
         const isLoginPage = currentPath === '/admin/login'
         
+        if (isLoginPage || !currentPath.startsWith('/admin')) {
+          return Promise.reject(error)
+        }
+        
+        error.config._retry = true
+        
+        if (!refreshPromise) {
+          refreshPromise = axios.post('/api/auth/refresh', null, {
+            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+          }).then(response => {
+            const newToken = response.data.access_token
+            if (newToken) {
+              localStorage.setItem('token', newToken)
+            }
+            refreshPromise = null
+            return newToken
+          }).catch(() => {
+            refreshPromise = null
+            return null
+          })
+        }
+        
+        const newToken = await refreshPromise
+        
+        if (newToken) {
+          error.config.headers.Authorization = `Bearer ${newToken}`
+          return api(error.config)
+        }
+        
         localStorage.removeItem('token')
         localStorage.removeItem('user')
-        
-        if (!isLoginPage && currentPath.startsWith('/admin')) {
-          ElMessage.error(t('api.loginExpired'))
-          setTimeout(() => {
-            window.location.href = '/admin/login'
-          }, 300)
-        }
+        ElMessage.error(t('api.loginExpired'))
+        setTimeout(() => {
+          window.location.href = '/admin/login'
+        }, 300)
       } else if (status === 403) {
         showError(t('api.permissionDenied'))
       } else {

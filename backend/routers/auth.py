@@ -24,6 +24,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
 SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key-change-in-production")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24
+REFRESH_GRACE_MINUTES = 60 * 24
 
 def check_teacher_visibility(db: Session, current_user: User) -> bool:
     """检查导师可见性限制是否开启"""
@@ -586,11 +587,62 @@ def read_users_me(current_user: User = Depends(get_current_user)):
     return current_user
 
 @router.post("/refresh")
-def refresh_token(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    """续期Token：当前Token有效时，签发新Token延长过期时间"""
+def refresh_token(
+    token: str = Depends(oauth2_scheme),
+    db: Session = Depends(get_db)
+):
+    """续期Token：接受过期Token（在宽限期内），签发新Token延长过期时间"""
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+    except ExpiredSignatureError:
+        try:
+            payload = jwt.decode(
+                token, SECRET_KEY, algorithms=[ALGORITHM],
+                options={"verify_exp": False}
+            )
+            exp_timestamp = payload.get("exp", 0)
+            now = datetime.utcnow().timestamp()
+            grace_seconds = REFRESH_GRACE_MINUTES * 60
+            if now - exp_timestamp > grace_seconds:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Token已过期超过宽限期，请重新登录",
+                    headers={"WWW-Authenticate": "Bearer"},
+                )
+        except HTTPException:
+            raise
+        except Exception:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="无法验证凭据",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+    except JWTError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="无法验证凭据",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    username: str = payload.get("sub")
+    if username is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="无法验证凭据",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    user = db.query(User).filter(User.username == username).first()
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="用户不存在",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
-        data={"sub": current_user.username}, expires_delta=access_token_expires
+        data={"sub": user.username}, expires_delta=access_token_expires
     )
     return {
         "access_token": access_token,

@@ -3402,12 +3402,13 @@ const fetchCurrentUser = async () => {
     currentUser.value = response.data
   } catch (error) {
     window.logger.error('获取当前用户信息失败:', error)
-    // 如果获取失败，清除token
-      localStorage.removeItem('token')
-      localStorage.removeItem('user')
-      currentUser.value = null
-      // 触发自定义登出事件
-      window.dispatchEvent(new CustomEvent('user-logged-out'))
+    if (error.response && error.response.status === 401) {
+      return
+    }
+    localStorage.removeItem('token')
+    localStorage.removeItem('user')
+    currentUser.value = null
+    window.dispatchEvent(new CustomEvent('user-logged-out'))
   }
 }
 
