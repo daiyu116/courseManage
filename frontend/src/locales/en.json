@@ -1471,6 +1471,7 @@
     "teacherConflict": "Teacher Conflict",
     "roomConflict": "Room Conflict",
     "classConflict": "Class Conflict",
+    "studentConflict": "Student Conflict",
     "scheduleType": "Schedule Type",
     "normalClass": "Regular",
     "makeupClass": "Makeup",

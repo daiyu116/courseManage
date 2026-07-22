@@ -392,8 +392,11 @@
       </template>
     </el-dialog>
     <!-- 冲突详情弹窗 -->
-    <el-dialog v-model="conflictDialogVisible" :title="t('calendar.conflictList')" width="800px" draggable>
-      <el-table :data="conflictSchedules" stripe style="width: 100%">
+    <el-dialog v-model="conflictDialogVisible" :title="t('calendar.conflictList')" width="900px" draggable>
+      <div v-if="conflictSchedules.length === 0" style="text-align: center; padding: 20px; color: #909399;">
+        {{ t('schedules.noConflictCourse') }}
+      </div>
+      <el-table v-else :data="conflictSchedules" stripe style="width: 100%">
         <el-table-column prop="id" label="ID" width="80" />
         <el-table-column :label="t('calendar.course')" width="120">
           <template #default="{ row }">
@@ -418,6 +421,19 @@
         <el-table-column :label="t('calendar.time')" width="160">
           <template #default="{ row }">
             {{ formatDate(row.start_date) }} {{ row.start_time }}-{{ row.end_time }}
+          </template>
+        </el-table-column>
+        <el-table-column :label="t('schedules.conflictReason')" min-width="220">
+          <template #default="{ row }">
+            <div style="display: flex; flex-wrap: wrap; gap: 4px; align-items: center;">
+              <template v-for="ct in row.conflict_types" :key="ct">
+                <el-tag v-if="ct === 'teacher'" type="warning" size="small">{{ t('schedules.teacherConflict') }}</el-tag>
+                <el-tag v-if="ct === 'room'" type="danger" size="small">{{ t('schedules.roomConflict') }}</el-tag>
+                <el-tag v-if="ct === 'class'" type="info" size="small">{{ t('schedules.classConflict') }}</el-tag>
+                <el-tag v-if="ct === 'student'" type="warning" size="small">{{ t('schedules.studentConflict') }}</el-tag>
+              </template>
+              <span style="color: #f56c6c; font-size: 12px;">{{ row.conflict_detail }}</span>
+            </div>
           </template>
         </el-table-column>
       </el-table>
@@ -1393,6 +1409,12 @@ const displayDates = computed(() => {
 
 watch(displayDates, () => {
   nextTick(() => updateScrollbarWidth())
+})
+
+watch(schedules, () => {
+  nextTick(() => {
+    setTimeout(() => updateScrollbarWidth(), 100)
+  })
 })
 
 const fetchSchedules = async () => {

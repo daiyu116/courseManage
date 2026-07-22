@@ -1479,6 +1479,7 @@
     "teacherConflict": "导师冲突",
     "roomConflict": "教室冲突",
     "classConflict": "班级冲突",
+    "studentConflict": "学员冲突",
     "scheduleType": "排课类型",
     "normalClass": "正课",
     "makeupClass": "补课",

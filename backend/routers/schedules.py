@@ -2484,26 +2484,49 @@ async def get_schedule_conflicts(schedule_id: int, db: Session = Depends(get_db)
         Schedule.end_time > schedule.start_time
     ).all()
     
+    # 预加载当前课程的学生ID集合（用于学生冲突检测）
+    current_class_students = get_students_by_class(db, schedule.class_id, is_active=True)
+    current_class_student_ids = {s.id for s in current_class_students}
+    
     for s in all_schedules:
         conflict_types = []
         conflict_details = []
         
-        # 检查是否冲突（同一教室、同一导师或同一班级）
-        if s.room_id == schedule.room_id:
+        # 检查教室冲突（排除线上课程）
+        if s.room_id is not None and schedule.room_id is not None and s.room_id == schedule.room_id:
             conflict_types.append("room")
             room = db.query(Room).filter(Room.id == schedule.room_id).first()
             conflict_details.append(f"教室: {room.name if room else '未知'}")
+        
+        # 检查导师冲突
         if s.teacher_id == schedule.teacher_id:
             conflict_types.append("teacher")
             teacher = db.query(Teacher).filter(Teacher.id == schedule.teacher_id).first()
             conflict_details.append(f"导师: {teacher.name if teacher else '未知'}")
+        
+        # 检查班级冲突
         if s.class_id == schedule.class_id:
             conflict_types.append("class")
             cls = db.query(Class).filter(Class.id == schedule.class_id).first()
             conflict_details.append(f"班级: {cls.name if cls else '未知'}")
+        else:
+            # 检查学生冲突（不同班级但有共同学生）
+            other_class_students = get_students_by_class(db, s.class_id, is_active=True)
+            other_class_student_ids = {st.id for st in other_class_students}
+            common_students = current_class_student_ids & other_class_student_ids
+            if common_students:
+                conflict_types.append("student")
+                cls1 = db.query(Class).filter(Class.id == schedule.class_id).first()
+                cls2 = db.query(Class).filter(Class.id == s.class_id).first()
+                student_names = []
+                for sid in list(common_students)[:3]:
+                    stu = db.query(Student).filter(Student.id == sid).first()
+                    if stu:
+                        student_names.append(stu.name)
+                suffix = f"等{len(common_students)}人" if len(common_students) > 3 else ""
+                conflict_details.append(f"学员: {cls1.name if cls1 else '未知'}与{cls2.name if cls2 else '未知'}共有学员{'、'.join(student_names)}{suffix}")
         
         if conflict_types:
-            # 将冲突信息附加到课程对象上
             s_dict = {
                 "id": s.id,
                 "course_id": s.course_id,
