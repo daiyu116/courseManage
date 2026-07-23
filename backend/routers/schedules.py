@@ -34,6 +34,10 @@ def get_students_by_class(db: Session, class_id: int, is_active: bool = None) ->
     return [s for s in students if any(c.id == class_id for c in s.classes)]
 
 def check_conflicts(db: Session, schedule: Schedule, exclude_id: int = None, class_students_cache: Dict[int, Set[int]] = None, check_room_conflict: bool = True) -> List[ConflictInfo]:
+    # 延期/取消的课程不参与冲突检测
+    if schedule.execution_status in ('postponed', 'cancelled'):
+        return []
+    
     conflicts = []
     
     # 获取所有启用的条件
@@ -664,8 +668,22 @@ def get_all_conflicts(db: Session = Depends(get_db)):
     schedules = db.query(Schedule).all()
     all_conflicts = []
     
+    # 预加载班级学生缓存
+    all_classes = db.query(Class).filter(Class.is_active == True).all()
+    class_students_cache = {}
+    for class_ in all_classes:
+        active_students = get_students_by_class(db, class_.id, is_active=True)
+        class_students_cache[class_.id] = {s.id for s in active_students}
+    
     for schedule in schedules:
-        conflicts = check_conflicts(db, schedule, exclude_id=schedule.id)
+        # 延期/取消的课程不参与冲突检测，清除其冲突标记
+        if schedule.execution_status in ('postponed', 'cancelled'):
+            if schedule.has_conflict:
+                schedule.has_conflict = False
+                schedule.conflict_reason = None
+            continue
+        
+        conflicts = check_conflicts(db, schedule, exclude_id=schedule.id, class_students_cache=class_students_cache)
         if conflicts:
             schedule.has_conflict = True
             schedule.conflict_reason = "; ".join([c.conflict_description for c in conflicts])
@@ -1603,6 +1621,28 @@ def update_schedule(
         except Exception as e:
             log_operation(db, "课程安排", "更新", f"消耗课时失败: {str(e)}", current_user.username,"Error")
 
+    # 重新计算所有排课的冲突状态（资源变更可能解除或产生新的冲突）
+    all_schedules_conflict = db.query(Schedule).all()
+    all_classes = db.query(Class).filter(Class.is_active == True).all()
+    class_students_cache = {}
+    for class_ in all_classes:
+        active_students = get_students_by_class(db, class_.id, is_active=True)
+        class_students_cache[class_.id] = {s.id for s in active_students}
+    
+    for s in all_schedules_conflict:
+        conflicts = check_conflicts(db, s, exclude_id=s.id, class_students_cache=class_students_cache)
+        leave_conflicts = check_leave_conflicts(db, s)
+        
+        if conflicts or leave_conflicts:
+            s.has_conflict = True
+            all_conflicts = [c.conflict_description for c in conflicts] + leave_conflicts
+            s.conflict_reason = "; ".join(all_conflicts)
+        else:
+            s.has_conflict = False
+            s.conflict_reason = None
+    
+    db.commit()
+
     db.refresh(db_schedule)
     
     # 手动获取学员列表，确保序列化为字典（与get_schedule保持一致）
@@ -1964,7 +2004,7 @@ def complete_schedule(
     # 更新学员出勤状态
     if feedback.student_attendance:
         for student_id, status in feedback.student_attendance.items():
-            if status not in ['present', 'absent', 'leave']:
+            if status not in ['present', 'absent', 'leave', 'pending']:
                 log_operation(db, "课程安排", "完训", f"无效的出勤状态: {status}", current_user.username,"Error")
                 raise HTTPException(status_code=400, detail=f"无效的出勤状态: {status}")
             
@@ -2166,6 +2206,8 @@ def postpone_schedule(
     # 更新原课程的执行状态为延期
     db_schedule.execution_status = "postponed"
     db_schedule.postpone_reason = postpone_data.postpone_reason
+    db_schedule.has_conflict = False
+    db_schedule.conflict_reason = None
     db.commit()
     log_operation(db, "课程安排", "延期", f"课程安排被延期: ID{db_schedule.id} - {postpone_data.postpone_reason}", current_user.username,"INFO")
     
@@ -2197,6 +2239,30 @@ def postpone_schedule(
         new_schedule.conflict_reason = "; ".join(all_conflicts)
     else:
         new_schedule.has_conflict = False
+    
+    db.commit()
+
+    # 重新计算所有排课的冲突状态（原课程延期后可能解除其他课程的冲突）
+    all_schedules_conflict = db.query(Schedule).all()
+    all_classes = db.query(Class).filter(Class.is_active == True).all()
+    class_students_cache = {}
+    for class_ in all_classes:
+        active_students = get_students_by_class(db, class_.id, is_active=True)
+        class_students_cache[class_.id] = {s.id for s in active_students}
+    
+    for s in all_schedules_conflict:
+        if s.id == new_schedule.id:
+            continue  # 新课程已检查过
+        conflicts = check_conflicts(db, s, exclude_id=s.id, class_students_cache=class_students_cache)
+        leave_conflicts = check_leave_conflicts(db, s)
+        
+        if conflicts or leave_conflicts:
+            s.has_conflict = True
+            all_conflicts = [c.conflict_description for c in conflicts] + leave_conflicts
+            s.conflict_reason = "; ".join(all_conflicts)
+        else:
+            s.has_conflict = False
+            s.conflict_reason = None
     
     db.commit()
 
@@ -2257,6 +2323,30 @@ def cancel_schedule(
     
     db_schedule.execution_status = "cancelled"
     db_schedule.cancel_reason = cancel_data.cancel_reason
+    db_schedule.has_conflict = False
+    db_schedule.conflict_reason = None
+    db.commit()
+
+    # 重新计算所有排课的冲突状态（取消课程后可能解除其他课程的冲突）
+    all_schedules_cancel = db.query(Schedule).all()
+    all_classes = db.query(Class).filter(Class.is_active == True).all()
+    class_students_cache = {}
+    for class_ in all_classes:
+        active_students = get_students_by_class(db, class_.id, is_active=True)
+        class_students_cache[class_.id] = {s.id for s in active_students}
+    
+    for s in all_schedules_cancel:
+        conflicts = check_conflicts(db, s, exclude_id=s.id, class_students_cache=class_students_cache)
+        leave_conflicts = check_leave_conflicts(db, s)
+        
+        if conflicts or leave_conflicts:
+            s.has_conflict = True
+            all_conflicts = [c.conflict_description for c in conflicts] + leave_conflicts
+            s.conflict_reason = "; ".join(all_conflicts)
+        else:
+            s.has_conflict = False
+            s.conflict_reason = None
+    
     db.commit()
 
     if hasattr(cancel_data, 'send_notification') and cancel_data.send_notification:
@@ -2317,7 +2407,7 @@ def update_schedule_attendance(
     
     # 更新学员出勤状态
     for student_id, status in attendance_data.student_attendance.items():
-        if status not in ['present', 'absent', 'leave']:
+        if status not in ['present', 'absent', 'leave', 'pending']:
             log_operation(db, "课程安排", "更新出勤状态", f"无效的出勤状态: {status}", current_user.username,"Error")
             raise HTTPException(status_code=400, detail=f"无效的出勤状态: {status}")
         

@@ -371,6 +371,58 @@ migrate_add_license_fields()
 migrate_add_daily_words_phrases()
 migrate_add_extra_student()
 
+def recalculate_conflicts_on_startup():
+    """启动时重新计算所有排课的冲突状态，修正历史错误冲突数据"""
+    from sqlalchemy.orm import Session
+    from models import Schedule, Class
+    from routers.schedules import check_conflicts, check_leave_conflicts, get_students_by_class
+    
+    db = SessionLocal()
+    try:
+        all_classes = db.query(Class).filter(Class.is_active == True).all()
+        class_students_cache = {}
+        for class_ in all_classes:
+            active_students = get_students_by_class(db, class_.id, is_active=True)
+            class_students_cache[class_.id] = {s.id for s in active_students}
+        
+        all_schedules = db.query(Schedule).all()
+        fixed_count = 0
+        
+        for schedule in all_schedules:
+            if schedule.execution_status in ('postponed', 'cancelled'):
+                if schedule.has_conflict:
+                    schedule.has_conflict = False
+                    schedule.conflict_reason = None
+                    fixed_count += 1
+                continue
+            
+            old_has_conflict = schedule.has_conflict
+            conflicts = check_conflicts(db, schedule, exclude_id=schedule.id, class_students_cache=class_students_cache)
+            leave_conflicts = check_leave_conflicts(db, schedule)
+            
+            if conflicts or leave_conflicts:
+                schedule.has_conflict = True
+                schedule.conflict_reason = "; ".join([c.conflict_description for c in conflicts] + leave_conflicts)
+            else:
+                schedule.has_conflict = False
+                schedule.conflict_reason = None
+            
+            if old_has_conflict != schedule.has_conflict:
+                fixed_count += 1
+        
+        db.commit()
+        if fixed_count > 0:
+            logger.info(f"启动时冲突重算完成，修正了 {fixed_count} 条排课的冲突状态")
+        else:
+            logger.info("启动时冲突重算完成，无需修正")
+    except Exception as e:
+        logger.error(f"启动时冲突重算失败: {e}")
+        db.rollback()
+    finally:
+        db.close()
+
+recalculate_conflicts_on_startup()
+
 def add_auto_backup_config_column():
     inspector = inspect(engine)
     columns = [col['name'] for col in inspector.get_columns('settings')]
